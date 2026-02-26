@@ -44,6 +44,7 @@ export function getCurrentInstallId(): string | undefined {
 export const UI_KEYS = {
   theme: "yep-anywhere-theme",
   fontSize: "yep-anywhere-font-size",
+  tabSize: "yep-anywhere-tab-size",
   sidebarWidth: "yep-anywhere-sidebar-width",
   sidebarExpanded: "yep-anywhere-sidebar-expanded",
   funPhrases: "yep-anywhere-fun-phrases-enabled",

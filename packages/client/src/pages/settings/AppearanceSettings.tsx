@@ -6,10 +6,12 @@ import {
 } from "../../hooks/useFontSize";
 import { useFunPhrases } from "../../hooks/useFunPhrases";
 import { useStreamingEnabled } from "../../hooks/useStreamingEnabled";
+import { TAB_SIZES, getTabSizeLabel, useTabSize } from "../../hooks/useTabSize";
 import { THEMES, getThemeLabel, useTheme } from "../../hooks/useTheme";
 
 export function AppearanceSettings() {
   const { fontSize, setFontSize } = useFontSize();
+  const { tabSize, setTabSize } = useTabSize();
   const { theme, setTheme } = useTheme();
   const { streamingEnabled, setStreamingEnabled } = useStreamingEnabled();
   const { funPhrasesEnabled, setFunPhrasesEnabled } = useFunPhrases();
@@ -51,6 +53,24 @@ export function AppearanceSettings() {
                 onClick={() => setFontSize(size)}
               >
                 {getFontSizeLabel(size)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="settings-item">
+          <div className="settings-item-info">
+            <strong>Tab Size</strong>
+            <p>Display width of tab characters in code and diffs.</p>
+          </div>
+          <div className="font-size-selector">
+            {TAB_SIZES.map((size) => (
+              <button
+                key={size}
+                type="button"
+                className={`font-size-option ${tabSize === size ? "active" : ""}`}
+                onClick={() => setTabSize(size)}
+              >
+                {getTabSizeLabel(size)}
               </button>
             ))}
           </div>

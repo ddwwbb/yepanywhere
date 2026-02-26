@@ -16,6 +16,7 @@
   margin: 0.5rem 0;
   white-space: pre-wrap;
   word-break: break-word;
+  tab-size: var(--tab-size);
 }
 
 .code-block-error {
@@ -810,6 +811,7 @@ details[open] .collapsible__icon {
   font-family: "SF Mono", Monaco, monospace;
   font-size: var(--font-size-base);
   background: var(--bg-code);
+  tab-size: var(--tab-size);
   border: 1px solid var(--border-color);
   border-radius: 6px;
 }
@@ -975,6 +977,7 @@ details[open] .collapsible__icon {
   padding: 0;
   background: var(--bg-code);
   overflow-x: auto;
+  tab-size: var(--tab-size);
 }
 
 .diff-content > div {
@@ -1001,6 +1004,7 @@ details[open] .collapsible__icon {
   font-family: "SF Mono", Monaco, monospace;
   font-size: var(--font-size-base);
   line-height: 1.5;
+  tab-size: var(--tab-size);
 }
 
 .highlighted-diff pre.shiki {
