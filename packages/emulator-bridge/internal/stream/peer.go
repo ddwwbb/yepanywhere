@@ -61,6 +61,10 @@ func NewPeerSession(stunServers []string, onInput func(msg []byte)) (*PeerSessio
 		closed:      make(chan struct{}),
 	}
 
+	dc.OnOpen(func() {
+		log.Printf("DataChannel '%s' opened", dc.Label())
+	})
+
 	dc.OnMessage(func(msg webrtc.DataChannelMessage) {
 		if ps.onInput != nil {
 			ps.onInput(msg.Data)

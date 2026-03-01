@@ -154,8 +154,8 @@ func (sh *SignalingHandler) runPipeline(session *PeerSession, done chan struct{}
 				return
 			}
 
-			// 1. Scale + flip.
-			scaled := encoder.ScaleAndFlip(
+			// 1. Scale.
+			scaled := encoder.Scale(
 				frame.Data,
 				int(frame.Width), int(frame.Height),
 				sh.targetW, sh.targetH,

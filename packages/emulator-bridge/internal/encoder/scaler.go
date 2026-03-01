@@ -16,14 +16,14 @@ func ComputeTargetSize(srcW, srcH, maxWidth int) (targetW, targetH int) {
 	return
 }
 
-// ScaleAndFlip downscales an RGB888 bottom-up image to the target size in top-down order.
-// Uses nearest-neighbor sampling.
-func ScaleAndFlip(src []byte, srcW, srcH, targetW, targetH int) []byte {
+// Scale downscales an RGB888 image to the target size using nearest-neighbor sampling.
+// The emulator pixels are already top-down despite the proto saying "bottom up"
+// (confirmed empirically in Phase 0 validation).
+func Scale(src []byte, srcW, srcH, targetW, targetH int) []byte {
 	dst := make([]byte, targetW*targetH*3)
 
 	for oy := 0; oy < targetH; oy++ {
-		// Map output row (top-down) to source row (bottom-up).
-		sy := srcH - 1 - (oy * srcH / targetH)
+		sy := oy * srcH / targetH
 		srcRowOffset := sy * srcW * 3
 		dstRowOffset := oy * targetW * 3
 
