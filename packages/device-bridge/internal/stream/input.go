@@ -5,23 +5,23 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/anthropics/yepanywhere/device-bridge/internal/emulator"
+	"github.com/anthropics/yepanywhere/device-bridge/internal/device"
 )
 
-// InputHandler translates browser touch/key events to emulator gRPC calls.
+// InputHandler translates browser touch/key events to device control calls.
 type InputHandler struct {
-	client *emulator.Client
+	client device.Device
 }
 
-// NewInputHandler creates a handler that maps normalized coordinates to emulator resolution.
-func NewInputHandler(client *emulator.Client) *InputHandler {
+// NewInputHandler creates a handler that maps normalized coordinates to device resolution.
+func NewInputHandler(client device.Device) *InputHandler {
 	return &InputHandler{client: client}
 }
 
 type inputMessage struct {
-	Type    string         `json:"type"`
-	Touches []inputTouch   `json:"touches,omitempty"`
-	Key     string         `json:"key,omitempty"`
+	Type    string       `json:"type"`
+	Touches []inputTouch `json:"touches,omitempty"`
+	Key     string       `json:"key,omitempty"`
 }
 
 type inputTouch struct {
@@ -43,9 +43,9 @@ func (ih *InputHandler) HandleMessage(msg []byte) {
 
 	switch m.Type {
 	case "touch":
-		touches := make([]emulator.TouchPoint, len(m.Touches))
+		touches := make([]device.TouchPoint, len(m.Touches))
 		for i, t := range m.Touches {
-			touches[i] = emulator.TouchPoint{
+			touches[i] = device.TouchPoint{
 				X:          t.X,
 				Y:          t.Y,
 				Pressure:   t.Pressure,

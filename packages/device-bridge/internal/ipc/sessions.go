@@ -8,25 +8,25 @@ import (
 	"sync"
 	"time"
 
-	"github.com/anthropics/yepanywhere/device-bridge/internal/emulator"
+	"github.com/anthropics/yepanywhere/device-bridge/internal/device"
 	"github.com/anthropics/yepanywhere/device-bridge/internal/encoder"
 	"github.com/anthropics/yepanywhere/device-bridge/internal/stream"
 )
 
-// SessionStartOptions are the options for starting an emulator streaming session.
+// SessionStartOptions are the options for starting a device streaming session.
 type SessionStartOptions struct {
 	MaxFPS   int `json:"maxFps"`
 	MaxWidth int `json:"maxWidth"`
 	Quality  int `json:"quality"` // x264 CRF value (0 = use default of 30)
 }
 
-// streamSession holds the state for a single active emulator streaming session.
+// streamSession holds the state for a single active device streaming session.
 type streamSession struct {
 	sessionID   string
-	emulatorID  string
+	deviceID    string
 	maxWidth    int // for pool release key
 	maxFPS      int
-	frameSource *emulator.FrameSource // shared via pool, not owned
+	frameSource *device.FrameSource // shared via pool, not owned
 	enc         *encoder.H264Encoder
 	peer        *stream.PeerSession
 	input       *stream.InputHandler
@@ -34,16 +34,16 @@ type streamSession struct {
 	targetW     int
 	targetH     int
 	pipelineWg  sync.WaitGroup // tracks runPipeline goroutine lifetime
-	fpsCh       chan int        // receives fps_hint values from the client DataChannel
+	fpsCh       chan int       // receives fps_hint values from the client DataChannel
 }
 
-// SessionManager manages multiple concurrent emulator streaming sessions.
+// SessionManager manages multiple concurrent device streaming sessions.
 type SessionManager struct {
 	mu          sync.Mutex
 	sessions    map[string]*streamSession
 	stunServers []string
 	sendMsg     func(msg []byte) // send JSON to the Yep server WebSocket
-	pool        *ResourcePool    // shared gRPC clients and FrameSources
+	pool        *ResourcePool    // shared device connections and FrameSources
 	onIdle      func()           // called when no sessions remain for idleTimeout
 	idleTimer   *time.Timer
 	idleTimeout time.Duration
@@ -91,8 +91,8 @@ func (sm *SessionManager) resetIdleTimer() {
 	}
 }
 
-// StartSession creates a new streaming session for the given emulator.
-func (sm *SessionManager) StartSession(sessionID, emulatorID string, opts SessionStartOptions) error {
+// StartSession creates a new streaming session for the given device.
+func (sm *SessionManager) StartSession(sessionID, deviceID string, opts SessionStartOptions) error {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 
@@ -113,13 +113,13 @@ func (sm *SessionManager) StartSession(sessionID, emulatorID string, opts Sessio
 		maxFPS = 30
 	}
 
-	// Acquire shared gRPC client from pool.
-	log.Printf("[session %s] connecting to emulator %s", sessionID, emulatorID)
+	// Acquire shared device from pool.
+	log.Printf("[session %s] connecting to device %s", sessionID, deviceID)
 
-	client, err := sm.pool.AcquireClient(emulatorID)
+	client, err := sm.pool.AcquireDevice(deviceID)
 	if err != nil {
-		sm.sendState(sessionID, "failed", fmt.Sprintf("emulator connect: %v", err))
-		return fmt.Errorf("connecting to emulator: %w", err)
+		sm.sendState(sessionID, "failed", fmt.Sprintf("device connect: %v", err))
+		return fmt.Errorf("connecting to device: %w", err)
 	}
 
 	srcW, srcH := client.ScreenSize()
@@ -128,13 +128,13 @@ func (sm *SessionManager) StartSession(sessionID, emulatorID string, opts Sessio
 
 	h264Enc, err := encoder.NewH264Encoder(targetW, targetH, maxFPS, opts.Quality)
 	if err != nil {
-		sm.pool.ReleaseClient(emulatorID)
+		sm.pool.ReleaseDevice(deviceID)
 		sm.sendState(sessionID, "failed", fmt.Sprintf("encoder: %v", err))
 		return fmt.Errorf("creating encoder: %w", err)
 	}
 
 	// Acquire shared FrameSource from pool.
-	frameSource := sm.pool.AcquireFrameSource(emulatorID, maxWidth, maxFPS, client)
+	frameSource := sm.pool.AcquireFrameSource(deviceID, maxWidth, maxFPS, client)
 	inputHandler := stream.NewInputHandler(client)
 
 	fpsCh := make(chan int, 1)
@@ -165,9 +165,9 @@ func (sm *SessionManager) StartSession(sessionID, emulatorID string, opts Sessio
 	}
 	peer, err := stream.NewPeerSession(sessionID, sm.stunServers, onMessage, onICE)
 	if err != nil {
-		sm.pool.ReleaseFrameSource(emulatorID, maxWidth)
+		sm.pool.ReleaseFrameSource(deviceID, maxWidth)
 		h264Enc.Close()
-		sm.pool.ReleaseClient(emulatorID)
+		sm.pool.ReleaseDevice(deviceID)
 		sm.sendState(sessionID, "failed", fmt.Sprintf("peer: %v", err))
 		return fmt.Errorf("creating peer: %w", err)
 	}
@@ -175,9 +175,9 @@ func (sm *SessionManager) StartSession(sessionID, emulatorID string, opts Sessio
 	sdp, err := peer.CreateOffer()
 	if err != nil {
 		peer.Close()
-		sm.pool.ReleaseFrameSource(emulatorID, maxWidth)
+		sm.pool.ReleaseFrameSource(deviceID, maxWidth)
 		h264Enc.Close()
-		sm.pool.ReleaseClient(emulatorID)
+		sm.pool.ReleaseDevice(deviceID)
 		sm.sendState(sessionID, "failed", fmt.Sprintf("offer: %v", err))
 		return fmt.Errorf("creating offer: %w", err)
 	}
@@ -185,7 +185,7 @@ func (sm *SessionManager) StartSession(sessionID, emulatorID string, opts Sessio
 	ctx, cancel := context.WithCancel(context.Background())
 	sess := &streamSession{
 		sessionID:   sessionID,
-		emulatorID:  emulatorID,
+		deviceID:    deviceID,
 		maxWidth:    maxWidth,
 		maxFPS:      maxFPS,
 		frameSource: frameSource,
@@ -306,8 +306,8 @@ func (sm *SessionManager) closeSessionLocked(sess *streamSession) {
 	sess.pipelineWg.Wait()
 	sess.enc.Close()
 	// Release shared resources via pool (ref-counted).
-	sm.pool.ReleaseFrameSource(sess.emulatorID, sess.maxWidth)
-	sm.pool.ReleaseClient(sess.emulatorID)
+	sm.pool.ReleaseFrameSource(sess.deviceID, sess.maxWidth)
+	sm.pool.ReleaseDevice(sess.deviceID)
 	log.Printf("[session %s] closed", sess.sessionID)
 	// Note: caller must call resetIdleTimer() after deleting from sm.sessions.
 }
@@ -346,15 +346,15 @@ func (sm *SessionManager) runPipeline(sess *streamSession) {
 
 	// Pipeline stats for diagnostics.
 	var (
-		lastTime       time.Time
-		framesReceived uint64
-		framesDrained  uint64
-		framesEncoded  uint64
-		framesWritten  uint64
-		encodeErrors   uint64
-		nilNals        uint64
+		lastTime        time.Time
+		framesReceived  uint64
+		framesDrained   uint64
+		framesEncoded   uint64
+		framesWritten   uint64
+		encodeErrors    uint64
+		nilNals         uint64
 		totalWriteBytes uint64
-		statsStart     = time.Now()
+		statsStart      = time.Now()
 	)
 
 	// Rate-limit encoding to maxFPS. Without this, the polling loop feeds
@@ -401,7 +401,7 @@ func (sm *SessionManager) runPipeline(sess *streamSession) {
 			}
 		case <-rateLimiter.C:
 			// Wait for a frame (or drain stale ones).
-			var frame *emulator.Frame
+			var frame *device.Frame
 			select {
 			case f, ok := <-frames:
 				if !ok {

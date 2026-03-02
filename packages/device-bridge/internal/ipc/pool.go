@@ -3,32 +3,35 @@ package ipc
 import (
 	"fmt"
 	"log"
+	"os"
+	"strings"
 	"sync"
 
+	"github.com/anthropics/yepanywhere/device-bridge/internal/device"
 	"github.com/anthropics/yepanywhere/device-bridge/internal/emulator"
 )
 
-// clientEntry is a ref-counted gRPC client.
+// clientEntry is a ref-counted device connection.
 type clientEntry struct {
-	client   *emulator.Client
+	client   device.Device
 	refCount int
 }
 
 // frameSourceEntry is a ref-counted FrameSource.
 type frameSourceEntry struct {
-	source   *emulator.FrameSource
+	source   *device.FrameSource
 	refCount int
 }
 
-// frameSourceKey uniquely identifies a FrameSource by emulator + resolution.
+// frameSourceKey uniquely identifies a FrameSource by device + resolution.
 type frameSourceKey struct {
-	emulatorID string
-	maxWidth   int
+	deviceID string
+	maxWidth int
 }
 
-// ResourcePool manages shared gRPC clients and FrameSources across sessions.
-// Multiple sessions viewing the same emulator at the same resolution share
-// a single gRPC connection and polling loop.
+// ResourcePool manages shared Device connections and FrameSources across sessions.
+// Multiple sessions viewing the same device at the same resolution share
+// a single device connection and polling loop.
 type ResourcePool struct {
 	mu           sync.Mutex
 	clients      map[string]*clientEntry
@@ -43,34 +46,54 @@ func NewResourcePool() *ResourcePool {
 	}
 }
 
-// AcquireClient returns a shared gRPC Client for the emulator, creating one if needed.
-func (rp *ResourcePool) AcquireClient(emulatorID string) (*emulator.Client, error) {
+// AcquireDevice returns a shared device connection, creating one if needed.
+func (rp *ResourcePool) AcquireDevice(deviceID string) (device.Device, error) {
 	rp.mu.Lock()
 	defer rp.mu.Unlock()
 
-	if entry, ok := rp.clients[emulatorID]; ok {
+	if entry, ok := rp.clients[deviceID]; ok {
 		entry.refCount++
-		log.Printf("[ResourcePool] reusing client for %s (refs=%d)", emulatorID, entry.refCount)
+		log.Printf("[ResourcePool] reusing device for %s (refs=%d)", deviceID, entry.refCount)
 		return entry.client, nil
 	}
 
-	grpcAddr := GRPCAddr(emulatorID)
-	client, err := emulator.NewClient(grpcAddr)
+	client, err := rp.createDeviceLocked(deviceID)
 	if err != nil {
-		return nil, fmt.Errorf("connecting to emulator %s: %w", emulatorID, err)
+		return nil, err
 	}
 
-	rp.clients[emulatorID] = &clientEntry{client: client, refCount: 1}
-	log.Printf("[ResourcePool] created new client for %s", emulatorID)
+	rp.clients[deviceID] = &clientEntry{client: client, refCount: 1}
+	log.Printf("[ResourcePool] created new device connection for %s", deviceID)
 	return client, nil
 }
 
-// ReleaseClient decrements the ref count and closes the client when it reaches 0.
-func (rp *ResourcePool) ReleaseClient(emulatorID string) {
+func (rp *ResourcePool) createDeviceLocked(deviceID string) (device.Device, error) {
+	if deviceID == "chromeos" || strings.HasPrefix(deviceID, "chromeos:") {
+		host := os.Getenv("CHROMEOS_HOST")
+		if strings.HasPrefix(deviceID, "chromeos:") {
+			host = strings.TrimPrefix(deviceID, "chromeos:")
+		}
+		d, err := device.NewChromeOSDevice(host)
+		if err != nil {
+			return nil, fmt.Errorf("connecting to chromeos device %s: %w", deviceID, err)
+		}
+		return d, nil
+	}
+
+	grpcAddr := GRPCAddr(deviceID)
+	d, err := emulator.NewClient(grpcAddr)
+	if err != nil {
+		return nil, fmt.Errorf("connecting to emulator %s: %w", deviceID, err)
+	}
+	return d, nil
+}
+
+// ReleaseDevice decrements the ref count and closes the device when it reaches 0.
+func (rp *ResourcePool) ReleaseDevice(deviceID string) {
 	rp.mu.Lock()
 	defer rp.mu.Unlock()
 
-	entry, ok := rp.clients[emulatorID]
+	entry, ok := rp.clients[deviceID]
 	if !ok {
 		return
 	}
@@ -78,37 +101,36 @@ func (rp *ResourcePool) ReleaseClient(emulatorID string) {
 	entry.refCount--
 	if entry.refCount <= 0 {
 		entry.client.Close()
-		delete(rp.clients, emulatorID)
-		log.Printf("[ResourcePool] closed client for %s", emulatorID)
+		delete(rp.clients, deviceID)
+		log.Printf("[ResourcePool] closed device connection for %s", deviceID)
 	}
 }
 
 // AcquireFrameSource returns a shared FrameSource, creating one if needed.
-// The client must already be acquired via AcquireClient.
-// fps is passed to NewFrameSource to cap the gRPC polling rate (0 = unlimited).
-func (rp *ResourcePool) AcquireFrameSource(emulatorID string, maxWidth, fps int, client *emulator.Client) *emulator.FrameSource {
+// The device must already be acquired via AcquireDevice.
+func (rp *ResourcePool) AcquireFrameSource(deviceID string, maxWidth, fps int, d device.Device) *device.FrameSource {
 	rp.mu.Lock()
 	defer rp.mu.Unlock()
 
-	key := frameSourceKey{emulatorID: emulatorID, maxWidth: maxWidth}
+	key := frameSourceKey{deviceID: deviceID, maxWidth: maxWidth}
 	if entry, ok := rp.frameSources[key]; ok {
 		entry.refCount++
-		log.Printf("[ResourcePool] reusing FrameSource for %s@%d (refs=%d)", emulatorID, maxWidth, entry.refCount)
+		log.Printf("[ResourcePool] reusing FrameSource for %s@%d (refs=%d)", deviceID, maxWidth, entry.refCount)
 		return entry.source
 	}
 
-	fs := emulator.NewFrameSource(client, maxWidth, fps)
+	fs := device.NewFrameSource(d, maxWidth, fps)
 	rp.frameSources[key] = &frameSourceEntry{source: fs, refCount: 1}
-	log.Printf("[ResourcePool] created new FrameSource for %s@%d fps=%d", emulatorID, maxWidth, fps)
+	log.Printf("[ResourcePool] created new FrameSource for %s@%d fps=%d", deviceID, maxWidth, fps)
 	return fs
 }
 
 // ReleaseFrameSource decrements the ref count and stops the FrameSource when it reaches 0.
-func (rp *ResourcePool) ReleaseFrameSource(emulatorID string, maxWidth int) {
+func (rp *ResourcePool) ReleaseFrameSource(deviceID string, maxWidth int) {
 	rp.mu.Lock()
 	defer rp.mu.Unlock()
 
-	key := frameSourceKey{emulatorID: emulatorID, maxWidth: maxWidth}
+	key := frameSourceKey{deviceID: deviceID, maxWidth: maxWidth}
 	entry, ok := rp.frameSources[key]
 	if !ok {
 		return
@@ -118,7 +140,7 @@ func (rp *ResourcePool) ReleaseFrameSource(emulatorID string, maxWidth int) {
 	if entry.refCount <= 0 {
 		entry.source.Stop()
 		delete(rp.frameSources, key)
-		log.Printf("[ResourcePool] stopped FrameSource for %s@%d", emulatorID, maxWidth)
+		log.Printf("[ResourcePool] stopped FrameSource for %s@%d", deviceID, maxWidth)
 	}
 }
 

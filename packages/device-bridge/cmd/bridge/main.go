@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	bridgeDevice "github.com/anthropics/yepanywhere/device-bridge/internal/device"
 	"github.com/anthropics/yepanywhere/device-bridge/internal/emulator"
 	"github.com/anthropics/yepanywhere/device-bridge/internal/encoder"
 	"github.com/anthropics/yepanywhere/device-bridge/internal/ipc"
@@ -62,7 +63,7 @@ func runStandalone(addr, emuAddr string, maxWidth, fps int) {
 	}
 	defer h264Enc.Close()
 
-	frameSource := emulator.NewFrameSource(client, maxWidth, fps)
+	frameSource := bridgeDevice.NewFrameSource(client, maxWidth, fps)
 	defer frameSource.Stop()
 
 	inputHandler := stream.NewInputHandler(client)
@@ -232,7 +233,7 @@ func handleScreenshot(w http.ResponseWriter, r *http.Request, emulatorID string)
 	}
 	defer client.Close()
 
-	frameSource := emulator.NewFrameSource(client, 360, 0)
+	frameSource := bridgeDevice.NewFrameSource(client, 360, 0)
 	defer frameSource.Stop()
 
 	id, frames := frameSource.Subscribe()

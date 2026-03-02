@@ -7,20 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/anthropics/yepanywhere/device-bridge/internal/device"
 	pb "github.com/anthropics/yepanywhere/device-bridge/proto/emulatorpb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
-
-// TouchPoint represents a single touch for forwarding to the emulator.
-type TouchPoint struct {
-	X          float64 // 0.0-1.0 normalized
-	Y          float64 // 0.0-1.0 normalized
-	Pressure   float64 // 0.0-1.0 (0 = release)
-	Identifier int32
-}
 
 // Client wraps the gRPC connection to a single emulator.
 type Client struct {
@@ -69,7 +62,7 @@ func (c *Client) ScreenSize() (width, height int32) {
 }
 
 // SendTouch forwards touch events to the emulator.
-func (c *Client) SendTouch(ctx context.Context, touches []TouchPoint) error {
+func (c *Client) SendTouch(ctx context.Context, touches []device.TouchPoint) error {
 	pbTouches := make([]*pb.Touch, len(touches))
 	for i, t := range touches {
 		pbTouches[i] = &pb.Touch{
@@ -83,6 +76,11 @@ func (c *Client) SendTouch(ctx context.Context, touches []TouchPoint) error {
 		Touches: pbTouches,
 	})
 	return err
+}
+
+// GetFrame implements device.Device by returning one RGB888 screenshot.
+func (c *Client) GetFrame(ctx context.Context, maxWidth int) (*device.Frame, error) {
+	return c.GetOneScreenshot(ctx, maxWidth)
 }
 
 // SendKey sends a keyboard event to the emulator.

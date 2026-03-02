@@ -61,6 +61,15 @@ func (d *Discovery) ListDevices() ([]DeviceInfo, error) {
 		}
 	}
 
+	// Manual ChromeOS entry (only shown when configured).
+	if host := strings.TrimSpace(os.Getenv("CHROMEOS_HOST")); host != "" {
+		result = append(result, DeviceInfo{
+			ID:    "chromeos:" + host,
+			AVD:   "ChromeOS (" + host + ")",
+			State: "running",
+		})
+	}
+
 	return result, nil
 }
 

@@ -8,26 +8,26 @@ import (
 	"sync"
 	"time"
 
-	"github.com/anthropics/yepanywhere/device-bridge/internal/emulator"
+	"github.com/anthropics/yepanywhere/device-bridge/internal/device"
 	"github.com/anthropics/yepanywhere/device-bridge/internal/encoder"
 )
 
 // SignalingHandler manages HTTP signaling for WebRTC sessions.
 type SignalingHandler struct {
-	mu          sync.Mutex
-	session     *PeerSession
-	pipeCancel  func()
-	frameSource *emulator.FrameSource
-	enc         *encoder.H264Encoder
+	mu           sync.Mutex
+	session      *PeerSession
+	pipeCancel   func()
+	frameSource  *device.FrameSource
+	enc          *encoder.H264Encoder
 	inputHandler *InputHandler
-	stunServers []string
-	targetW     int
-	targetH     int
+	stunServers  []string
+	targetW      int
+	targetH      int
 }
 
 // NewSignalingHandler creates a new signaling handler.
 func NewSignalingHandler(
-	frameSource *emulator.FrameSource,
+	frameSource *device.FrameSource,
 	enc *encoder.H264Encoder,
 	inputHandler *InputHandler,
 	stunServers []string,
