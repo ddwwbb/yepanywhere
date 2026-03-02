@@ -48,6 +48,14 @@ export interface ModelInfo {
   description?: string;
   /** Model size in bytes (for local models) */
   size?: number;
+  /** Context window size in tokens (for local models) */
+  contextWindow?: number;
+  /** Parameter count string, e.g. "30.5B" (for local models) */
+  parameterSize?: string;
+  /** Base model this preset was derived from, e.g. "qwen3-coder:30b" */
+  parentModel?: string;
+  /** Quantization level, e.g. "Q4_K_M" */
+  quantizationLevel?: string;
 }
 
 /**

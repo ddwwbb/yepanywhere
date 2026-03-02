@@ -180,13 +180,25 @@ export function NewSessionForm({
 
   // Build model options for FilterDropdown
   const modelOptions = useMemo((): FilterOption<string>[] => {
-    return availableModels.map((model) => ({
-      value: model.id,
-      label: model.size
+    return availableModels.map((model) => {
+      const label = model.size
         ? `${model.name} (${(model.size / (1024 * 1024 * 1024)).toFixed(1)} GB)`
-        : model.name,
-      description: model.description,
-    }));
+        : model.name;
+
+      let description = model.description;
+      if (!description) {
+        const parts: string[] = [];
+        if (model.parameterSize) parts.push(model.parameterSize);
+        if (model.contextWindow) {
+          parts.push(`${Math.round(model.contextWindow / 1024)}K ctx`);
+        }
+        if (model.parentModel) parts.push(model.parentModel);
+        if (model.quantizationLevel) parts.push(model.quantizationLevel);
+        if (parts.length > 0) description = parts.join(" · ");
+      }
+
+      return { value: model.id, label, description };
+    });
   }, [availableModels]);
 
   // Handle model selection from FilterDropdown

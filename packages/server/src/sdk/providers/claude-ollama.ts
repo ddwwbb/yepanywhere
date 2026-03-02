@@ -22,6 +22,60 @@ interface OllamaTagsResponse {
   }>;
 }
 
+/** Ollama /api/show response shape (subset we care about) */
+interface OllamaShowResponse {
+  parameters?: string;
+  details?: {
+    parent_model?: string;
+    parameter_size?: string;
+    quantization_level?: string;
+  };
+}
+
+/** Parse num_ctx from Ollama parameters string */
+function parseNumCtx(parameters: string): number | undefined {
+  const match = parameters.match(/num_ctx\s+(\d+)/);
+  const ctx = match?.[1];
+  return ctx !== undefined ? Number.parseInt(ctx, 10) : undefined;
+}
+
+/** Fetch extended model details from /api/show. Returns empty object on failure. */
+async function fetchOllamaModelDetails(
+  ollamaUrl: string,
+  modelName: string,
+): Promise<
+  Pick<
+    ModelInfo,
+    "contextWindow" | "parameterSize" | "parentModel" | "quantizationLevel"
+  >
+> {
+  try {
+    const response = await fetch(`${ollamaUrl}/api/show`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: modelName }),
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!response.ok) return {};
+    const data = (await response.json()) as OllamaShowResponse;
+    const contextWindow = data.parameters
+      ? parseNumCtx(data.parameters)
+      : undefined;
+    const parentModel =
+      data.details?.parent_model && data.details.parent_model !== modelName
+        ? data.details.parent_model
+        : undefined;
+    return {
+      contextWindow,
+      parameterSize: data.details?.parameter_size || undefined,
+      parentModel,
+      quantizationLevel: data.details?.quantization_level || undefined,
+    };
+  } catch {
+    return {};
+  }
+}
+
 /**
  * Claude + Ollama provider.
  * Extends ClaudeProvider, overriding env injection and model discovery.
@@ -113,10 +167,17 @@ export class ClaudeOllamaProvider extends ClaudeProvider {
         return [];
       }
       const data = (await response.json()) as OllamaTagsResponse;
-      return (data.models ?? []).map((m) => ({
+      const baseModels = data.models ?? [];
+      const details = await Promise.all(
+        baseModels.map((m) =>
+          fetchOllamaModelDetails(ClaudeOllamaProvider.ollamaUrl, m.name),
+        ),
+      );
+      return baseModels.map((m, i) => ({
         id: m.name,
         name: m.name,
         size: m.size,
+        ...details[i],
       }));
     } catch (error) {
       log.debug({ error }, "Failed to fetch Ollama models");
