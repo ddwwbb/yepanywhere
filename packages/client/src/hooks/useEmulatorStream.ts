@@ -4,6 +4,8 @@ import { getGlobalConnection } from "../lib/connection";
 import { getWebSocketConnection } from "../lib/connection/WebSocketConnection";
 import { generateUUID } from "../lib/uuid";
 
+const LOG_PREFIX = "[EmulatorStream]";
+
 export type EmulatorConnectionState =
   | "idle"
   | "connecting"
@@ -57,13 +59,16 @@ export function useEmulatorStream(): UseEmulatorStreamResult {
   }, []);
 
   const disconnect = useCallback(() => {
+    const sid = sessionIdRef.current;
+    console.log(`${LOG_PREFIX} disconnect() called, session=${sid}`);
+
     // Send stop message
-    if (sessionIdRef.current) {
+    if (sid) {
       try {
         const conn = getConnection();
         conn.sendMessage?.({
           type: "emulator_stream_stop",
-          sessionId: sessionIdRef.current,
+          sessionId: sid,
         });
       } catch {
         // Connection may already be closed
@@ -72,7 +77,11 @@ export function useEmulatorStream(): UseEmulatorStreamResult {
 
     // Close peer connection
     if (pcRef.current) {
-      pcRef.current.close();
+      const pc = pcRef.current;
+      console.log(
+        `${LOG_PREFIX} closing RTCPeerConnection (state=${pc.connectionState}, ice=${pc.iceConnectionState})`,
+      );
+      pc.close();
       pcRef.current = null;
     }
 
@@ -96,6 +105,10 @@ export function useEmulatorStream(): UseEmulatorStreamResult {
 
       const sessionId = generateUUID();
       sessionIdRef.current = sessionId;
+      const sid = sessionId.slice(0, 8);
+      console.log(
+        `${LOG_PREFIX} connect(emulatorId=${emulatorId}, session=${sid})`,
+      );
       setConnectionState("connecting");
       setError(null);
 
@@ -109,24 +122,53 @@ export function useEmulatorStream(): UseEmulatorStreamResult {
 
       // Handle remote stream
       pc.ontrack = (event) => {
+        const track = event.track;
+        console.log(
+          `${LOG_PREFIX} [${sid}] ontrack: kind=${track.kind} id=${track.id} readyState=${track.readyState} muted=${track.muted}`,
+        );
         if (event.streams[0]) {
           setRemoteStream(event.streams[0]);
         }
+        // Monitor track lifecycle
+        track.onmute = () =>
+          console.warn(`${LOG_PREFIX} [${sid}] track MUTED: ${track.id}`);
+        track.onunmute = () =>
+          console.log(`${LOG_PREFIX} [${sid}] track unmuted: ${track.id}`);
+        track.onended = () =>
+          console.warn(`${LOG_PREFIX} [${sid}] track ENDED: ${track.id}`);
       };
 
       // Handle data channel from sidecar
       pc.ondatachannel = (event) => {
         const dc = event.channel;
+        console.log(
+          `${LOG_PREFIX} [${sid}] ondatachannel: label=${dc.label} id=${dc.id}`,
+        );
         dc.onopen = () => {
+          console.log(
+            `${LOG_PREFIX} [${sid}] DataChannel "${dc.label}" opened`,
+          );
           setDataChannel(dc);
         };
         dc.onclose = () => {
+          console.warn(
+            `${LOG_PREFIX} [${sid}] DataChannel "${dc.label}" closed`,
+          );
           setDataChannel(null);
+        };
+        dc.onerror = (ev) => {
+          console.error(
+            `${LOG_PREFIX} [${sid}] DataChannel "${dc.label}" error:`,
+            ev,
+          );
         };
       };
 
       // Connection state tracking
       pc.onconnectionstatechange = () => {
+        console.log(
+          `${LOG_PREFIX} [${sid}] connectionState: ${pc.connectionState}`,
+        );
         switch (pc.connectionState) {
           case "connected":
             setConnectionState("connected");
@@ -144,8 +186,38 @@ export function useEmulatorStream(): UseEmulatorStreamResult {
         }
       };
 
+      // ICE connection state (more granular than connectionState)
+      pc.oniceconnectionstatechange = () => {
+        console.log(
+          `${LOG_PREFIX} [${sid}] iceConnectionState: ${pc.iceConnectionState}`,
+        );
+      };
+
+      // ICE gathering state
+      pc.onicegatheringstatechange = () => {
+        console.log(
+          `${LOG_PREFIX} [${sid}] iceGatheringState: ${pc.iceGatheringState}`,
+        );
+      };
+
+      // Signaling state
+      pc.onsignalingstatechange = () => {
+        console.log(
+          `${LOG_PREFIX} [${sid}] signalingState: ${pc.signalingState}`,
+        );
+      };
+
       // Send ICE candidates to sidecar via relay
       pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          console.log(
+            `${LOG_PREFIX} [${sid}] sending ICE candidate: ${event.candidate.candidate.slice(0, 60)}...`,
+          );
+        } else {
+          console.log(
+            `${LOG_PREFIX} [${sid}] ICE gathering complete (null candidate)`,
+          );
+        }
         conn.sendMessage?.({
           type: "emulator_ice_candidate",
           sessionId,
@@ -167,6 +239,9 @@ export function useEmulatorStream(): UseEmulatorStreamResult {
 
           switch (msg.type) {
             case "emulator_webrtc_offer": {
+              console.log(
+                `${LOG_PREFIX} [${sid}] received SDP offer (${msg.sdp.length} bytes)`,
+              );
               try {
                 await pc.setRemoteDescription({
                   type: "offer",
@@ -174,12 +249,19 @@ export function useEmulatorStream(): UseEmulatorStreamResult {
                 });
                 const answer = await pc.createAnswer();
                 await pc.setLocalDescription(answer);
+                console.log(
+                  `${LOG_PREFIX} [${sid}] sent SDP answer (${(answer.sdp ?? "").length} bytes)`,
+                );
                 conn.sendMessage?.({
                   type: "emulator_webrtc_answer",
                   sessionId,
                   sdp: answer.sdp ?? "",
                 });
               } catch (err) {
+                console.error(
+                  `${LOG_PREFIX} [${sid}] SDP negotiation failed:`,
+                  err,
+                );
                 setConnectionState("failed");
                 setError(
                   `WebRTC negotiation failed: ${err instanceof Error ? err.message : String(err)}`,
@@ -190,16 +272,29 @@ export function useEmulatorStream(): UseEmulatorStreamResult {
 
             case "emulator_ice_candidate_event": {
               if (msg.candidate) {
+                console.log(
+                  `${LOG_PREFIX} [${sid}] received remote ICE candidate`,
+                );
                 try {
                   await pc.addIceCandidate(msg.candidate);
-                } catch {
-                  // ICE candidate may arrive after connection is established
+                } catch (err) {
+                  console.warn(
+                    `${LOG_PREFIX} [${sid}] failed to add ICE candidate:`,
+                    err,
+                  );
                 }
+              } else {
+                console.log(
+                  `${LOG_PREFIX} [${sid}] remote ICE gathering complete`,
+                );
               }
               break;
             }
 
             case "emulator_session_state": {
+              console.log(
+                `${LOG_PREFIX} [${sid}] server session state: ${msg.state}${msg.error ? ` error=${msg.error}` : ""}`,
+              );
               if (msg.state === "failed" || msg.state === "disconnected") {
                 setConnectionState(msg.state);
                 if (msg.error) setError(msg.error);
@@ -216,6 +311,7 @@ export function useEmulatorStream(): UseEmulatorStreamResult {
         conn as { ensureConnected?: () => Promise<void> }
       ).ensureConnected?.bind(conn);
       const sendStart = () => {
+        console.log(`${LOG_PREFIX} [${sid}] sending emulator_stream_start`);
         conn.sendMessage?.({
           type: "emulator_stream_start",
           sessionId,
@@ -227,6 +323,10 @@ export function useEmulatorStream(): UseEmulatorStreamResult {
         ensureConnected()
           .then(sendStart)
           .catch((err: unknown) => {
+            console.error(
+              `${LOG_PREFIX} [${sid}] ensureConnected failed:`,
+              err,
+            );
             setConnectionState("failed");
             setError(
               `Connection failed: ${err instanceof Error ? err.message : String(err)}`,

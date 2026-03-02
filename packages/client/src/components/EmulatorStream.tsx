@@ -43,11 +43,70 @@ function clamp01(v: number): number {
 export function EmulatorStream({ stream, dataChannel }: EmulatorStreamProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Attach stream to video element
+  // Attach stream to video element and monitor health
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     video.srcObject = stream;
+
+    if (!stream) return;
+
+    const tracks = stream.getVideoTracks();
+    console.log(
+      `[EmulatorStream] attached stream: ${tracks.length} video track(s), active=${stream.active}`,
+    );
+    for (const t of tracks) {
+      console.log(
+        `[EmulatorStream] track ${t.id}: readyState=${t.readyState} enabled=${t.enabled} muted=${t.muted}`,
+      );
+    }
+
+    // Monitor video playback health — detect stale frames
+    let lastTime = -1;
+    let staleCount = 0;
+    const healthCheck = setInterval(() => {
+      const ct = video.currentTime;
+      if (lastTime >= 0 && ct === lastTime && !video.paused) {
+        staleCount++;
+        if (staleCount === 1) {
+          console.warn(
+            `[EmulatorStream] video stale: currentTime=${ct.toFixed(3)} not advancing`,
+          );
+        } else if (staleCount % 6 === 0) {
+          // Log every 30s (6 × 5s intervals)
+          const track = stream.getVideoTracks()[0];
+          console.warn(
+            `[EmulatorStream] video still stale (${staleCount * 5}s): currentTime=${ct.toFixed(3)}, track=${track?.readyState ?? "none"}, streamActive=${stream.active}`,
+          );
+        }
+      } else {
+        if (staleCount > 0) {
+          console.log(
+            `[EmulatorStream] video resumed after ${staleCount * 5}s stale`,
+          );
+        }
+        staleCount = 0;
+      }
+      lastTime = ct;
+    }, 5000);
+
+    // Monitor stream-level events
+    const onRemoveTrack = (e: MediaStreamTrackEvent) => {
+      console.warn(
+        `[EmulatorStream] stream removetrack: ${e.track.kind} ${e.track.id}`,
+      );
+    };
+    const onInactive = () => {
+      console.warn("[EmulatorStream] stream became inactive");
+    };
+    stream.addEventListener("removetrack", onRemoveTrack);
+    stream.addEventListener("inactive", onInactive);
+
+    return () => {
+      clearInterval(healthCheck);
+      stream.removeEventListener("removetrack", onRemoveTrack);
+      stream.removeEventListener("inactive", onInactive);
+    };
   }, [stream]);
 
   const canSend = useCallback(() => {
