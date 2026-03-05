@@ -333,9 +333,11 @@ export async function createStreamAugmenter(
       }
     }
 
-    // Check for user message with tool_result and tool_use_result
+    // Check for user message with tool_result and structured tool result payload.
+    // Support both snake_case and camelCase keys across provider stream formats.
     if (message.type === "user") {
-      const toolUseResult = message.tool_use_result as
+      const toolUseResult = (message.tool_use_result ??
+        message.toolUseResult) as
         | ExitPlanModeResult
         | undefined;
       if (toolUseResult?.plan && !toolUseResult._renderedHtml) {
@@ -349,7 +351,8 @@ export async function createStreamAugmenter(
       }
 
       // Check for Read tool_result and augment with syntax highlighting
-      const readResult = message.tool_use_result as
+      const readResult = (message.tool_use_result ??
+        message.toolUseResult) as
         | ReadResultWithAugment
         | undefined;
       if (

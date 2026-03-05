@@ -19,6 +19,11 @@ import { join } from "node:path";
 import { createInterface } from "node:readline";
 import { promisify } from "node:util";
 import type { ModelInfo } from "@yep-anywhere/shared";
+import {
+  normalizeCodexCommandExecutionOutput,
+  normalizeCodexToolInvocation,
+  type CodexToolCallContext,
+} from "../../codex/normalization.js";
 import { getLogger } from "../../logging/logger.js";
 import { whichCommand } from "../cli-detection.js";
 import { MessageQueue } from "../messageQueue.js";
@@ -769,6 +774,14 @@ export class CodexOSSProvider implements AgentProvider {
         ];
 
       case "command_execution": {
+        const normalizedInvocation = normalizeCodexToolInvocation("Bash", {
+          command: item.command,
+        });
+        const toolContext: CodexToolCallContext = {
+          toolName: normalizedInvocation.toolName,
+          input: normalizedInvocation.input,
+          readShellInfo: normalizedInvocation.readShellInfo,
+        };
         const messages: SDKMessage[] = [
           {
             type: "assistant",
@@ -780,8 +793,8 @@ export class CodexOSSProvider implements AgentProvider {
                 {
                   type: "tool_use",
                   id: item.id,
-                  name: "Bash",
-                  input: { command: item.command },
+                  name: normalizedInvocation.toolName,
+                  input: normalizedInvocation.input,
                 },
               ],
             },
@@ -789,20 +802,38 @@ export class CodexOSSProvider implements AgentProvider {
         ];
 
         if (isComplete && item.status !== "in_progress") {
-          const output =
-            item.exit_code === 0
-              ? item.aggregated_output || "(no output)"
-              : `Exit code: ${item.exit_code}\n${item.aggregated_output}`;
+          const normalizedResult = normalizeCodexCommandExecutionOutput(
+            {
+              aggregatedOutput: item.aggregated_output,
+              exitCode: item.exit_code,
+              status: item.status,
+            },
+            toolContext,
+          );
+          const toolResultBlock: {
+            type: "tool_result";
+            tool_use_id: string;
+            content: string;
+            is_error?: boolean;
+          } = {
+            type: "tool_result",
+            tool_use_id: item.id,
+            content: normalizedResult.content,
+          };
+          if (normalizedResult.isError) {
+            toolResultBlock.is_error = true;
+          }
 
           messages.push({
             type: "user",
             session_id: sessionId,
             message: {
               role: "user",
-              content: [
-                { type: "tool_result", tool_use_id: item.id, content: output },
-              ],
+              content: [toolResultBlock],
             },
+            ...(normalizedResult.structured !== undefined
+              ? { toolUseResult: normalizedResult.structured }
+              : {}),
           } as SDKMessage);
         }
 

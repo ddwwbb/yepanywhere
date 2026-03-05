@@ -202,6 +202,110 @@ describe("CodexProvider Event Normalization", () => {
     expect(typeof provider.getAuthStatus).toBe("function");
     expect(typeof provider.startSession).toBe("function");
   });
+
+  it("normalizes command execution tool_use and tool_result to Read shape", () => {
+    const provider = createTestProvider() as unknown as {
+      convertItemToSDKMessages: (
+        item: unknown,
+        sessionId: string,
+        turnId: string,
+        isComplete: boolean,
+      ) => Array<Record<string, unknown>>;
+    };
+
+    const messages = provider.convertItemToSDKMessages(
+      {
+        id: "call-read",
+        type: "command_execution",
+        command: "cat src/example.ts",
+        aggregated_output: "line 1\nline 2",
+        exit_code: 0,
+        status: "completed",
+      },
+      "session-1",
+      "turn-1",
+      true,
+    );
+
+    expect(messages).toHaveLength(2);
+    expect(messages[0]?.message).toMatchObject({
+      role: "assistant",
+      content: [
+        {
+          type: "tool_use",
+          id: "call-read",
+          name: "Read",
+          input: { file_path: "src/example.ts" },
+        },
+      ],
+    });
+    expect(messages[1]?.message).toMatchObject({
+      role: "user",
+      content: [
+        {
+          type: "tool_result",
+          tool_use_id: "call-read",
+          content: "line 1\nline 2",
+        },
+      ],
+    });
+    expect(messages[1]?.toolUseResult).toMatchObject({
+      type: "text",
+      file: {
+        filePath: "src/example.ts",
+      },
+    });
+  });
+
+  it("normalizes no-match ripgrep exit code as non-error Grep result", () => {
+    const provider = createTestProvider() as unknown as {
+      convertItemToSDKMessages: (
+        item: unknown,
+        sessionId: string,
+        turnId: string,
+        isComplete: boolean,
+      ) => Array<Record<string, unknown>>;
+    };
+
+    const messages = provider.convertItemToSDKMessages(
+      {
+        id: "call-grep",
+        type: "command_execution",
+        command: "rg -n missing_pattern src",
+        aggregated_output: "",
+        exit_code: 1,
+        status: "completed",
+      },
+      "session-1",
+      "turn-2",
+      true,
+    );
+
+    expect(messages).toHaveLength(2);
+    expect(messages[0]?.message).toMatchObject({
+      role: "assistant",
+      content: [
+        {
+          type: "tool_use",
+          id: "call-grep",
+          name: "Grep",
+          input: { pattern: "missing_pattern", path: "src" },
+        },
+      ],
+    });
+
+    const resultBlock = (
+      (messages[1]?.message as { content?: unknown[] } | undefined)?.content ??
+      []
+    )[0] as Record<string, unknown>;
+    expect(resultBlock.type).toBe("tool_result");
+    expect(resultBlock.tool_use_id).toBe("call-grep");
+    expect(resultBlock.is_error).toBeUndefined();
+    expect(messages[1]?.toolUseResult).toMatchObject({
+      mode: "files_with_matches",
+      numFiles: 0,
+    });
+  });
 });
 
 describe("CodexProvider Configuration", () => {
