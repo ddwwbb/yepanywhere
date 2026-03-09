@@ -72,6 +72,10 @@ export interface SDKMessage {
   [key: string]: unknown;
 }
 
+export type TimestampedSDKMessage<T extends SDKMessage = SDKMessage> = T & {
+  timestamp: string;
+};
+
 export interface UserMessage {
   text: string;
   images?: string[]; // base64 or file paths

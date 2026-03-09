@@ -19,7 +19,7 @@ type CodexProviderBridge = {
     item: unknown,
     sessionId: string,
     turnId: string,
-    isComplete: boolean,
+    sourceEvent: "item/started" | "item/completed",
   ) => Array<Record<string, unknown>>;
 };
 
@@ -234,7 +234,12 @@ function codexStreamMessages(): Array<Record<string, unknown>> {
 
   for (const item of streamItems) {
     messages.push(
-      ...provider.convertItemToSDKMessages(item, sessionId, turnId, true),
+      ...provider.convertItemToSDKMessages(
+        item,
+        sessionId,
+        turnId,
+        "item/completed",
+      ),
     );
   }
 

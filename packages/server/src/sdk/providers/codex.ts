@@ -21,7 +21,11 @@ import { getLogger } from "../../logging/logger.js";
 import { whichCommand } from "../cli-detection.js";
 import { logSDKMessage } from "../messageLogger.js";
 import { MessageQueue } from "../messageQueue.js";
-import type { SDKMessage, UserMessage } from "../types.js";
+import type {
+  SDKMessage,
+  TimestampedSDKMessage,
+  UserMessage,
+} from "../types.js";
 import type { ToolApprovalResult } from "../types.js";
 import type {
   AskForApproval as CodexAskForApproval,
@@ -75,6 +79,22 @@ function logSdkCorrelationDebug(
     ...metadata,
     ...summarizeCodexNormalizedMessage(message),
   });
+}
+
+function withCodexTimestamp<T extends SDKMessage>(
+  message: T,
+  timestamp = new Date().toISOString(),
+): TimestampedSDKMessage<T> {
+  if (
+    typeof message.timestamp === "string" &&
+    message.timestamp.trim().length > 0
+  ) {
+    return message as TimestampedSDKMessage<T>;
+  }
+  return {
+    ...message,
+    timestamp,
+  } as TimestampedSDKMessage<T>;
 }
 
 const MODEL_CACHE_TTL_MS = 60 * 60 * 1000;
@@ -1086,12 +1106,14 @@ export class CodexProvider implements AgentProvider {
       );
 
       // Emit init immediately with the real session ID.
-      yield logMessage({
-        type: "system",
-        subtype: "init",
-        session_id: sessionId,
-        cwd: options.cwd,
-      } as SDKMessage);
+      yield logMessage(
+        withCodexTimestamp({
+          type: "system",
+          subtype: "init",
+          session_id: sessionId,
+          cwd: options.cwd,
+        } as SDKMessage),
+      );
 
       const messageGen = queue.generator();
       let isFirstMessage = !options.resumeSessionId;
@@ -1115,7 +1137,7 @@ export class CodexProvider implements AgentProvider {
         }
 
         // Emit user message with UUID from queue to enable deduplication.
-        const userMessage = {
+        const userMessage = withCodexTimestamp({
           type: "user",
           uuid: message.uuid,
           session_id: sessionId,
@@ -1123,7 +1145,7 @@ export class CodexProvider implements AgentProvider {
             role: "user",
             content: userPrompt,
           },
-        } as SDKMessage;
+        } as SDKMessage);
         logSdkCorrelationDebug(sessionId, userMessage, {
           eventKind: "user_message",
           phase: "submitted",
@@ -1541,7 +1563,7 @@ export class CodexProvider implements AgentProvider {
         const params = this.asTurnCompletedNotification(notification.params);
         const turnId = params?.turn.id ?? null;
         const usage = turnId ? usageByTurnId.get(turnId) : undefined;
-        const message = {
+        const message = withCodexTimestamp({
           type: "system",
           subtype: "turn_complete",
           session_id: sessionId,
@@ -1552,7 +1574,7 @@ export class CodexProvider implements AgentProvider {
                 cached_input_tokens: usage.cachedInputTokens,
               }
             : undefined,
-        } as SDKMessage;
+        } as SDKMessage);
         logSdkCorrelationDebug(sessionId, message, {
           eventKind: "turn_complete",
           ...(turnId ? { turnId } : {}),
@@ -1954,25 +1976,29 @@ export class CodexProvider implements AgentProvider {
     sourceEvent: "item/started" | "item/completed",
   ): SDKMessage[] {
     const isComplete = sourceEvent === "item/completed";
+    const observedAt = new Date().toISOString();
     // Create unique UUID by combining item.id with turn ID.
     const uuid = `${item.id}-${turnId}`;
 
     switch (item.type) {
       case "reasoning": {
-        const message = {
-          type: "assistant",
-          session_id: sessionId,
-          uuid,
-          message: {
-            role: "assistant",
-            content: [
-              {
-                type: "thinking",
-                thinking: item.text,
-              },
-            ],
-          },
-        } as SDKMessage;
+        const message = withCodexTimestamp(
+          {
+            type: "assistant",
+            session_id: sessionId,
+            uuid,
+            message: {
+              role: "assistant",
+              content: [
+                {
+                  type: "thinking",
+                  thinking: item.text,
+                },
+              ],
+            },
+          } as SDKMessage,
+          observedAt,
+        );
         logSdkCorrelationDebug(sessionId, message, {
           eventKind: "reasoning",
           turnId,
@@ -1984,15 +2010,18 @@ export class CodexProvider implements AgentProvider {
       }
 
       case "agent_message": {
-        const message = {
-          type: "assistant",
-          session_id: sessionId,
-          uuid,
-          message: {
-            role: "assistant",
-            content: item.text,
-          },
-        } as SDKMessage;
+        const message = withCodexTimestamp(
+          {
+            type: "assistant",
+            session_id: sessionId,
+            uuid,
+            message: {
+              role: "assistant",
+              content: item.text,
+            },
+          } as SDKMessage,
+          observedAt,
+        );
         logSdkCorrelationDebug(sessionId, message, {
           eventKind: "agent_message",
           turnId,
@@ -2016,22 +2045,25 @@ export class CodexProvider implements AgentProvider {
         };
 
         // Emit tool_use for the command
-        const toolUseMessage = {
-          type: "assistant",
-          session_id: sessionId,
-          uuid,
-          message: {
-            role: "assistant",
-            content: [
-              {
-                type: "tool_use",
-                id: item.id,
-                name: normalizedInvocation.toolName,
-                input: normalizedInvocation.input,
-              },
-            ],
-          },
-        } as SDKMessage;
+        const toolUseMessage = withCodexTimestamp(
+          {
+            type: "assistant",
+            session_id: sessionId,
+            uuid,
+            message: {
+              role: "assistant",
+              content: [
+                {
+                  type: "tool_use",
+                  id: item.id,
+                  name: normalizedInvocation.toolName,
+                  input: normalizedInvocation.input,
+                },
+              ],
+            },
+          } as SDKMessage,
+          observedAt,
+        );
         logSdkCorrelationDebug(sessionId, toolUseMessage, {
           eventKind: "command_execution",
           turnId,
@@ -2067,18 +2099,21 @@ export class CodexProvider implements AgentProvider {
             toolResultBlock.is_error = true;
           }
 
-          const toolResultMessage = {
-            type: "user",
-            session_id: sessionId,
-            uuid: `${uuid}-result`,
-            message: {
-              role: "user",
-              content: [toolResultBlock],
-            },
-            ...(normalizedResult.structured !== undefined
-              ? { toolUseResult: normalizedResult.structured }
-              : {}),
-          } as SDKMessage;
+          const toolResultMessage = withCodexTimestamp(
+            {
+              type: "user",
+              session_id: sessionId,
+              uuid: `${uuid}-result`,
+              message: {
+                role: "user",
+                content: [toolResultBlock],
+              },
+              ...(normalizedResult.structured !== undefined
+                ? { toolUseResult: normalizedResult.structured }
+                : {}),
+            } as SDKMessage,
+            observedAt,
+          );
           logSdkCorrelationDebug(sessionId, toolResultMessage, {
             eventKind: "tool_result",
             turnId,
@@ -2106,22 +2141,25 @@ export class CodexProvider implements AgentProvider {
           editInput.file_path = singlePath;
         }
 
-        const toolUseMessage = {
-          type: "assistant",
-          session_id: sessionId,
-          uuid,
-          message: {
-            role: "assistant",
-            content: [
-              {
-                type: "tool_use",
-                id: item.id,
-                name: "Edit",
-                input: editInput,
-              },
-            ],
-          },
-        } as SDKMessage;
+        const toolUseMessage = withCodexTimestamp(
+          {
+            type: "assistant",
+            session_id: sessionId,
+            uuid,
+            message: {
+              role: "assistant",
+              content: [
+                {
+                  type: "tool_use",
+                  id: item.id,
+                  name: "Edit",
+                  input: editInput,
+                },
+              ],
+            },
+          } as SDKMessage,
+          observedAt,
+        );
         logSdkCorrelationDebug(sessionId, toolUseMessage, {
           eventKind: "file_change",
           turnId,
@@ -2135,26 +2173,29 @@ export class CodexProvider implements AgentProvider {
         const messages = [toolUseMessage];
 
         if (isComplete) {
-          const toolResultMessage = {
-            type: "user",
-            session_id: sessionId,
-            uuid: `${uuid}-result`,
-            message: {
-              role: "user",
-              content: [
-                {
-                  type: "tool_result",
-                  tool_use_id: item.id,
-                  content:
-                    item.status === "completed"
-                      ? `File changes applied:\n${changesSummary}`
-                      : item.status === "declined"
-                        ? `File changes declined:\n${changesSummary}`
-                        : `File changes failed:\n${changesSummary}`,
-                },
-              ],
-            },
-          } as SDKMessage;
+          const toolResultMessage = withCodexTimestamp(
+            {
+              type: "user",
+              session_id: sessionId,
+              uuid: `${uuid}-result`,
+              message: {
+                role: "user",
+                content: [
+                  {
+                    type: "tool_result",
+                    tool_use_id: item.id,
+                    content:
+                      item.status === "completed"
+                        ? `File changes applied:\n${changesSummary}`
+                        : item.status === "declined"
+                          ? `File changes declined:\n${changesSummary}`
+                          : `File changes failed:\n${changesSummary}`,
+                  },
+                ],
+              },
+            } as SDKMessage,
+            observedAt,
+          );
           logSdkCorrelationDebug(sessionId, toolResultMessage, {
             eventKind: "tool_result",
             turnId,
@@ -2173,22 +2214,25 @@ export class CodexProvider implements AgentProvider {
       case "mcp_tool_call": {
         const messages: SDKMessage[] = [];
 
-        const toolUseMessage = {
-          type: "assistant",
-          session_id: sessionId,
-          uuid,
-          message: {
-            role: "assistant",
-            content: [
-              {
-                type: "tool_use",
-                id: item.id,
-                name: `${item.server}:${item.tool}`,
-                input: item.arguments,
-              },
-            ],
-          },
-        } as SDKMessage;
+        const toolUseMessage = withCodexTimestamp(
+          {
+            type: "assistant",
+            session_id: sessionId,
+            uuid,
+            message: {
+              role: "assistant",
+              content: [
+                {
+                  type: "tool_use",
+                  id: item.id,
+                  name: `${item.server}:${item.tool}`,
+                  input: item.arguments,
+                },
+              ],
+            },
+          } as SDKMessage,
+          observedAt,
+        );
         logSdkCorrelationDebug(sessionId, toolUseMessage, {
           eventKind: "mcp_tool_call",
           turnId,
@@ -2201,24 +2245,27 @@ export class CodexProvider implements AgentProvider {
         messages.push(toolUseMessage);
 
         if (isComplete && item.status !== "in_progress") {
-          const toolResultMessage = {
-            type: "user",
-            session_id: sessionId,
-            uuid: `${uuid}-result`,
-            message: {
-              role: "user",
-              content: [
-                {
-                  type: "tool_result",
-                  tool_use_id: item.id,
-                  content:
-                    item.status === "completed"
-                      ? JSON.stringify(item.result)
-                      : item.error?.message || "MCP tool call failed",
-                },
-              ],
-            },
-          } as SDKMessage;
+          const toolResultMessage = withCodexTimestamp(
+            {
+              type: "user",
+              session_id: sessionId,
+              uuid: `${uuid}-result`,
+              message: {
+                role: "user",
+                content: [
+                  {
+                    type: "tool_result",
+                    tool_use_id: item.id,
+                    content:
+                      item.status === "completed"
+                        ? JSON.stringify(item.result)
+                        : item.error?.message || "MCP tool call failed",
+                  },
+                ],
+              },
+            } as SDKMessage,
+            observedAt,
+          );
           logSdkCorrelationDebug(sessionId, toolResultMessage, {
             eventKind: "tool_result",
             turnId,
@@ -2235,22 +2282,25 @@ export class CodexProvider implements AgentProvider {
       }
 
       case "web_search": {
-        const message = {
-          type: "assistant",
-          session_id: sessionId,
-          uuid,
-          message: {
-            role: "assistant",
-            content: [
-              {
-                type: "tool_use",
-                id: item.id,
-                name: "WebSearch",
-                input: { query: item.query },
-              },
-            ],
-          },
-        } as SDKMessage;
+        const message = withCodexTimestamp(
+          {
+            type: "assistant",
+            session_id: sessionId,
+            uuid,
+            message: {
+              role: "assistant",
+              content: [
+                {
+                  type: "tool_use",
+                  id: item.id,
+                  name: "WebSearch",
+                  input: { query: item.query },
+                },
+              ],
+            },
+          } as SDKMessage,
+          observedAt,
+        );
         logSdkCorrelationDebug(sessionId, message, {
           eventKind: "web_search",
           turnId,
@@ -2263,13 +2313,16 @@ export class CodexProvider implements AgentProvider {
       }
 
       case "todo_list": {
-        const message = {
-          type: "system",
-          subtype: "todo_list",
-          session_id: sessionId,
-          uuid,
-          items: item.items,
-        } as SDKMessage;
+        const message = withCodexTimestamp(
+          {
+            type: "system",
+            subtype: "todo_list",
+            session_id: sessionId,
+            uuid,
+            items: item.items,
+          } as SDKMessage,
+          observedAt,
+        );
         logSdkCorrelationDebug(sessionId, message, {
           eventKind: "todo_list",
           turnId,
@@ -2281,12 +2334,15 @@ export class CodexProvider implements AgentProvider {
       }
 
       case "error": {
-        const message = {
-          type: "error",
-          session_id: sessionId,
-          uuid,
-          error: item.message,
-        } as SDKMessage;
+        const message = withCodexTimestamp(
+          {
+            type: "error",
+            session_id: sessionId,
+            uuid,
+            error: item.message,
+          } as SDKMessage,
+          observedAt,
+        );
         logSdkCorrelationDebug(sessionId, message, {
           eventKind: "error",
           turnId,

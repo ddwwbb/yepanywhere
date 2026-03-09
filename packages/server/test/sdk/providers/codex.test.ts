@@ -209,7 +209,7 @@ describe("CodexProvider Event Normalization", () => {
         item: unknown,
         sessionId: string,
         turnId: string,
-        isComplete: boolean,
+        sourceEvent: "item/started" | "item/completed",
       ) => Array<Record<string, unknown>>;
     };
 
@@ -224,7 +224,7 @@ describe("CodexProvider Event Normalization", () => {
       },
       "session-1",
       "turn-1",
-      true,
+      "item/completed",
     );
 
     expect(messages).toHaveLength(2);
@@ -263,7 +263,7 @@ describe("CodexProvider Event Normalization", () => {
         item: unknown,
         sessionId: string,
         turnId: string,
-        isComplete: boolean,
+        sourceEvent: "item/started" | "item/completed",
       ) => Array<Record<string, unknown>>;
     };
 
@@ -278,7 +278,7 @@ describe("CodexProvider Event Normalization", () => {
       },
       "session-1",
       "turn-1",
-      true,
+      "item/completed",
     );
 
     expect(messages).toHaveLength(2);
@@ -308,7 +308,7 @@ describe("CodexProvider Event Normalization", () => {
         item: unknown,
         sessionId: string,
         turnId: string,
-        isComplete: boolean,
+        sourceEvent: "item/started" | "item/completed",
       ) => Array<Record<string, unknown>>;
     };
 
@@ -324,7 +324,7 @@ describe("CodexProvider Event Normalization", () => {
       },
       "session-1",
       "turn-2",
-      true,
+      "item/completed",
     );
 
     expect(messages).toHaveLength(2);
@@ -367,7 +367,7 @@ describe("CodexProvider Event Normalization", () => {
         item: unknown,
         sessionId: string,
         turnId: string,
-        isComplete: boolean,
+        sourceEvent: "item/started" | "item/completed",
       ) => Array<Record<string, unknown>>;
     };
 
@@ -382,7 +382,7 @@ describe("CodexProvider Event Normalization", () => {
       },
       "session-1",
       "turn-2",
-      true,
+      "item/completed",
     );
 
     expect(messages).toHaveLength(2);

@@ -14,6 +14,7 @@ import type { MessageQueue } from "../sdk/messageQueue.js";
 import type {
   PermissionMode,
   SDKMessage,
+  TimestampedSDKMessage,
   ToolApprovalResult,
   UserMessage,
 } from "../sdk/types.js";
@@ -766,17 +767,19 @@ export class Process {
    * Ensure every emitted/replayed message has a timestamp.
    * Some providers (notably Codex stream messages) omit this field.
    */
-  private withTimestamp(message: SDKMessage): SDKMessage {
+  private withTimestamp<T extends SDKMessage>(
+    message: T,
+  ): TimestampedSDKMessage<T> {
     if (
       typeof message.timestamp === "string" &&
       message.timestamp.trim().length > 0
     ) {
-      return message;
+      return message as TimestampedSDKMessage<T>;
     }
     return {
       ...message,
       timestamp: new Date().toISOString(),
-    };
+    } as TimestampedSDKMessage<T>;
   }
 
   /**

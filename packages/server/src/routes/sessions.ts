@@ -186,7 +186,10 @@ function sdkMessagesToClientMessages(sdkMessages: SDKMessage[]): Message[] {
         type: msg.type,
         role: msg.type as "user" | "assistant",
         content,
-        timestamp: new Date().toISOString(),
+        timestamp:
+          typeof msg.timestamp === "string" && msg.timestamp.trim().length > 0
+            ? msg.timestamp
+            : new Date().toISOString(),
       });
     }
   }
