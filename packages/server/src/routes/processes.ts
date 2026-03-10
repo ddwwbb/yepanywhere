@@ -40,17 +40,18 @@ async function enrichProcessInfo(
       process.projectId as UrlProjectId,
     );
 
-    // Get title from cache if available, otherwise from summary
-    let title: string | null = null;
+    // Prefer cached titles, but fall back to the live summary when the cache
+    // misses. This matters for providers like Codex whose session files are
+    // not stored in project.sessionDir.
+    let title = summary?.title ?? null;
     if (deps.sessionIndexService) {
-      title = await deps.sessionIndexService.getSessionTitle(
+      const cachedTitle = await deps.sessionIndexService.getSessionTitle(
         project.sessionDir,
         process.projectId as UrlProjectId,
         process.sessionId,
         reader,
       );
-    } else {
-      title = summary?.title ?? null;
+      title = cachedTitle ?? title;
     }
 
     // Get custom title from metadata service if available
