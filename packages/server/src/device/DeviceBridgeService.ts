@@ -18,11 +18,55 @@ import type {
 } from "@yep-anywhere/shared";
 import { WebSocket } from "ws";
 
-/** Compatible bridge version for auto-download. Update when IPC protocol changes. */
-const BRIDGE_VERSION = "0.1.0";
+/** Fallback bridge version if update server is unreachable. */
+const BRIDGE_VERSION_FALLBACK = "0.0.1";
+
+/** Update server endpoint for bridge version. */
+const BRIDGE_VERSION_URL = "https://updates.yepanywhere.com/bridge/version";
 
 /** GitHub repo for downloading bridge binaries. */
 const BRIDGE_REPO = "kzahel/yepanywhere";
+
+/** Cached bridge version from update server (5 minute TTL). */
+let cachedBridgeVersion: { version: string; timestamp: number } | null = null;
+const BRIDGE_VERSION_CACHE_TTL_MS = 5 * 60 * 1000;
+
+async function getBridgeVersion(): Promise<string> {
+  if (
+    cachedBridgeVersion &&
+    Date.now() - cachedBridgeVersion.timestamp < BRIDGE_VERSION_CACHE_TTL_MS
+  ) {
+    return cachedBridgeVersion.version;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const response = await fetch(BRIDGE_VERSION_URL, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      console.warn(
+        `[DeviceBridge] Update server returned ${response.status}, using fallback version`,
+      );
+      return BRIDGE_VERSION_FALLBACK;
+    }
+
+    const data = (await response.json()) as { version?: string };
+    if (data.version) {
+      cachedBridgeVersion = { version: data.version, timestamp: Date.now() };
+      return data.version;
+    }
+  } catch {
+    console.warn(
+      "[DeviceBridge] Failed to fetch bridge version, using fallback",
+    );
+  }
+
+  return BRIDGE_VERSION_FALLBACK;
+}
 const ANDROID_SERVER_APK_NAME = "yep-device-server.apk";
 const ANDROID_SERVER_APK_ENV_VAR = "ANDROID_DEVICE_SERVER_APK";
 const DATA_DIR_ENV_VAR = "YEP_ANYWHERE_DATA_DIR";
@@ -243,7 +287,8 @@ export class DeviceBridgeService {
     options?: { executable?: boolean; kindLabel?: string },
   ): Promise<string> {
     const kindLabel = options?.kindLabel ?? name;
-    const url = `https://github.com/${BRIDGE_REPO}/releases/download/bridge-v${BRIDGE_VERSION}/${name}`;
+    const bridgeVersion = await getBridgeVersion();
+    const url = `https://github.com/${BRIDGE_REPO}/releases/download/bridge-v${bridgeVersion}/${name}`;
     const destDir = path.dirname(destPath);
     fs.mkdirSync(destDir, { recursive: true });
 
