@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.11] - 2026-03-12
+
+### Added
+- Relay telemetry and stats dashboard
+- Relay server compatibility reporting
+- Fetch version and bridge version from update server instead of npm registry/hardcoding
+
+### Fixed
+- Fix inbox race condition
+- Prevent Enter key from triggering send during IME composition
+- Relax relay resume proof skew tolerance
+
 ## [0.4.10] - 2026-03-10
 
 ### Added
