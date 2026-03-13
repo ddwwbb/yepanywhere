@@ -29,3 +29,40 @@ FA8X31A01234	unauthorized
 		t.Fatalf("unexpected android entry: %+v", got[1])
 	}
 }
+
+func TestParseSimctlDevicesOutputClassifiesBootedIOSSimulators(t *testing.T) {
+	input := []byte(`{
+  "devices": {
+    "com.apple.CoreSimulator.SimRuntime.iOS-26-2": [
+      {
+        "udid": "F87D9B80-78AD-4398-B7D4-CA5E74D5474A",
+        "name": "iPhone 17",
+        "state": "Booted"
+      },
+      {
+        "udid": "D8147CD8-A240-40C2-BC5F-6706D0C9BC31",
+        "name": "iPhone 17 Pro Max",
+        "state": "Shutdown"
+      }
+    ]
+  }
+}`)
+
+	got, err := parseSimctlDevicesOutput(input)
+	if err != nil {
+		t.Fatalf("parseSimctlDevicesOutput: %v", err)
+	}
+	if len(got) != 1 {
+		t.Fatalf("expected 1 booted simulator, got %d", len(got))
+	}
+
+	if got[0].ID != "F87D9B80-78AD-4398-B7D4-CA5E74D5474A" {
+		t.Fatalf("unexpected simulator id: %+v", got[0])
+	}
+	if got[0].Type != "ios-simulator" || got[0].State != "booted" {
+		t.Fatalf("unexpected simulator classification: %+v", got[0])
+	}
+	if got[0].Label != "iPhone 17 (iOS 26.2)" {
+		t.Fatalf("unexpected simulator label: %+v", got[0])
+	}
+}

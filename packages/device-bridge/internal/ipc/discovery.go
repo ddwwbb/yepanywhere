@@ -1,11 +1,13 @@
 package ipc
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -69,6 +71,11 @@ func (d *Discovery) ListDevices() ([]DeviceInfo, error) {
 		}
 	}
 
+	iosSimulators, err := d.listBootedIOSSimulators()
+	if err == nil {
+		result = append(result, iosSimulators...)
+	}
+
 	// Manual ChromeOS entry (only shown when configured).
 	if host := strings.TrimSpace(os.Getenv("CHROMEOS_HOST")); host != "" {
 		result = append(result, DeviceInfo{
@@ -82,6 +89,76 @@ func (d *Discovery) ListDevices() ([]DeviceInfo, error) {
 	}
 
 	return result, nil
+}
+
+type simctlDeviceList struct {
+	Devices map[string][]simctlDevice `json:"devices"`
+}
+
+type simctlDevice struct {
+	UDID  string `json:"udid"`
+	Name  string `json:"name"`
+	State string `json:"state"`
+}
+
+func (d *Discovery) listBootedIOSSimulators() ([]DeviceInfo, error) {
+	if runtime.GOOS != "darwin" {
+		return nil, nil
+	}
+
+	out, err := exec.Command("xcrun", "simctl", "list", "devices", "booted", "-j").Output()
+	if err != nil {
+		return nil, fmt.Errorf("running xcrun simctl list devices booted -j: %w", err)
+	}
+	return parseSimctlDevicesOutput(out)
+}
+
+func parseSimctlDevicesOutput(data []byte) ([]DeviceInfo, error) {
+	var parsed simctlDeviceList
+	if err := json.Unmarshal(data, &parsed); err != nil {
+		return nil, fmt.Errorf("parse simctl devices json: %w", err)
+	}
+
+	var devices []DeviceInfo
+	for runtimeID, entries := range parsed.Devices {
+		runtimeLabel := runtimeLabelFromIdentifier(runtimeID)
+		for _, entry := range entries {
+			if !strings.EqualFold(strings.TrimSpace(entry.State), "booted") {
+				continue
+			}
+
+			label := strings.TrimSpace(entry.Name)
+			if runtimeLabel != "" {
+				label = fmt.Sprintf("%s (%s)", label, runtimeLabel)
+			}
+			devices = append(devices, DeviceInfo{
+				ID:      strings.TrimSpace(entry.UDID),
+				Label:   label,
+				Type:    "ios-simulator",
+				State:   "booted",
+				Actions: actionsForDevice("ios-simulator", "booted"),
+				AVD:     label,
+			})
+		}
+	}
+
+	return devices, nil
+}
+
+func runtimeLabelFromIdentifier(runtimeID string) string {
+	const prefix = "com.apple.CoreSimulator.SimRuntime."
+	runtimeID = strings.TrimSpace(runtimeID)
+	if !strings.HasPrefix(runtimeID, prefix) {
+		return ""
+	}
+
+	label := strings.TrimPrefix(runtimeID, prefix)
+	label = strings.ReplaceAll(label, "-", ".")
+	label = strings.ReplaceAll(label, "iOS.", "iOS ")
+	label = strings.ReplaceAll(label, "tvOS.", "tvOS ")
+	label = strings.ReplaceAll(label, "watchOS.", "watchOS ")
+	label = strings.ReplaceAll(label, "visionOS.", "visionOS ")
+	return label
 }
 
 // GRPCAddr returns the gRPC address for a running emulator.

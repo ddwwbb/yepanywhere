@@ -33,8 +33,9 @@ A Swift command-line tool (~300 lines) built with Swift Package Manager. Takes a
 
 ### Frame capture
 
-1. Look up the booted `SimDevice` by UDID via CoreSimulator's `SimDeviceSet.defaultSet`
-2. Get the main display's IOSurface via `SimDisplayIOSurfaceRenderable.framebufferSurface` (or `.ioSurface` on older Xcode)
+1. Create `SimServiceContext` for the active Xcode developer dir, then construct `SimDeviceSet` with `initWithSetPath:serviceContext:`
+2. Look up the booted `SimDevice` by UDID by iterating `deviceSet.devices` (do not rely on `bootedDevices`, which was `nil` in the local spike)
+3. Get the main display's IOSurface from the **port descriptor** implementing `SimDisplayIOSurfaceRenderable` via `framebufferSurface` (or `.ioSurface` on older Xcode)
 3. Wrap IOSurface in a `CVPixelBuffer` via `CVPixelBufferCreateWithIOSurface()`
 4. On each 0x01 frame request:
    - Optionally scale with `vImageScale_ARGB8888` (Accelerate framework) for bandwidth reduction
@@ -160,6 +161,10 @@ swift build -c release \
 
 Output: `.build/release/ios-sim-server`
 
+The built binary must also include runtime `rpath` entries for Xcode/private
+framework directories or dyld will fail to locate `SimulatorKit.framework` at
+launch.
+
 ### Distribution
 
 **Cannot cross-compile** — private frameworks are macOS-only and Xcode-version-specific. Two options:
@@ -252,6 +257,47 @@ Priority order (same pattern as Android APK):
    - Optional downscaling via `vImageScale_ARGB8888`
 2. Verify: manual test capturing frames, compare quality/speed to `simctl screenshot`
 
+### Spike findings on this machine
+
+Validated locally on the booted simulator:
+
+- Booted simulator: `iPhone 17` / `F87D9B80-78AD-4398-B7D4-CA5E74D5474A`
+- `xcrun simctl io ... screenshot` baseline: ~`0.52s` for one frame
+- `framebufferSurface` access via private frameworks: working
+- `SimDeviceLegacyHIDClient initWithDevice:error:`: working
+- `IndigoHIDMessageForMouseNSEvent`, `IndigoHIDMessageForKeyboardArbitrary`,
+  `IndigoHIDMessageForButton`: all present via `dlsym`
+- One-shot IOSurface -> VideoToolbox JPEG encode: working
+- In-process steady-state capture + JPEG encode benchmark: ~`218-240 FPS`
+  (`~4.2-4.6ms` per frame) on a mostly static simulator screen
+
+These measurements confirm that simulator capture is not the bottleneck.
+Production work should therefore keep the existing Go sidecar for WebRTC,
+adaptive streaming, and session lifecycle rather than introducing a separate
+Swift-side streaming stack.
+
+### Recommended production shape
+
+#### V1
+
+- Keep `ios-sim-server` as a tiny macOS-only daemon responsible only for:
+  - simulator discovery by UDID
+  - IOSurface access
+  - VideoToolbox JPEG encode
+  - IndigoHID input injection
+  - stdin/stdout framing
+- Integrate through the existing Go sidecar as `IOSSimulatorDevice`
+- Reuse the existing `Device` pull-frame path and WebRTC stack unchanged
+
+This matches the current ChromeOS subprocess model and minimizes platform-
+specific complexity in the main bridge.
+
+#### V2 optimization only if needed
+
+If end-to-end tests show JPEG decode/re-encode is too expensive, upgrade the
+simulator path to push H.264 directly and implement `StreamCapable` in the Go
+bridge. Do not start there; the simpler JPEG-framed path should land first.
+
 ### Step 3 — Input injection
 
 1. Implement `HIDInput.swift`:
@@ -281,8 +327,8 @@ Priority order (same pattern as Android APK):
 
 | Metric | `simctl screenshot` | `ios-sim-server` (IOSurface) |
 |---|---|---|
-| Frame latency | ~500ms | <10ms |
-| Max FPS | ~2 | 30+ |
+| Frame latency | ~500ms | ~4-5ms steady-state encode on local spike |
+| Max FPS | ~2 | 200+ local encode loop, likely lower end-to-end |
 | Encoding | N/A (file I/O) | VideoToolbox hardware JPEG |
 | Scaling | Not supported | `vImageScale_ARGB8888` before encode |
 | Process overhead | New process per frame | Persistent process, shared memory |
@@ -296,6 +342,10 @@ The private frameworks change between Xcode versions. Known variations:
 - **IOSurface access**: Xcode 13.2+ split `ioSurface` into `framebufferSurface` + `maskedFramebufferSurface`. The daemon tries `framebufferSurface` first, falls back to `ioSurface`.
 - **HID client class**: `SimDeviceLegacyHIDClient` has been stable since Xcode 9+.
 - **IndigoHID functions**: Stable since Xcode 9+, loaded dynamically via `dlsym` so missing symbols fail gracefully.
+- **Device set lookup**: `+[SimDeviceSet defaultSet]` was unavailable in the
+  local spike; constructing `SimDeviceSet` via `SimServiceContext` was stable.
+- **Display lookup**: `framebufferSurface` was exposed on the display
+  **descriptor proxy**, not the port object itself, in the local spike.
 
 Building from source on the user's machine (Step 1 distribution option) sidesteps most compatibility issues since it links against the locally-installed frameworks.
 

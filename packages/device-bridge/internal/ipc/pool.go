@@ -116,7 +116,11 @@ func (rp *ResourcePool) createDeviceLocked(deviceID, deviceType string) (device.
 		}
 		return nil, fmt.Errorf("invalid emulator device id: %s", deviceID)
 	case "ios-simulator":
-		return nil, fmt.Errorf("ios simulator transport not implemented yet for device %s", deviceID)
+		d, err := device.NewIOSSimulatorDevice(deviceID)
+		if err != nil {
+			return nil, fmt.Errorf("connecting to ios simulator %s: %w", deviceID, err)
+		}
+		return d, nil
 	}
 
 	if deviceID == "chromeos" || strings.HasPrefix(deviceID, "chromeos:") {
