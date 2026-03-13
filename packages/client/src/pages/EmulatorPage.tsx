@@ -421,8 +421,8 @@ export function BridgeRuntimePrompt({
           </>
         ) : (
           <>
-            Device streaming requires bridge runtime downloads (sidecar binary
-            + Android server APK).
+            Device streaming requires bridge runtime downloads (sidecar binary +
+            Android server APK).
           </>
         )}
       </p>

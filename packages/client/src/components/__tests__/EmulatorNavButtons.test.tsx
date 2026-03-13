@@ -17,7 +17,9 @@ describe("EmulatorNavButtons", () => {
   it("renders Android navigation controls for Android devices", () => {
     const dataChannel = createDataChannel();
 
-    render(<EmulatorNavButtons dataChannel={dataChannel} deviceType="android" />);
+    render(
+      <EmulatorNavButtons dataChannel={dataChannel} deviceType="android" />,
+    );
 
     expect(screen.getByRole("button", { name: "Back" })).toBeDefined();
     expect(screen.getByRole("button", { name: "Home" })).toBeDefined();

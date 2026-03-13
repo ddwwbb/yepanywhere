@@ -342,7 +342,9 @@ export class DeviceBridgeService {
     }
   }
 
-  private async getInstalledBinaryVersion(binaryPath: string): Promise<string | null> {
+  private async getInstalledBinaryVersion(
+    binaryPath: string,
+  ): Promise<string | null> {
     if (
       this.activeBinaryPath === binaryPath &&
       this.runningBridgeVersion &&

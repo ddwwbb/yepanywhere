@@ -179,7 +179,10 @@ describe("DeviceBridgeService", () => {
       dataDir: "/tmp/yep-anywhere-test",
     });
     const shim = service as unknown as DeviceBridgeServiceTestShim & {
-      findBinaryCandidate: () => { path: string; source: "prod" | "dev" } | null;
+      findBinaryCandidate: () => {
+        path: string;
+        source: "prod" | "dev";
+      } | null;
     };
 
     shim.findBinaryCandidate = vi.fn().mockReturnValue({
@@ -210,7 +213,10 @@ describe("DeviceBridgeService", () => {
       dataDir: "/tmp/yep-anywhere-test",
     });
     const shim = service as unknown as DeviceBridgeServiceTestShim & {
-      findBinaryCandidate: () => { path: string; source: "prod" | "dev" } | null;
+      findBinaryCandidate: () => {
+        path: string;
+        source: "prod" | "dev";
+      } | null;
     };
 
     shim.findBinaryCandidate = vi.fn().mockReturnValue({
@@ -251,9 +257,7 @@ describe("DeviceBridgeService", () => {
 
     shim.activeBinaryPath = prodBinaryPath;
     shim.available = true;
-    shim.downloadBinary = vi
-      .fn()
-      .mockResolvedValue(prodBinaryPath);
+    shim.downloadBinary = vi.fn().mockResolvedValue(prodBinaryPath);
     shim.downloadAndroidServerAPK = vi
       .fn()
       .mockResolvedValue("/tmp/yep-anywhere-test/bin/yep-device-server.apk");

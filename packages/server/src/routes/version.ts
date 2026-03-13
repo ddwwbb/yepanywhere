@@ -233,9 +233,7 @@ export function createVersionRoutes(options?: VersionRouteOptions): Hono {
     const latest = await getLatestVersion(baseVersion, options?.installId, {
       forceRefresh: fresh,
     });
-    const updateAvailable = latest
-      ? isNewerSemver(baseVersion, latest)
-      : false;
+    const updateAvailable = latest ? isNewerSemver(baseVersion, latest) : false;
 
     const info: VersionInfo = {
       current,
