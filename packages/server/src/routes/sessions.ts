@@ -724,10 +724,29 @@ export function createSessionsRoutes(deps: SessionsDeps): Hono {
     // Keep persisted rendering in lockstep with stream augmentation behavior.
     await augmentPersistedSessionMessages(session.messages);
 
+    // Override context usage with SDK-reported context window from live process
+    // The reader uses hardcoded defaults; the process captures the real value at runtime
+    let { contextUsage } = session;
+    if (process?.contextWindow && contextUsage) {
+      const cw = process.contextWindow;
+      contextUsage = {
+        ...contextUsage,
+        percentage: Math.round((contextUsage.inputTokens / cw) * 100),
+        contextWindow: cw,
+      };
+      // Cache for future reads without a live process
+      deps.modelInfoService?.recordContextWindow(
+        process.resolvedModel ?? session.model ?? "",
+        cw,
+        process.provider,
+      );
+    }
+
     return c.json({
       session: {
         ...session,
         ownership,
+        contextUsage,
         customTitle: metadata?.customTitle,
         isArchived: metadata?.isArchived,
         isStarred: metadata?.isStarred,
