@@ -191,17 +191,19 @@ export function ToolApprovalPanel({
 
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
-  // Only show "View details" when the tool input is large enough to warrant a modal
+  // Only show "View details" when the tool input is large enough that the
+  // inline rendering would be truncated (inline renderers cap at ~12 lines)
   const hasLargeInput = useMemo(() => {
     if (!request.toolInput || typeof request.toolInput !== "object")
       return false;
     const input = request.toolInput as Record<string, unknown>;
-    // Check total string content size across all values
-    let totalSize = 0;
+    let totalLines = 0;
     for (const value of Object.values(input)) {
-      if (typeof value === "string") totalSize += value.length;
+      if (typeof value === "string") {
+        totalLines += value.split("\n").length;
+      }
     }
-    return totalSize > 200;
+    return totalLines > 20;
   }, [request.toolInput]);
 
   const renderContext: RenderContext = useMemo(
