@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.15] - 2026-03-19
+
+### Fixed
+- Pin @biomejs/biome to 1.9.4 to fix CI (pnpm resolved ^1.9.4 to breaking 2.x)
+
 ## [0.4.14] - 2026-03-19
 
 ### Added
