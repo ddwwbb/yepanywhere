@@ -35,6 +35,7 @@ Everything in the AI coding agent supervisor/wrapper space, in one table. For de
 | **Codexia** | Tauri desktop workstation for Codex CLI + Claude Code with task scheduler, git worktrees, remote control, IDE editor, MCP ([deep dive](codexia.md)) | [milisp/codexia](https://github.com/milisp/codexia) | AGPL-3.0 | milisp | 489 |
 | **Farfield** | Local web UI for remote-controlling Codex Desktop via IPC socket | [achimala/farfield](https://github.com/achimala/farfield) | MIT | achimala | 89 |
 | **AgentOS** | Mobile-first multi-agent dashboard (Claude, Codex, Gemini, Aider, Cursor) | [saadnvd1/agent-os](https://github.com/saadnvd1/agent-os) | — | saadnvd1 | 81 |
+| **Nimbalyst** | Electron desktop + native iOS app — visual workspace (WYSIWYG markdown, diagrams, mockups, Kanban tasks) with Claude Code & Codex session management | [Nimbalyst/nimbalyst](https://github.com/Nimbalyst/nimbalyst) | Proprietary | Karl Wirth | 81 |
 | **Chell** | Claude Code session manager | [Cerulin/Chell](https://github.com/Cerulin/Chell) | — | Cerulin | 72 |
 | **Obsidian Claude Anywhere** | Obsidian plugin with embedded relay and full terminal access | [derek-larson14/obsidian-claude-anywhere](https://github.com/derek-larson14/obsidian-claude-anywhere) | — | derek-larson14 | 65 |
 | **Termly CLI** | Universal PTY wrapper for 20+ AI assistants with E2E encryption | [termly-dev/termly-cli](https://github.com/termly-dev/termly-cli) | — | termly-dev | 54 |
@@ -96,4 +97,4 @@ Already listed above: emdash, claudecodeui.
 
 ## Last Updated
 
-2026-03-15
+2026-03-19
