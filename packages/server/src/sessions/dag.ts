@@ -50,13 +50,6 @@ export interface DagResult {
 /** Message types that count as conversation (not internal/progress) */
 const CONVERSATION_TYPES = new Set(["user", "assistant"]);
 
-/** Message types excluded from the DAG entirely.
- * Progress messages (subagent status updates) form long chains that branch off
- * the main conversation. When the SDK parents the next user message to the last
- * progress message, the real conversation (tool_result → assistant text) ends up
- * on a dead branch. Excluding progress from the DAG prevents this. */
-const DAG_EXCLUDED_TYPES = new Set(["progress"]);
-
 /**
  * Walk from a tip to root, returning the count of conversation messages.
  * Only counts user/assistant messages, not progress or other internal types.
@@ -88,10 +81,8 @@ function walkBranchLength(
       nextUuid = logicalParent;
     }
 
-    // Fallback: if parent doesn't exist in the DAG (e.g., compact_boundary
-    // referencing a prior session, or parent was a skipped progress message),
-    // find the nearest preceding node by file position.
-    if (nextUuid && !nodeMap.has(nextUuid)) {
+    // Fallback: if logicalParentUuid doesn't exist in this file, find previous node
+    if (nextUuid && !nodeMap.has(nextUuid) && logicalParent) {
       const fallback = findFallbackParentByLineIndex(
         node.lineIndex,
         nodeMap,
@@ -158,9 +149,6 @@ export function buildDag(messages: ClaudeSessionEntry[]): DagResult {
     // Access uuid - only some entry types have it
     const uuid = "uuid" in raw ? raw.uuid : undefined;
     if (!uuid) continue; // Skip messages without uuid (internal types)
-
-    // Skip progress messages - they form long chains that break branch selection
-    if (DAG_EXCLUDED_TYPES.has(raw.type)) continue;
 
     // Access parentUuid - only some entry types have it
     const parentUuid = "parentUuid" in raw ? (raw.parentUuid ?? null) : null;
@@ -250,10 +238,10 @@ export function buildDag(messages: ClaudeSessionEntry[]): DagResult {
 
     let nextNode = nextUuid ? (nodeMap.get(nextUuid) ?? null) : null;
 
-    // Fallback: parent doesn't exist in the DAG (e.g., compact_boundary
-    // referencing a prior session, or parent was a skipped progress message).
-    // Find the most recent node before this one in file order to bridge the gap.
-    if (!nextNode && nextUuid) {
+    // Fallback: compact_boundary's logicalParentUuid references a message not in
+    // this file (e.g., from a continued/parent session). Find the most recent
+    // node before this boundary in file order to bridge the gap.
+    if (!nextNode && logicalParent && !nodeMap.has(logicalParent)) {
       nextNode = findFallbackParentByLineIndex(
         current.lineIndex,
         nodeMap,
