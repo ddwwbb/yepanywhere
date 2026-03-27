@@ -30,6 +30,23 @@ const IMAGE_EXTENSIONS: Record<string, string> = {
 export function createLocalImageRoutes(deps: LocalImageDeps) {
   const routes = new Hono();
 
+  // Resolve allowed paths at startup so symlinks like /tmp -> /private/tmp work
+  let resolvedAllowedPaths: string[] | null = null;
+  async function getAllowedPaths(): Promise<string[]> {
+    if (!resolvedAllowedPaths) {
+      resolvedAllowedPaths = await Promise.all(
+        deps.allowedPaths.map(async (p) => {
+          try {
+            return await realpath(p);
+          } catch {
+            return p;
+          }
+        }),
+      );
+    }
+    return resolvedAllowedPaths;
+  }
+
   routes.get("/", async (c) => {
     const filePath = c.req.query("path");
     if (!filePath) {
@@ -56,11 +73,10 @@ export function createLocalImageRoutes(deps: LocalImageDeps) {
       return c.json({ error: "File not found" }, 404);
     }
 
-    // Check both the requested path and resolved path against allowed prefixes
-    const isAllowed = deps.allowedPaths.some(
-      (prefix) =>
-        filePath.startsWith(`${prefix}/`) &&
-        resolvedPath.startsWith(`${prefix}/`),
+    // Check resolved path against resolved allowed prefixes
+    const allowed = await getAllowedPaths();
+    const isAllowed = allowed.some((prefix) =>
+      resolvedPath.startsWith(`${prefix}/`),
     );
     if (!isAllowed) {
       return c.json({ error: "Path not in allowed directories" }, 403);
