@@ -1,4 +1,6 @@
-import { useRemoteImage } from "../../../hooks/useRemoteImage";
+import { useState } from "react";
+import { useFetchedImage } from "../../../hooks/useRemoteImage";
+import { Modal } from "../../ui/Modal";
 import type { ToolRenderer } from "./types";
 
 interface ViewImageInput {
@@ -21,7 +23,24 @@ function ViewImageToolUse({ input }: { input: ViewImageInput }) {
 }
 
 /**
- * ViewImage tool result - fetches and displays a local image via /api/local-image
+ * Image content displayed inside the modal
+ */
+function ViewImageModalContent({ url, alt }: { url: string; alt: string }) {
+  return (
+    <div className="read-image-result">
+      <img
+        className="read-image"
+        src={url}
+        alt={alt}
+        style={{ maxWidth: "100%" }}
+      />
+    </div>
+  );
+}
+
+/**
+ * ViewImage tool result - clickable filename that opens modal with the image.
+ * Fetches via XHR (with auth) and displays as blob URL.
  */
 function ViewImageToolResult({
   input,
@@ -30,10 +49,12 @@ function ViewImageToolResult({
   input: ViewImageInput;
   isError: boolean;
 }) {
+  const [showModal, setShowModal] = useState(false);
   const apiPath = input?.path
     ? `/api/local-image?path=${encodeURIComponent(input.path)}`
     : null;
-  const { url, loading, error } = useRemoteImage(apiPath);
+  const { url, loading, error } = useFetchedImage(apiPath);
+  const fileName = getFileName(input.path);
 
   if (isError || error) {
     return (
@@ -46,14 +67,64 @@ function ViewImageToolResult({
   }
 
   return (
-    <div className="viewimage-result">
-      <img
-        className="read-image"
-        src={url}
-        alt={getFileName(input.path)}
-        style={{ maxWidth: "100%" }}
-      />
-    </div>
+    <>
+      <div className="read-image-result">
+        <button
+          type="button"
+          className="file-link-button"
+          onClick={() => setShowModal(true)}
+        >
+          {fileName}
+          <span className="file-line-count">(image)</span>
+        </button>
+      </div>
+      {showModal && (
+        <Modal title={fileName} onClose={() => setShowModal(false)}>
+          <ViewImageModalContent url={url} alt={fileName} />
+        </Modal>
+      )}
+    </>
+  );
+}
+
+/**
+ * Interactive summary - clickable filename that opens modal
+ */
+function ViewImageInteractiveSummary({
+  input,
+}: {
+  input: ViewImageInput;
+}) {
+  const [showModal, setShowModal] = useState(false);
+  const apiPath = input?.path
+    ? `/api/local-image?path=${encodeURIComponent(input.path)}`
+    : null;
+  const { url, error } = useFetchedImage(apiPath);
+  const fileName = getFileName(input.path);
+
+  if (error || !url) {
+    return <span>{fileName}</span>;
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        className="file-link-inline"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowModal(true);
+        }}
+      >
+        {fileName}
+        <span className="file-line-count-inline">(image)</span>
+      </button>
+      {showModal && (
+        <Modal title={fileName} onClose={() => setShowModal(false)}>
+          <ViewImageModalContent url={url} alt={fileName} />
+        </Modal>
+      )}
+    </>
   );
 }
 
@@ -78,5 +149,9 @@ export const viewImageRenderer: ToolRenderer<ViewImageInput, unknown> = {
 
   getResultSummary(_result, isError) {
     return isError ? "Error" : "Image loaded";
+  },
+
+  renderInteractiveSummary(input, _result, _isError, _context) {
+    return <ViewImageInteractiveSummary input={input as ViewImageInput} />;
   },
 };

@@ -110,6 +110,77 @@ export function useRemoteImage(apiPath: string | null): RemoteImageResult {
 }
 
 /**
+ * Hook that always fetches images via XHR and returns a blob URL.
+ * Unlike useRemoteImage, this fetches in both direct and remote modes,
+ * ensuring auth headers/cookies are included (important for endpoints
+ * that require authentication like /api/local-image).
+ */
+export function useFetchedImage(apiPath: string | null): RemoteImageResult {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const blobUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!apiPath) {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+      setBlobUrl(null);
+      setError(null);
+      return;
+    }
+
+    const connection = getGlobalConnection();
+    if (!connection) {
+      setError("No connection available");
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+      setBlobUrl(null);
+    }
+
+    connection
+      .fetchBlob(apiPath)
+      .then((blob) => {
+        if (cancelled) return;
+        const url = URL.createObjectURL(blob);
+        blobUrlRef.current = url;
+        setBlobUrl(url);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error("[useFetchedImage] Failed to fetch image:", err);
+        setError(err instanceof Error ? err.message : "Failed to load image");
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+    };
+  }, [apiPath]);
+
+  if (!apiPath) {
+    return { url: null, loading: false, error: null };
+  }
+
+  return { url: blobUrl, loading, error };
+}
+
+/**
  * Preload an image via relay and return its blob URL.
  * Useful for programmatic image loading outside of React components.
  *
