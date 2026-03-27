@@ -1016,6 +1016,12 @@ export interface RemoteExecutorTestResult {
   claudeVersion?: string;
 }
 
+export interface NewSessionDefaults {
+  provider?: ProviderName;
+  model?: string;
+  permissionMode?: PermissionMode;
+}
+
 /** Server-wide settings that persist across restarts */
 export interface ServerSettings {
   /** Whether clients should register the service worker */
@@ -1038,4 +1044,6 @@ export interface ServerSettings {
   ollamaUseFullSystemPrompt?: boolean;
   /** Whether the device bridge (emulator/device streaming) feature is enabled */
   deviceBridgeEnabled?: boolean;
+  /** Defaults applied when opening the new session form */
+  newSessionDefaults?: NewSessionDefaults;
 }

@@ -2,9 +2,11 @@
  * Server settings API routes
  */
 
+import type { PermissionMode, ProviderName } from "@yep-anywhere/shared";
 import { Hono } from "hono";
 import { testSSHConnection } from "../sdk/remote-spawn.js";
 import type {
+  NewSessionDefaults,
   ServerSettings,
   ServerSettingsService,
 } from "../services/ServerSettingsService.js";
@@ -29,6 +31,23 @@ export interface SettingsRoutesDeps {
   onOllamaUseFullSystemPromptChanged?: (enabled: boolean) => void;
 }
 
+const VALID_PROVIDERS: ProviderName[] = [
+  "claude",
+  "claude-ollama",
+  "codex",
+  "codex-oss",
+  "gemini",
+  "gemini-acp",
+  "opencode",
+];
+
+const VALID_PERMISSION_MODES: PermissionMode[] = [
+  "default",
+  "acceptEdits",
+  "plan",
+  "bypassPermissions",
+];
+
 function parseHostAliasList(rawHosts: unknown[]): {
   hosts: string[];
   invalidHost?: string;
@@ -48,6 +67,64 @@ function parseHostAliasList(rawHosts: unknown[]): {
   }
 
   return { hosts };
+}
+
+function parseNewSessionDefaults(
+  raw: unknown,
+): NewSessionDefaults | undefined | null {
+  if (raw === undefined) return null;
+  if (raw === null || raw === "") return undefined;
+  if (typeof raw !== "object") return null;
+
+  const input = raw as Record<string, unknown>;
+  const parsed: NewSessionDefaults = {};
+
+  if ("provider" in input) {
+    if (
+      input.provider !== undefined &&
+      input.provider !== null &&
+      input.provider !== "" &&
+      !VALID_PROVIDERS.includes(input.provider as ProviderName)
+    ) {
+      return null;
+    }
+    if (typeof input.provider === "string" && input.provider.length > 0) {
+      parsed.provider = input.provider as ProviderName;
+    }
+  }
+
+  if ("model" in input) {
+    if (
+      input.model !== undefined &&
+      input.model !== null &&
+      input.model !== "" &&
+      typeof input.model !== "string"
+    ) {
+      return null;
+    }
+    if (typeof input.model === "string" && input.model.length > 0) {
+      parsed.model = input.model;
+    }
+  }
+
+  if ("permissionMode" in input) {
+    if (
+      input.permissionMode !== undefined &&
+      input.permissionMode !== null &&
+      input.permissionMode !== "" &&
+      !VALID_PERMISSION_MODES.includes(input.permissionMode as PermissionMode)
+    ) {
+      return null;
+    }
+    if (
+      typeof input.permissionMode === "string" &&
+      input.permissionMode.length > 0
+    ) {
+      parsed.permissionMode = input.permissionMode as PermissionMode;
+    }
+  }
+
+  return Object.keys(parsed).length > 0 ? parsed : undefined;
 }
 
 export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
@@ -171,6 +248,14 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
     // Handle deviceBridgeEnabled boolean
     if (typeof body.deviceBridgeEnabled === "boolean") {
       updates.deviceBridgeEnabled = body.deviceBridgeEnabled;
+    }
+
+    if ("newSessionDefaults" in body) {
+      const parsedDefaults = parseNewSessionDefaults(body.newSessionDefaults);
+      if (parsedDefaults === null) {
+        return c.json({ error: "Invalid newSessionDefaults setting" }, 400);
+      }
+      updates.newSessionDefaults = parsedDefaults;
     }
 
     if (Object.keys(updates).length === 0) {

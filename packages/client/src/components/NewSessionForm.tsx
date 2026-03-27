@@ -31,6 +31,7 @@ import {
 } from "../hooks/useProviders";
 import { useRemoteBasePath } from "../hooks/useRemoteBasePath";
 import { useRemoteExecutors } from "../hooks/useRemoteExecutors";
+import { useServerSettings } from "../hooks/useServerSettings";
 import { useI18n } from "../i18n";
 import { hasCoarsePointer } from "../lib/deviceDetection";
 import type { PermissionMode } from "../types";
@@ -57,6 +58,22 @@ function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024 * 1024)
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+}
+
+function getPreferredModelId(
+  models: ModelInfo[],
+  preferredModelId?: string | null,
+) {
+  if (preferredModelId) {
+    const matchingPreferredModel = models.find(
+      (m) => m.id === preferredModelId,
+    );
+    if (matchingPreferredModel) return matchingPreferredModel.id;
+  }
+
+  const targetModelId = resolveModel(getModelSetting());
+  const matchingUserSetting = models.find((m) => m.id === targetModelId);
+  return matchingUserSetting?.id ?? models[0]?.id ?? null;
 }
 
 export interface NewSessionFormProps {
@@ -97,9 +114,11 @@ export function NewSessionForm({
     Record<string, { uploaded: number; total: number }>
   >({});
   const [interimTranscript, setInterimTranscript] = useState("");
+  const [isSavingDefaults, setIsSavingDefaults] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const voiceButtonRef = useRef<VoiceInputButtonRef>(null);
+  const hasInitializedDefaultsRef = useRef(false);
 
   // Thinking toggle state
   const { thinkingMode, cycleThinkingMode, thinkingLevel } = useModelSettings();
@@ -112,6 +131,11 @@ export function NewSessionForm({
 
   // Fetch available providers
   const { providers, loading: providersLoading } = useProviders();
+  const {
+    settings,
+    isLoading: settingsLoading,
+    updateSetting: updateServerSetting,
+  } = useServerSettings();
 
   // Fetch remote executors
   const { executors: remoteExecutors, loading: executorsLoading } =
@@ -142,38 +166,54 @@ export function NewSessionForm({
   const supportsThinkingToggle =
     selectedProviderInfo?.supportsThinkingToggle ?? true;
 
-  // Set default provider when providers load
+  // Initialize provider/model/mode from saved defaults once settings and providers load.
   useEffect(() => {
-    if (!selectedProvider && providers.length > 0) {
-      const defaultProvider = getDefaultProvider(providers);
-      if (defaultProvider) {
-        setSelectedProvider(defaultProvider.name);
-        // Set default model based on user settings
-        if (defaultProvider.models && defaultProvider.models.length > 0) {
-          const targetModelId = resolveModel(getModelSetting());
-          // Find the preferred model in available models
-          const matchingModel = defaultProvider.models.find(
-            (m) => m.id === targetModelId,
-          );
-          // Use preferred model if available, otherwise fall back to first model
-          setSelectedModel(
-            matchingModel?.id ?? defaultProvider.models[0]?.id ?? null,
-          );
-        }
-      }
+    if (
+      hasInitializedDefaultsRef.current ||
+      providersLoading ||
+      settingsLoading
+    ) {
+      return;
     }
-  }, [providers, selectedProvider]);
+
+    hasInitializedDefaultsRef.current = true;
+
+    if (providers.length === 0) return;
+
+    const availableProviderNames = new Set(
+      availableProviders.map((p) => p.name),
+    );
+    const savedDefaults = settings?.newSessionDefaults;
+    const savedProviderName =
+      savedDefaults?.provider &&
+      availableProviderNames.has(savedDefaults.provider)
+        ? savedDefaults.provider
+        : null;
+    const initialProvider =
+      providers.find((p) => p.name === savedProviderName) ??
+      getDefaultProvider(providers);
+
+    if (!initialProvider) return;
+
+    setSelectedProvider(initialProvider.name);
+    setSelectedModel(
+      getPreferredModelId(initialProvider.models ?? [], savedDefaults?.model),
+    );
+    setMode(savedDefaults?.permissionMode ?? "default");
+  }, [
+    availableProviders,
+    providers,
+    providersLoading,
+    settings,
+    settingsLoading,
+  ]);
 
   // When provider changes, reset model based on user settings
   const handleProviderSelect = (providerName: ProviderName) => {
     setSelectedProvider(providerName);
     const provider = providers.find((p) => p.name === providerName);
     if (provider?.models && provider.models.length > 0) {
-      const targetModelId = resolveModel(getModelSetting());
-      // Find the preferred model in available models
-      const matchingModel = provider.models.find((m) => m.id === targetModelId);
-      // Use preferred model if available, otherwise fall back to first model
-      setSelectedModel(matchingModel?.id ?? provider.models[0]?.id ?? null);
+      setSelectedModel(getPreferredModelId(provider.models));
     } else {
       setSelectedModel(null);
     }
@@ -273,6 +313,33 @@ export function NewSessionForm({
   const handleModeSelect = (selectedMode: PermissionMode) => {
     setMode(selectedMode);
   };
+
+  const handleSaveDefaults = useCallback(async () => {
+    setIsSavingDefaults(true);
+    try {
+      await updateServerSetting("newSessionDefaults", {
+        provider: selectedProvider ?? undefined,
+        model: selectedModel ?? undefined,
+        permissionMode: mode,
+      });
+      showToast(t("newSessionDefaultsSaved"), "success");
+    } catch (err) {
+      console.error("Failed to save new session defaults:", err);
+      showToast(
+        err instanceof Error ? err.message : t("newSessionDefaultsSaveError"),
+        "error",
+      );
+    } finally {
+      setIsSavingDefaults(false);
+    }
+  }, [
+    mode,
+    selectedModel,
+    selectedProvider,
+    showToast,
+    t,
+    updateServerSetting,
+  ]);
 
   const handleStartSession = async () => {
     // Stop voice recording and get any pending interim text
@@ -504,6 +571,12 @@ export function NewSessionForm({
   }, []);
 
   const hasContent = message.trim() || pendingFiles.length > 0;
+  const savedDefaults = settings?.newSessionDefaults;
+  const defaultsMatchCurrent =
+    (savedDefaults?.provider ?? undefined) ===
+      (selectedProvider ?? undefined) &&
+    (savedDefaults?.model ?? undefined) === (selectedModel ?? undefined) &&
+    (savedDefaults?.permissionMode ?? "default") === mode;
 
   // Shared input area with toolbar (textarea + attach/voice on left, send on right)
   const inputArea = (
@@ -829,6 +902,28 @@ export function NewSessionForm({
                 </div>
               </button>
             ))}
+          </div>
+
+          <div className="new-session-defaults-bar">
+            <p className="new-session-defaults-copy">
+              {t("newSessionDefaultsDescription")}
+            </p>
+            <button
+              type="button"
+              className="new-session-defaults-button"
+              onClick={handleSaveDefaults}
+              disabled={
+                isStarting ||
+                isSavingDefaults ||
+                settingsLoading ||
+                !selectedProvider ||
+                defaultsMatchCurrent
+              }
+            >
+              {isSavingDefaults
+                ? t("newSessionDefaultsSaving")
+                : t("newSessionDefaultsAction")}
+            </button>
           </div>
         </div>
       )}
