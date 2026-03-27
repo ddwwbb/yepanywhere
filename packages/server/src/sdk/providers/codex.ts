@@ -19,7 +19,7 @@ import {
   normalizeCodexToolInvocation,
 } from "../../codex/normalization.js";
 import { getLogger } from "../../logging/logger.js";
-import { whichCommand } from "../cli-detection.js";
+import { findCodexCliPath, whichCommand } from "../cli-detection.js";
 import { logSDKMessage } from "../messageLogger.js";
 import { MessageQueue } from "../messageQueue.js";
 import type {
@@ -645,18 +645,21 @@ export class CodexProvider implements AgentProvider {
   }
 
   /**
-   * Check if Codex CLI is installed by looking for it in PATH.
+   * Check if Codex CLI is installed by looking in PATH and common locations.
    */
   private async isCodexCliInstalled(): Promise<boolean> {
     if (this.config.codexPath) {
       return true;
     }
-    try {
-      await execAsync(whichCommand("codex"), { encoding: "utf-8" });
-      return true;
-    } catch {
-      return false;
-    }
+    return (await findCodexCliPath()) !== null;
+  }
+
+  /**
+   * Resolve the codex command: explicit config, PATH, or common install locations.
+   */
+  private async resolveCodexCommand(): Promise<string> {
+    if (this.config.codexPath) return this.config.codexPath;
+    return (await findCodexCliPath()) ?? "codex";
   }
 
   private getCodexClientName(): string {
@@ -740,9 +743,9 @@ export class CodexProvider implements AgentProvider {
     }
   }
 
-  private requestAppServerModelList(): Promise<AppServerModel[]> {
+  private async requestAppServerModelList(): Promise<AppServerModel[]> {
+    const codexCommand = await this.resolveCodexCommand();
     return new Promise((resolve, reject) => {
-      const codexCommand = this.config.codexPath ?? "codex";
       const child = spawn(
         codexCommand,
         ["app-server", "--listen", "stdio://"],
@@ -1068,7 +1071,7 @@ export class CodexProvider implements AgentProvider {
     runtimeState: CodexTurnRuntimeState,
     setActiveClient: (client: CodexAppServerClient) => void,
   ): AsyncIterableIterator<SDKMessage> {
-    const codexCommand = this.config.codexPath ?? "codex";
+    const codexCommand = await this.resolveCodexCommand();
     const appServer = new CodexAppServerClient(
       codexCommand,
       options.cwd,

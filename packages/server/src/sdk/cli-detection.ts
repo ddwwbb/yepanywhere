@@ -67,46 +67,11 @@ export interface CodexCliInfo {
  * @returns Information about the CLI installation
  */
 export async function detectCodexCli(): Promise<CodexCliInfo> {
-  const whichCmd = whichCommand("codex");
-
-  // Try to find codex in PATH
-  try {
-    const { stdout } = await execAsync(whichCmd, {
-      encoding: "utf-8",
-    });
-    const codexPath = stdout.split("\n")[0]?.trim();
-
-    if (codexPath) {
-      const version = await getCodexVersion(codexPath);
+  const codexPath = await findCodexCliPath();
+  if (codexPath) {
+    const version = await getCodexVersion(codexPath);
+    if (version) {
       return { found: true, path: codexPath, version };
-    }
-  } catch {
-    // Not in PATH, continue to check common locations
-  }
-
-  // Check common installation locations
-  const home = os.homedir();
-  const ext = isWindows ? ".exe" : "";
-  const sep = isWindows ? "\\" : "/";
-  const commonPaths = isWindows
-    ? [
-        `${home}${sep}.cargo${sep}bin${sep}codex${ext}`,
-        `${home}${sep}.codex${sep}bin${sep}codex${ext}`,
-        `${home}${sep}AppData${sep}Local${sep}bin${sep}codex${ext}`,
-      ]
-    : [
-        `${home}/.local/bin/codex`,
-        "/usr/local/bin/codex",
-        `${home}/.cargo/bin/codex`,
-        `${home}/.codex/bin/codex`,
-      ];
-
-  for (const path of commonPaths) {
-    if (existsSync(path)) {
-      const version = await getCodexVersion(path);
-      if (version) {
-        return { found: true, path, version };
-      }
     }
   }
 
@@ -114,6 +79,52 @@ export async function detectCodexCli(): Promise<CodexCliInfo> {
     found: false,
     error: "Codex CLI not found. Install via: cargo install codex",
   };
+}
+
+/**
+ * Common Codex CLI installation paths (checked after PATH lookup).
+ * Includes the Codex desktop app's sandbox-bin location.
+ */
+export function getCodexCommonPaths(): string[] {
+  const home = os.homedir();
+  const ext = isWindows ? ".exe" : "";
+  const sep = isWindows ? "\\" : "/";
+  return isWindows
+    ? [
+        `${home}${sep}.codex${sep}.sandbox-bin${sep}codex${ext}`,
+        `${home}${sep}.cargo${sep}bin${sep}codex${ext}`,
+        `${home}${sep}.codex${sep}bin${sep}codex${ext}`,
+        `${home}${sep}AppData${sep}Local${sep}bin${sep}codex${ext}`,
+      ]
+    : [
+        `${home}/.codex/.sandbox-bin/codex`,
+        `${home}/.local/bin/codex`,
+        "/usr/local/bin/codex",
+        `${home}/.cargo/bin/codex`,
+        `${home}/.codex/bin/codex`,
+      ];
+}
+
+/**
+ * Find the Codex CLI path by checking PATH first, then common locations.
+ * Returns the path if found, null otherwise.
+ */
+export async function findCodexCliPath(): Promise<string | null> {
+  try {
+    const { stdout } = await execAsync(whichCommand("codex"), {
+      encoding: "utf-8",
+    });
+    const codexPath = stdout.split("\n")[0]?.trim();
+    if (codexPath) return codexPath;
+  } catch {
+    // Not in PATH
+  }
+
+  for (const path of getCodexCommonPaths()) {
+    if (existsSync(path)) return path;
+  }
+
+  return null;
 }
 
 /**

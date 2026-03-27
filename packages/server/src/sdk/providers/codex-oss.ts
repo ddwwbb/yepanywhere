@@ -24,7 +24,7 @@ import {
   normalizeCodexToolInvocation,
 } from "../../codex/normalization.js";
 import { getLogger } from "../../logging/logger.js";
-import { whichCommand } from "../cli-detection.js";
+import { findCodexCliPath, whichCommand } from "../cli-detection.js";
 import { MessageQueue } from "../messageQueue.js";
 import type { SDKMessage } from "../types.js";
 import type {
@@ -1026,28 +1026,7 @@ export class CodexOSSProvider implements AgentProvider {
     if (this.codexPath && existsSync(this.codexPath)) {
       return this.codexPath;
     }
-
-    const commonPaths = [
-      join(homedir(), ".local", "bin", "codex"),
-      "/usr/local/bin/codex",
-      join(homedir(), ".codex", "bin", "codex"),
-    ];
-
-    for (const path of commonPaths) {
-      if (existsSync(path)) return path;
-    }
-
-    try {
-      const { stdout } = await execAsync(whichCommand("codex"), {
-        encoding: "utf-8",
-      });
-      const result = stdout.trim();
-      if (result && existsSync(result)) return result;
-    } catch {
-      // Not in PATH
-    }
-
-    return null;
+    return findCodexCliPath();
   }
 }
 
