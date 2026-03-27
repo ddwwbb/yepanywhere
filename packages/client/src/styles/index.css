@@ -4542,6 +4542,42 @@ a.sidebar-nav-item {
   margin: 0;
 }
 
+.new-session-defaults-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: 1rem;
+}
+
+.new-session-defaults-copy {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.new-session-defaults-button {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-code);
+  color: var(--text-primary);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.new-session-defaults-button:hover:not(:disabled) {
+  border-color: var(--app-yep-green);
+  background: rgba(217, 119, 87, 0.08);
+}
+
+.new-session-defaults-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .new-session-input-area {
   margin-bottom: 1.5rem;
 }
@@ -4766,6 +4802,15 @@ a.sidebar-nav-item {
 
 /* On mobile, hide provider name and dot - show only model */
 @media (max-width: 600px) {
+  .new-session-defaults-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .new-session-defaults-button {
+    width: 100%;
+  }
+
   .provider-badge-label,
   .provider-badge-dot-inline {
     display: none;

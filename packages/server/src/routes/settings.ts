@@ -2,6 +2,13 @@
  * Server settings API routes
  */
 
+import {
+  ALL_PERMISSION_MODES,
+  ALL_PROVIDERS,
+  type NewSessionDefaults,
+  type PermissionMode,
+  type ProviderName,
+} from "@yep-anywhere/shared";
 import { Hono } from "hono";
 import { testSSHConnection } from "../sdk/remote-spawn.js";
 import type {
@@ -48,6 +55,70 @@ function parseHostAliasList(rawHosts: unknown[]): {
   }
 
   return { hosts };
+}
+
+/**
+ * Returns:
+ * - `null` when the payload is invalid
+ * - `undefined` when the setting should be cleared
+ * - an object when valid defaults should be saved
+ */
+function parseNewSessionDefaults(
+  raw: unknown,
+): NewSessionDefaults | undefined | null {
+  if (raw === undefined) return null;
+  if (raw === null || raw === "") return undefined;
+  if (typeof raw !== "object") return null;
+
+  const input = raw as Record<string, unknown>;
+  const parsed: NewSessionDefaults = {};
+
+  if ("provider" in input) {
+    if (
+      input.provider !== undefined &&
+      input.provider !== null &&
+      input.provider !== "" &&
+      !ALL_PROVIDERS.includes(input.provider as ProviderName)
+    ) {
+      return null;
+    }
+    if (typeof input.provider === "string" && input.provider.length > 0) {
+      parsed.provider = input.provider as ProviderName;
+    }
+  }
+
+  if ("model" in input) {
+    if (
+      input.model !== undefined &&
+      input.model !== null &&
+      input.model !== "" &&
+      typeof input.model !== "string"
+    ) {
+      return null;
+    }
+    if (typeof input.model === "string" && input.model.length > 0) {
+      parsed.model = input.model;
+    }
+  }
+
+  if ("permissionMode" in input) {
+    if (
+      input.permissionMode !== undefined &&
+      input.permissionMode !== null &&
+      input.permissionMode !== "" &&
+      !ALL_PERMISSION_MODES.includes(input.permissionMode as PermissionMode)
+    ) {
+      return null;
+    }
+    if (
+      typeof input.permissionMode === "string" &&
+      input.permissionMode.length > 0
+    ) {
+      parsed.permissionMode = input.permissionMode as PermissionMode;
+    }
+  }
+
+  return Object.keys(parsed).length > 0 ? parsed : undefined;
 }
 
 export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
@@ -171,6 +242,14 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
     // Handle deviceBridgeEnabled boolean
     if (typeof body.deviceBridgeEnabled === "boolean") {
       updates.deviceBridgeEnabled = body.deviceBridgeEnabled;
+    }
+
+    if ("newSessionDefaults" in body) {
+      const parsedDefaults = parseNewSessionDefaults(body.newSessionDefaults);
+      if (parsedDefaults === null) {
+        return c.json({ error: "Invalid newSessionDefaults setting" }, 400);
+      }
+      updates.newSessionDefaults = parsedDefaults;
     }
 
     if (Object.keys(updates).length === 0) {

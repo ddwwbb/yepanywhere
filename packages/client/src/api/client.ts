@@ -6,6 +6,7 @@ import type {
   EnrichedRecentEntry,
   FileContentResponse,
   GitStatusInfo,
+  NewSessionDefaults,
   PendingInputType,
   ProviderInfo,
   ProviderName,
@@ -1038,4 +1039,6 @@ export interface ServerSettings {
   ollamaUseFullSystemPrompt?: boolean;
   /** Whether the device bridge (emulator/device streaming) feature is enabled */
   deviceBridgeEnabled?: boolean;
+  /** Defaults applied when opening the new session form */
+  newSessionDefaults?: NewSessionDefaults;
 }

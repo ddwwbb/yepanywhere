@@ -7,6 +7,7 @@
 
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import type { NewSessionDefaults } from "@yep-anywhere/shared";
 
 const CURRENT_VERSION = 1;
 
@@ -32,6 +33,8 @@ export interface ServerSettings {
   ollamaUseFullSystemPrompt?: boolean;
   /** Whether the device bridge (emulator/device streaming) feature is enabled */
   deviceBridgeEnabled?: boolean;
+  /** Defaults applied when opening the new session form */
+  newSessionDefaults?: NewSessionDefaults;
 }
 
 /** Default settings */
