@@ -22,6 +22,36 @@ interface EditInputWithAugment extends EditInput {
   _rawPatch?: string;
 }
 
+function extractFilePathFromRawPatch(rawPatch?: string): string | undefined {
+  if (typeof rawPatch !== "string" || rawPatch.trim().length === 0) {
+    return undefined;
+  }
+
+  const lines = rawPatch.replace(/\r\n/g, "\n").split("\n");
+  for (const line of lines) {
+    const match = line.match(
+      /^\*\*\*\s+(?:Update File|Add File|Delete File|Move to):\s+(.+?)\s*$/,
+    );
+    if (match?.[1]) {
+      return match[1].trim();
+    }
+  }
+
+  return undefined;
+}
+
+function getEditFilePath(
+  input?: EditInputWithAugment,
+  result?: Partial<EditResult>,
+): string {
+  return (
+    result?.filePath ??
+    input?.file_path ??
+    extractFilePathFromRawPatch(input?._rawPatch) ??
+    ""
+  );
+}
+
 /**
  * Extract filename from path.
  * Some Codex tool aliases (e.g. apply_patch -> Edit) may not include file_path.
@@ -428,7 +458,7 @@ function EditCollapsedPreview({
   }, []);
 
   // Use result data if available, fall back to input
-  const filePath = result?.filePath ?? input.file_path;
+  const filePath = getEditFilePath(input, result);
   const fileName = getFileName(filePath);
   const oldString = result?.oldString ?? input.old_string;
   const newString = result?.newString ?? input.new_string;
@@ -690,7 +720,7 @@ function EditInteractiveSummary({
   const showValidationWarning =
     enabled && validationErrors && !isToolIgnored("Edit");
 
-  const filePath = result?.filePath ?? input.file_path;
+  const filePath = getEditFilePath(input, result);
   const fileName = getFileName(filePath);
   const oldString = result?.oldString ?? input.old_string;
   const newString = result?.newString ?? input.new_string;
@@ -856,7 +886,7 @@ function EditToolResult({
       : [];
     const proposedDiffTruncated = proposedDiffLines.length > MAX_VISIBLE_LINES;
 
-    const filePath = inputWithAugment?.file_path ?? "";
+    const filePath = getEditFilePath(inputWithAugment);
     const fileName = getFileName(filePath);
 
     return (
@@ -934,7 +964,7 @@ function EditToolResult({
   // Handle case where result doesn't have structuredPatch
   // Use input data as fallback when result data is missing
   if (!result?.structuredPatch || result.structuredPatch.length === 0) {
-    const filePath = result?.filePath || input?.file_path;
+    const filePath = getEditFilePath(input, result);
     const oldString = result?.oldString || input?.old_string || "";
     const newString = result?.newString || input?.new_string || "";
     const isPlan = filePath ? isPlanFile(filePath) : false;
@@ -1046,7 +1076,7 @@ export const editRenderer: ToolRenderer<EditInput, EditResult> = {
   },
 
   getUseSummary(input) {
-    return getFileName((input as EditInput).file_path);
+    return getFileName(getEditFilePath(input as EditInputWithAugment));
   },
 
   getResultSummary(result, isError) {

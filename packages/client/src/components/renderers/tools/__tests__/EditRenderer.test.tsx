@@ -154,4 +154,56 @@ describe("EditRenderer collapsed preview fallback", () => {
     expect(screen.queryByText("Computing diff...")).toBeNull();
     expect(screen.getByText("Patch preview unavailable")).toBeDefined();
   });
+
+  it("derives filename from raw patch when file_path is missing", () => {
+    const summary = editRenderer.getUseSummary?.({
+      _rawPatch: [
+        "*** Begin Patch",
+        "*** Update File: packages/client/src/components/Foo.tsx",
+        "@@",
+        "-const x = 1;",
+        "+const x = 2;",
+        "*** End Patch",
+      ].join("\n"),
+    } as never);
+
+    expect(summary).toBe("Foo.tsx");
+  });
+
+  it("shows raw patch filename in interactive summary when file_path is missing", () => {
+    if (!editRenderer.renderInteractiveSummary) {
+      throw new Error("Edit renderer must provide interactive summary");
+    }
+
+    render(
+      <div>
+        {editRenderer.renderInteractiveSummary(
+          {
+            _rawPatch: [
+              "*** Begin Patch",
+              "*** Update File: packages/client/src/components/Foo.tsx",
+              "@@",
+              "-const x = 1;",
+              "+const x = 2;",
+              "*** End Patch",
+            ].join("\n"),
+            _structuredPatch: [
+              {
+                oldStart: 1,
+                oldLines: 1,
+                newStart: 1,
+                newLines: 1,
+                lines: ["-const x = 1;", "+const x = 2;"],
+              },
+            ],
+          } as never,
+          undefined,
+          false,
+          renderContext,
+        )}
+      </div>,
+    );
+
+    expect(screen.getByRole("button", { name: /Foo\.tsx/i })).toBeDefined();
+  });
 });
