@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useState } from "react";
 import { useStreamingMarkdownContext } from "../../contexts/StreamingMarkdownContext";
 import { useStreamingMarkdown } from "../../hooks/useStreamingMarkdown";
+import { LocalMediaModal, useLocalMediaClick } from "../LocalMediaModal";
 
 interface Props {
   text: string;
@@ -60,6 +61,8 @@ export const TextBlock = memo(function TextBlock({
     }
   }, [text]);
 
+  const { modal, handleClick, closeModal } = useLocalMediaClick();
+
   const showStreamingContent = isStreaming && useStreamingContent;
 
   // Always render streaming container when isStreaming so refs are attached
@@ -67,8 +70,10 @@ export const TextBlock = memo(function TextBlock({
   const renderStreamingContainer = isStreaming;
 
   return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents: click handler intercepts local media links only
     <div
       className={`text-block timeline-item${isStreaming ? " streaming" : ""}`}
+      onClick={handleClick}
     >
       <button
         type="button"
@@ -103,6 +108,13 @@ export const TextBlock = memo(function TextBlock({
           // Plain text fallback (no server augment available)
           <p>{text}</p>
         ))}
+      {modal && (
+        <LocalMediaModal
+          path={modal.path}
+          mediaType={modal.mediaType}
+          onClose={closeModal}
+        />
+      )}
     </div>
   );
 });

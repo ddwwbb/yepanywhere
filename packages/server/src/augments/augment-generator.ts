@@ -18,7 +18,14 @@ import type {
   StreamingCodeBlock,
   StreamingList,
 } from "./block-detector.js";
-import { renderSafeMarkdown, sanitizeUrl } from "./safe-markdown.js";
+import {
+  MEDIA_EXTENSIONS,
+  VIDEO_EXTENSIONS,
+  isLocalFilePath,
+  localFileApiUrl,
+  renderSafeMarkdown,
+  sanitizeUrl,
+} from "./safe-markdown.js";
 
 /** CSS variables theme - outputs `style="color: var(--shiki-...)"` */
 const cssVarsTheme = createCssVariablesTheme({
@@ -232,8 +239,18 @@ function renderInlineFormatting(text: string): string {
   // Inline code: `text`
   result = result.replace(/`([^`]+)`/g, "<code>$1</code>");
 
-  // Links: [text](url)
+  // Links: [text](url) — handle local file paths and regular URLs
   result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label, href) => {
+    if (isLocalFilePath(href)) {
+      const ext = (href.split(".").pop() ?? "").toLowerCase();
+      const apiUrl = escapeHtml(localFileApiUrl(href));
+      if (MEDIA_EXTENSIONS.has(ext)) {
+        const mediaType = VIDEO_EXTENSIONS.has(ext) ? "video" : "image";
+        const typeLabel = VIDEO_EXTENSIONS.has(ext) ? "video" : "image";
+        return `<a href="${apiUrl}" class="local-media-link" data-media-type="${mediaType}">${label}<span class="local-media-type">(${typeLabel})</span></a>`;
+      }
+      return `<a href="${apiUrl}">${label}</a>`;
+    }
     const safeHref = sanitizeUrl(href);
     if (!safeHref) {
       return `[${label}](${href})`;

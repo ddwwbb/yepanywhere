@@ -202,6 +202,51 @@
   text-decoration: underline;
 }
 
+/* Local media links (clickable placeholders for images/videos in markdown) */
+.local-media-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  cursor: pointer;
+}
+
+.local-media-type {
+  font-size: 0.85em;
+  opacity: 0.6;
+}
+
+/* Local media modal content */
+.local-media-modal-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.local-media-image {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+.local-media-player {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: var(--radius-md);
+}
+
+.local-media-loading,
+.local-media-error {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.local-media-error {
+  color: var(--color-error);
+}
+
 /* Blockquotes in streaming blocks */
 .streaming-blocks blockquote,
 .streaming-block blockquote {

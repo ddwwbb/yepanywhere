@@ -7,7 +7,8 @@ interface LocalImageDeps {
   allowedPaths: string[];
 }
 
-const IMAGE_EXTENSIONS: Record<string, string> = {
+const MEDIA_EXTENSIONS: Record<string, string> = {
+  // Images
   png: "image/png",
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
@@ -17,6 +18,13 @@ const IMAGE_EXTENSIONS: Record<string, string> = {
   tiff: "image/tiff",
   tif: "image/tiff",
   svg: "image/svg+xml",
+  // Video
+  mp4: "video/mp4",
+  webm: "video/webm",
+  mov: "video/quicktime",
+  avi: "video/x-msvideo",
+  mkv: "video/x-matroska",
+  ogv: "video/ogg",
 };
 
 /**
@@ -24,7 +32,7 @@ const IMAGE_EXTENSIONS: Record<string, string> = {
  *
  * Security: Only serves files that:
  * 1. Resolve (after symlink resolution) to a path under an allowed prefix
- * 2. Have a recognized image extension
+ * 2. Have a recognized image or video extension
  * 3. Are regular files (not directories, devices, etc.)
  */
 export function createLocalImageRoutes(deps: LocalImageDeps) {
@@ -58,11 +66,11 @@ export function createLocalImageRoutes(deps: LocalImageDeps) {
       return c.json({ error: "Path must be absolute" }, 400);
     }
 
-    // Check image extension
+    // Check file extension
     const ext = filePath.split(".").pop()?.toLowerCase() ?? "";
-    const contentType = IMAGE_EXTENSIONS[ext];
+    const contentType = MEDIA_EXTENSIONS[ext];
     if (!contentType) {
-      return c.json({ error: "Not a recognized image type" }, 400);
+      return c.json({ error: "Not a recognized media type" }, 400);
     }
 
     // Resolve symlinks to get the real path

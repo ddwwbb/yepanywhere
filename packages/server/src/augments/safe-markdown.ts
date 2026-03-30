@@ -9,6 +9,71 @@ import sanitizeHtml from "sanitize-html";
 const ALLOWED_LINK_PROTOCOLS = new Set(["http:", "https:", "mailto:"]);
 const ALLOWED_IMAGE_PROTOCOLS = new Set(["http:", "https:"]);
 
+const IMAGE_EXTENSIONS = new Set([
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "webp",
+  "bmp",
+  "tiff",
+  "tif",
+  "svg",
+]);
+
+const VIDEO_EXTENSIONS = new Set(["mp4", "webm", "mov", "avi", "mkv", "ogv"]);
+
+const MEDIA_EXTENSIONS = new Set([...IMAGE_EXTENSIONS, ...VIDEO_EXTENSIONS]);
+
+/**
+ * Check if a string looks like an absolute local file path.
+ * Must start with / (but not //) and contain a file extension.
+ */
+function isLocalFilePath(href: string): boolean {
+  const trimmed = href.trim();
+  if (!trimmed.startsWith("/") || trimmed.startsWith("//")) return false;
+  // Must have a file extension after the last /
+  const basename = trimmed.split("/").pop() ?? "";
+  return basename.includes(".");
+}
+
+/**
+ * Get the file extension from a path (lowercase, without the dot).
+ */
+function getExtension(path: string): string {
+  return (path.split(".").pop() ?? "").toLowerCase();
+}
+
+/**
+ * Get the filename from a path.
+ */
+function getFileName(path: string): string {
+  return path.trim().split("/").pop() ?? path;
+}
+
+/**
+ * Rewrite a local file path to the local-image API endpoint.
+ */
+function localFileApiUrl(path: string): string {
+  return `/api/local-image?path=${encodeURIComponent(path.trim())}`;
+}
+
+/**
+ * Render a local media file as a clickable placeholder link.
+ * The client intercepts clicks on .local-media-link to open a modal.
+ */
+function renderLocalMediaLink(
+  path: string,
+  label: string,
+  ext: string,
+): string {
+  const apiUrl = escapeHtml(localFileApiUrl(path));
+  const escapedLabel = escapeHtml(label || getFileName(path));
+  const mediaType = VIDEO_EXTENSIONS.has(ext) ? "video" : "image";
+  const typeLabel = VIDEO_EXTENSIONS.has(ext) ? "video" : "image";
+  return `<a href="${apiUrl}" class="local-media-link" data-media-type="${mediaType}">${escapedLabel}<span class="local-media-type">(${typeLabel})</span></a>`;
+}
+
 const MARKDOWN_SANITIZE_OPTIONS = {
   allowedTags: [
     "a",
@@ -30,6 +95,7 @@ const MARKDOWN_SANITIZE_OPTIONS = {
     "ol",
     "p",
     "pre",
+    "span",
     "strong",
     "table",
     "tbody",
@@ -40,11 +106,12 @@ const MARKDOWN_SANITIZE_OPTIONS = {
     "ul",
   ],
   allowedAttributes: {
-    a: ["href", "title"],
+    a: ["href", "title", "class", "data-media-type"],
     code: ["class"],
     img: ["src", "alt", "title"],
     input: ["type", "checked", "disabled"],
     ol: ["start"],
+    span: ["class"],
     td: ["align"],
     th: ["align"],
   },
@@ -67,6 +134,20 @@ const renderer: RendererObject<string, string> = {
     this: RendererThis<string, string>,
     { href, title, tokens }: Tokens.Link,
   ) {
+    // Check for local file paths first — rewrite to clickable media placeholder
+    if (isLocalFilePath(href)) {
+      const ext = getExtension(href);
+      const renderedText = this.parser.parseInline(tokens);
+
+      if (MEDIA_EXTENSIONS.has(ext)) {
+        return renderLocalMediaLink(href, renderedText, ext);
+      }
+      // Other local file — render as a link to the API
+      const apiUrl = escapeHtml(localFileApiUrl(href));
+      const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
+      return `<a href="${apiUrl}"${titleAttr}>${renderedText}</a>`;
+    }
+
     const safeHref = sanitizeUrl(href);
     const renderedText = this.parser.parseInline(tokens);
 
@@ -80,6 +161,17 @@ const renderer: RendererObject<string, string> = {
     return `<a href="${escapedHref}"${titleAttr}>${renderedText}</a>`;
   },
   image({ href, title, text }: Tokens.Image) {
+    // Check for local file paths first — rewrite to clickable media placeholder
+    if (isLocalFilePath(href)) {
+      const ext = getExtension(href);
+
+      if (MEDIA_EXTENSIONS.has(ext)) {
+        return renderLocalMediaLink(href, text, ext);
+      }
+      // Unrecognized extension — just show text
+      return escapeHtml(text || getFileName(href));
+    }
+
     const safeSrc = sanitizeUrl(href, ALLOWED_IMAGE_PROTOCOLS);
     if (!safeSrc) {
       return escapeHtml(text);
@@ -146,3 +238,11 @@ function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+export {
+  IMAGE_EXTENSIONS,
+  MEDIA_EXTENSIONS,
+  VIDEO_EXTENSIONS,
+  isLocalFilePath,
+  localFileApiUrl,
+};
