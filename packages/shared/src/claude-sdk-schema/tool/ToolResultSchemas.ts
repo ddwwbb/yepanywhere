@@ -378,6 +378,23 @@ export const TaskStopResultSchema = withStringError(TaskStopResultObjectSchema);
 
 export type TaskStopResultValidated = z.infer<typeof TaskStopResultSchema>;
 
+const ToolSearchResultObjectSchema = z.object({
+  matches: z.array(z.string()).optional(),
+  query: z.string().optional(),
+  total_deferred_tools: z.number().optional(),
+  pending_mcp_servers: z.array(z.string()).optional(),
+});
+
+/**
+ * ToolSearch tool result schema
+ * Accepts either structured object OR string error message from SDK
+ */
+export const ToolSearchResultSchema = withStringError(
+  ToolSearchResultObjectSchema,
+);
+
+export type ToolSearchResultValidated = z.infer<typeof ToolSearchResultSchema>;
+
 const EnterPlanModeResultObjectSchema = z.object({
   message: z.string().optional(),
 });

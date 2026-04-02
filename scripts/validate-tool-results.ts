@@ -34,6 +34,7 @@ import {
   TaskResultSchema,
   TaskStopResultSchema,
   TodoWriteResultSchema,
+  ToolSearchResultSchema,
   WebFetchResultSchema,
   WebSearchResultSchema,
   WriteResultSchema,
@@ -57,6 +58,7 @@ const toolSchemas: Record<string, ZodType> = {
   TaskOutput: TaskOutputResultSchema,
   KillShell: KillShellResultSchema,
   TaskStop: TaskStopResultSchema,
+  ToolSearch: ToolSearchResultSchema,
   EnterPlanMode: EnterPlanModeResultSchema,
   ExitPlanMode: ExitPlanModeResultSchema,
 };
@@ -145,6 +147,9 @@ function inferToolFromResult(result: unknown): string | null {
   if ("shell_id" in r && "message" in r) return "KillShell";
   // TaskStop has task_id + message (but no shell_id)
   if ("task_id" in r && "message" in r) return "TaskStop";
+  if ("matches" in r && "query" in r && "total_deferred_tools" in r) {
+    return "ToolSearch";
+  }
   // ExitPlanMode has a plan field with the plan content
   if ("plan" in r) return "ExitPlanMode";
   // EnterPlanMode has just a message field about entering plan mode
