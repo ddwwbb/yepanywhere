@@ -178,21 +178,27 @@ export class NotificationService {
    * Save state to disk with debouncing to prevent excessive writes.
    */
   private async save(): Promise<void> {
-    // If a save is in progress, mark that we need another save
+    // Coalesce concurrent save requests into a single write loop that keeps
+    // flushing until no more changes were queued during the previous write.
     if (this.savePromise) {
       this.pendingSave = true;
+      await this.savePromise;
       return;
     }
 
-    this.savePromise = this.doSave();
-    await this.savePromise;
-    this.savePromise = null;
-
-    // If another save was requested while we were saving, do it now
-    if (this.pendingSave) {
-      this.pendingSave = false;
-      await this.save();
+    this.savePromise = this.runSaveLoop();
+    try {
+      await this.savePromise;
+    } finally {
+      this.savePromise = null;
     }
+  }
+
+  private async runSaveLoop(): Promise<void> {
+    do {
+      this.pendingSave = false;
+      await this.doSave();
+    } while (this.pendingSave);
   }
 
   private async doSave(): Promise<void> {
@@ -210,5 +216,18 @@ export class NotificationService {
    */
   getFilePath(): string {
     return this.filePath;
+  }
+
+  /**
+   * Wait for any in-flight or queued saves to reach disk.
+   */
+  async flush(): Promise<void> {
+    while (this.savePromise) {
+      await this.savePromise;
+    }
+
+    if (this.pendingSave) {
+      await this.save();
+    }
   }
 }

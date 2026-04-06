@@ -1,8 +1,10 @@
 import { Hono } from "hono";
+import type { NotificationService } from "../notifications/index.js";
 import type { Supervisor } from "../supervisor/Supervisor.js";
 
 export interface ServerAdminDeps {
   supervisor: Supervisor;
+  notificationService?: NotificationService;
 }
 
 /**
@@ -13,8 +15,10 @@ export function createServerAdminRoutes(deps: ServerAdminDeps): Hono {
   const routes = new Hono();
 
   // POST /api/server/restart - Trigger graceful server restart
-  routes.post("/restart", (c) => {
+  routes.post("/restart", async (c) => {
     console.log("[ServerAdmin] Restart requested via API");
+
+    await deps.notificationService?.flush();
 
     // Respond before exiting
     const response = c.json({

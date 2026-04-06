@@ -460,7 +460,13 @@ export function createApp(options: AppOptions): AppResult {
   }
 
   // Server admin routes (restart, always available for remote relay)
-  app.route("/api/server", createServerAdminRoutes({ supervisor }));
+  app.route(
+    "/api/server",
+    createServerAdminRoutes({
+      supervisor,
+      notificationService: options.notificationService,
+    }),
+  );
 
   // Network binding routes (runtime port/interface configuration)
   if (

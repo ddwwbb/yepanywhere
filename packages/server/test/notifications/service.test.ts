@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import * as fs from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -14,13 +14,13 @@ describe("NotificationService", () => {
     // Freeze time before the test timestamps so max(provided, now) returns provided
     vi.useFakeTimers({ now: new Date("2024-01-01T00:00:00Z") });
     testDir = join(tmpdir(), `claude-notifications-test-${randomUUID()}`);
-    await mkdir(testDir, { recursive: true });
+    await fs.mkdir(testDir, { recursive: true });
     service = new NotificationService({ dataDir: testDir });
   });
 
   afterEach(async () => {
     vi.useRealTimers();
-    await rm(testDir, { recursive: true, force: true });
+    await fs.rm(testDir, { recursive: true, force: true });
   });
 
   describe("initialization", () => {
@@ -35,7 +35,7 @@ describe("NotificationService", () => {
       await service.initialize();
       await service.markSeen("session-1", "2024-01-01T00:00:00Z");
 
-      const content = await readFile(
+      const content = await fs.readFile(
         join(testDir, "notifications.json"),
         "utf-8",
       );
@@ -55,7 +55,7 @@ describe("NotificationService", () => {
           },
         },
       };
-      await writeFile(
+      await fs.writeFile(
         join(testDir, "notifications.json"),
         JSON.stringify(existingState),
       );
@@ -72,7 +72,10 @@ describe("NotificationService", () => {
     });
 
     it("handles corrupted JSON gracefully", async () => {
-      await writeFile(join(testDir, "notifications.json"), "not valid json{{{");
+      await fs.writeFile(
+        join(testDir, "notifications.json"),
+        "not valid json{{{",
+      );
 
       // Should not throw
       await service.initialize();
@@ -312,6 +315,73 @@ describe("NotificationService", () => {
         timestamp: "2024-06-15T12:00:00Z",
       });
       expect(newService.getLastSeen("session-3")).toEqual({
+        timestamp: "2024-06-15T12:00:00Z",
+      });
+    });
+
+    it("waits for queued saves before resolving concurrent markSeen calls", async () => {
+      await service.initialize();
+
+      const originalDoSave = (
+        service as NotificationService & { doSave: () => Promise<void> }
+      ).doSave.bind(service);
+      let writeCallCount = 0;
+      let releaseFirstWrite: (() => void) | undefined;
+      let releaseSecondWrite: (() => void) | undefined;
+      const firstWrite = new Promise<void>((resolve) => {
+        releaseFirstWrite = resolve;
+      });
+      const secondWrite = new Promise<void>((resolve) => {
+        releaseSecondWrite = resolve;
+      });
+
+      (
+        service as NotificationService & { doSave: () => Promise<void> }
+      ).doSave = async () => {
+        writeCallCount++;
+
+        if (writeCallCount === 1) {
+          await firstWrite;
+        } else if (writeCallCount === 2) {
+          await secondWrite;
+        }
+
+        await originalDoSave();
+      };
+
+      const firstMarkSeen = service.markSeen("session-1", "2024-06-15T12:00:00Z");
+      await Promise.resolve();
+
+      let secondResolved = false;
+      const secondMarkSeen = service
+        .markSeen("session-2", "2024-06-15T12:00:00Z")
+        .then(() => {
+          secondResolved = true;
+        });
+
+      await Promise.resolve();
+      expect(writeCallCount).toBe(1);
+      expect(secondResolved).toBe(false);
+
+      releaseFirstWrite?.();
+      await vi.waitFor(() => {
+        expect(writeCallCount).toBe(2);
+      });
+      expect(secondResolved).toBe(false);
+
+      releaseSecondWrite?.();
+      await Promise.all([firstMarkSeen, secondMarkSeen]);
+
+      const persisted = JSON.parse(
+        await fs.readFile(join(testDir, "notifications.json"), "utf-8"),
+      ) as {
+        lastSeen: Record<string, { timestamp: string }>;
+      };
+
+      expect(persisted.lastSeen["session-1"]).toEqual({
+        timestamp: "2024-06-15T12:00:00Z",
+      });
+      expect(persisted.lastSeen["session-2"]).toEqual({
         timestamp: "2024-06-15T12:00:00Z",
       });
     });
