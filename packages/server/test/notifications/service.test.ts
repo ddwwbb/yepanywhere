@@ -349,7 +349,10 @@ describe("NotificationService", () => {
         await originalDoSave();
       };
 
-      const firstMarkSeen = service.markSeen("session-1", "2024-06-15T12:00:00Z");
+      const firstMarkSeen = service.markSeen(
+        "session-1",
+        "2024-06-15T12:00:00Z",
+      );
       await Promise.resolve();
 
       let secondResolved = false;
