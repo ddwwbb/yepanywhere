@@ -7,7 +7,13 @@
  * - Other irrelevant development/build-time variables
  *
  * We keep essential system variables that Claude might need.
+ * We also read ~/.claude/settings.json and ~/.claude/settings.local.json
+ * to inject user-configured env vars (e.g., ANTHROPIC_BASE_URL) into child processes.
  */
+
+import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 
 /** Prefixes to exclude from child process environment */
 const EXCLUDED_PREFIXES = [
@@ -70,8 +76,20 @@ const ALWAYS_KEEP = new Set([
   // SSH
   "SSH_AUTH_SOCK",
   "SSH_AGENT_PID",
-  // API keys Claude might need
+  // Claude/Anthropic 自定义 API 端点和模型别名配置
+  "API_TIMEOUT_MS",
   "ANTHROPIC_API_KEY",
+  "ANTHROPIC_AUTH_TOKEN",
+  "ANTHROPIC_BASE_URL",
+  "ANTHROPIC_MODEL",
+  "ANTHROPIC_DEFAULT_SONNET_MODEL",
+  "ANTHROPIC_DEFAULT_OPUS_MODEL",
+  "ANTHROPIC_DEFAULT_HAIKU_MODEL",
+  "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS",
+  "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
+  "DISABLE_INSTALLATION_CHECKS",
+  "DISABLE_TELEMETRY",
+  "ENABLE_TOOL_SEARCH",
   // XDG directories
   "XDG_CONFIG_HOME",
   "XDG_DATA_HOME",
@@ -85,7 +103,42 @@ const ALWAYS_KEEP = new Set([
 ]);
 
 /**
+ * Read the `env` field from ~/.claude/settings.json and ~/.claude/settings.local.json.
+ * Settings files are merged with local taking precedence over user.
+ */
+export function readClaudeSettingsEnv(): Record<string, string> {
+  const result: Record<string, string> = {};
+  const home = homedir();
+  const paths = [
+    join(home, ".claude", "settings.json"),
+    join(home, ".claude", "settings.local.json"),
+  ];
+
+  for (const settingsPath of paths) {
+    if (!existsSync(settingsPath)) continue;
+    try {
+      const raw = readFileSync(settingsPath, "utf-8");
+      const parsed = JSON.parse(raw) as { env?: Record<string, string> };
+      if (parsed.env && typeof parsed.env === "object") {
+        for (const [k, v] of Object.entries(parsed.env)) {
+          if (typeof v === "string") {
+            result[k] = v;
+          }
+        }
+      }
+    } catch {
+      // 配置文件格式错误时静默跳过
+    }
+  }
+
+  return result;
+}
+
+/**
  * Filter environment variables for spawning child Claude processes.
+ *
+ * Merges process.env with env vars from ~/.claude/settings*.json,
+ * then filters out internal/irrelevant variables.
  *
  * @param env - Environment object to filter (defaults to process.env)
  * @returns Filtered environment object suitable for child processes
@@ -93,9 +146,16 @@ const ALWAYS_KEEP = new Set([
 export function filterEnvForChildProcess(
   env: Record<string, string | undefined> = process.env,
 ): Record<string, string | undefined> {
+  // 从 ~/.claude/settings*.json 读取用户配置的 env
+  const settingsEnv = readClaudeSettingsEnv();
+  const merged: Record<string, string | undefined> = {
+    ...settingsEnv,
+    ...env,
+  };
+
   const filtered: Record<string, string | undefined> = {};
 
-  for (const [key, value] of Object.entries(env)) {
+  for (const [key, value] of Object.entries(merged)) {
     // Always keep essential variables
     if (ALWAYS_KEEP.has(key)) {
       filtered[key] = value;
