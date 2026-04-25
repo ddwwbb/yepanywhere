@@ -1,3 +1,4 @@
+import { isBrowserBlockedPort } from "@yep-anywhere/shared";
 import { useState } from "react";
 import { api } from "../../api/client";
 import { FilterDropdown } from "../../components/FilterDropdown";
@@ -144,6 +145,10 @@ export function LocalAccessSettings() {
     const portNum = Number.parseInt(localhostPort, 10);
     if (Number.isNaN(portNum) || portNum < 1 || portNum > 65535) {
       setFormError(t("localAccessErrorPortRange"));
+      return;
+    }
+    if (isBrowserBlockedPort(portNum)) {
+      setFormError(t("localAccessErrorBrowserBlockedPort"));
       return;
     }
 

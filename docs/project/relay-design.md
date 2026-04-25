@@ -174,7 +174,7 @@ class SecureConnection implements Connection {
 }
 
 // Direct secure - WS straight to yepanywhere (LAN testing)
-new SecureConnection('wss://192.168.1.50:3400/ws', 'kgraehl')
+new SecureConnection('wss://192.168.1.50:7777/ws', 'kgraehl')
 
 // Via relay - WS to relay (production remote access)
 new SecureConnection('wss://relay.yepanywhere.com/ws', 'kgraehl')
@@ -414,7 +414,7 @@ Before adding relay complexity, validate the full secure connection flow using a
 
 **Login Entrypoint**
 - [x] Standalone login page (RemoteLoginPage.tsx)
-- [x] Form: WebSocket URL input (default: `ws://localhost:3400/ws`)
+- [x] Form: WebSocket URL input (default: `ws://localhost:7777/ws`)
 - [x] Form: Username and password fields
 - [x] "Remember URL" option (stores URL/username in localStorage)
 - [x] SRP handshake via SecureConnection
@@ -428,7 +428,7 @@ Before adding relay complexity, validate the full secure connection flow using a
 
 **Testing Scenarios**
 - [ ] Localhost dev server → localhost yepanywhere (primary development flow)
-- [ ] LAN testing once localhost works (e.g., `ws://192.168.1.50:3400/ws`)
+- [ ] LAN testing once localhost works (e.g., `ws://192.168.1.50:7777/ws`)
 
 **Nice to Have**
 - [ ] QR code generation on server settings page (encodes WS URL + username)

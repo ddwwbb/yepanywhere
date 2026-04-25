@@ -33,7 +33,7 @@ yepanywhere.app/
 **Runtime:**
 1. Tauri launches (no window, tray only)
 2. Spawns Node.js sidecar: `node app/server.js`
-3. User clicks "Open in Browser" → opens `http://localhost:3400`
+3. User clicks "Open in Browser" → opens `http://localhost:7777`
 
 ## System Tray Menu
 
@@ -41,7 +41,7 @@ yepanywhere.app/
 
 ```
 ● yepanywhere
-├── Open in Browser              → opens localhost:3400
+├── Open in Browser              → opens localhost:7777
 ├── ────────────────────────────
 ├── ● 3 sessions active
 ├── ● Waiting: project-x         → opens that session
@@ -61,7 +61,7 @@ Same menu, accessed via right-click on tray icon.
 | Feature | Description |
 |---------|-------------|
 | **Tray icon** | Shows status (green = running, yellow = needs attention, red = error) |
-| **Open in Browser** | Launches default browser to localhost:3400 |
+| **Open in Browser** | Launches default browser to localhost:7777 |
 | **Session shortcuts** | Quick access to sessions needing attention |
 | **Native notifications** | OS-level alerts when approval needed |
 | **Auto-launch** | Option to start on login |
@@ -70,7 +70,7 @@ Same menu, accessed via right-click on tray icon.
 
 ## Onboarding
 
-First launch opens browser to `http://localhost:3400/setup` which shows:
+First launch opens browser to `http://localhost:7777/setup` which shows:
 
 1. Claude CLI status (installed or not)
 2. Instructions: `npm install -g @anthropic-ai/claude-code`
@@ -265,7 +265,7 @@ fn main() {
         .on_system_tray_event(|app, event| match event {
             SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
                 "open" => {
-                    open::that("http://localhost:3400").unwrap();
+                    open::that("http://localhost:7777").unwrap();
                 }
                 "quit" => {
                     app.exit(0);

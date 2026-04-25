@@ -84,7 +84,7 @@ describe("allowed-hosts", () => {
     });
 
     it("strips port from hostname", () => {
-      expect(isAllowedHost("localhost:3400")).toBe(true);
+      expect(isAllowedHost("localhost:7777")).toBe(true);
       expect(isAllowedHost("127.0.0.1:8080")).toBe(true);
     });
 
@@ -93,7 +93,7 @@ describe("allowed-hosts", () => {
     });
 
     it("handles IPv6 with brackets and port", () => {
-      expect(isAllowedHost("[::1]:3400")).toBe(true);
+      expect(isAllowedHost("[::1]:7777")).toBe(true);
     });
 
     it("handles IPv6 with brackets without port", () => {
@@ -105,7 +105,7 @@ describe("allowed-hosts", () => {
     });
 
     it("rejects unknown hosts", () => {
-      expect(isAllowedHost("evil.com:3400")).toBe(false);
+      expect(isAllowedHost("evil.com:7777")).toBe(false);
     });
   });
 
@@ -128,17 +128,17 @@ describe("allowed-hosts", () => {
     });
 
     it("allows localhost origins", () => {
-      expect(isAllowedOrigin("http://localhost:3400")).toBe(true);
+      expect(isAllowedOrigin("http://localhost:7777")).toBe(true);
       expect(isAllowedOrigin("https://localhost")).toBe(true);
     });
 
     it("allows private IP origins", () => {
-      expect(isAllowedOrigin("http://192.168.1.100:3400")).toBe(true);
+      expect(isAllowedOrigin("http://192.168.1.100:7777")).toBe(true);
       expect(isAllowedOrigin("http://10.0.0.1")).toBe(true);
     });
 
     it("allows Tailscale origins", () => {
-      expect(isAllowedOrigin("http://myhost.ts.net:3400")).toBe(true);
+      expect(isAllowedOrigin("http://myhost.ts.net:7777")).toBe(true);
       expect(isAllowedOrigin("https://foo.bar.ts.net")).toBe(true);
     });
 
@@ -214,7 +214,7 @@ describe("allowed-hosts", () => {
       expect(mod.allowAllHosts()).toBe(false);
       mod.updateAllowedHosts("*");
       expect(mod.allowAllHosts()).toBe(true);
-      expect(mod.isAllowedHost("anything.com:3400")).toBe(true);
+      expect(mod.isAllowedHost("anything.com:7777")).toBe(true);
     });
 
     it("clears settings hosts with undefined", () => {

@@ -123,7 +123,7 @@ pnpm with workspaces. Fast, strict, good monorepo support.
 import { serve } from '@hono/node-server';
 import { app } from './app';
 
-const port = parseInt(process.env.PORT || '3400');
+const port = parseInt(process.env.PORT || '7777');
 
 serve({ fetch: app.fetch, port }, (info) => {
   console.log(`Server running at http://localhost:${info.port}`);
@@ -185,14 +185,14 @@ export function App() {
 - [ ] `pnpm install` succeeds
 - [ ] `pnpm lint` passes with no errors
 - [ ] `pnpm test` passes (server health check)
-- [ ] `pnpm dev` starts both server (3400) and client (5173)
-- [ ] `curl localhost:3400/health` returns JSON
+- [ ] `pnpm dev` starts both server (7777) and client (5173)
+- [ ] `curl localhost:7777/health` returns JSON
 - [ ] Client loads in browser and shows heading
 - [ ] `pnpm build` produces outputs without errors
 
 ## Questions / Decisions Needed
 
-1. **Port numbers**: Server 3400, client dev 5173 (Vite default). OK?
+1. **Port numbers**: Server 7777, client dev 5173 (Vite default). OK?
 2. **Client proxy**: Should Vite proxy `/api/*` to server in dev? (I'd say yes)
 3. **Node version**: Minimum 20.x? Add `.node-version` file?
 4. **Git setup**: Initialize with `.gitignore` for node_modules, dist, etc.?

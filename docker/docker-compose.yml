@@ -23,7 +23,7 @@ services:
     # Port forwarding (host:container)
     # Only forward main server - it proxies to Vite internally
     ports:
-      - "${SANDBOX_PORT:-3600}:3400"
+      - "${SANDBOX_PORT:-3600}:7777"
 
     # Security: drop all capabilities, no privilege escalation
     cap_drop:
@@ -49,7 +49,7 @@ services:
     # Environment
     environment:
       - HOME=/home/sandbox
-      - PORT=3400
+      - PORT=7777
       - VITE_HOST=true  # Bind to all interfaces (fixes IPv4/IPv6 mismatch)
       - COREPACK_ENABLE_AUTO_PIN=0
       - COREPACK_ENABLE_DOWNLOAD_PROMPT=0  # Don't prompt for corepack downloads

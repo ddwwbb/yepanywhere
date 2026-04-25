@@ -11,6 +11,73 @@ import type { NewSessionDefaults } from "@yep-anywhere/shared";
 
 const CURRENT_VERSION = 1;
 
+export interface RemoteChannelFeishuBot {
+  id: string;
+  name?: string;
+  enabled?: boolean;
+  proxyUrl?: string;
+  appId?: string;
+  appSecret?: string;
+  appChatId?: string;
+  boundSessionId?: string;
+}
+
+export interface RemoteChannelTelegramBot {
+  id: string;
+  name?: string;
+  enabled?: boolean;
+  botToken?: string;
+  chatId?: string;
+  proxyUrl?: string;
+  boundSessionId?: string;
+}
+
+export interface RemoteChannelQqBot {
+  id: string;
+  name?: string;
+  enabled?: boolean;
+  appId?: string;
+  appSecret?: string;
+  openId?: string;
+  boundSessionId?: string;
+}
+
+export interface RemoteChannelWeixinBot {
+  id: string;
+  name?: string;
+  enabled?: boolean;
+  accountId?: string;
+  peerUserId?: string;
+  boundSessionId?: string;
+}
+
+export interface RemoteChannelFeishuSettings {
+  enabled?: boolean;
+  bots?: RemoteChannelFeishuBot[];
+}
+
+export interface RemoteChannelTelegramSettings {
+  enabled?: boolean;
+  bots?: RemoteChannelTelegramBot[];
+}
+
+export interface RemoteChannelQqSettings {
+  enabled?: boolean;
+  bots?: RemoteChannelQqBot[];
+}
+
+export interface RemoteChannelWeixinSettings {
+  enabled?: boolean;
+  bots?: RemoteChannelWeixinBot[];
+}
+
+export interface RemoteChannelSettings {
+  feishu?: RemoteChannelFeishuSettings;
+  telegram?: RemoteChannelTelegramSettings;
+  qq?: RemoteChannelQqSettings;
+  weixin?: RemoteChannelWeixinSettings;
+}
+
 /** Server-wide settings */
 export interface ServerSettings {
   /** Whether clients should register the service worker (for push notifications) */
@@ -43,6 +110,8 @@ export interface ServerSettings {
   lifecycleWebhookToken?: string;
   /** When true, include dryRun=true in lifecycle webhook payloads */
   lifecycleWebhookDryRun?: boolean;
+  /** Remote channel outbound notification settings */
+  remoteChannels?: RemoteChannelSettings;
 }
 
 /** Default settings */

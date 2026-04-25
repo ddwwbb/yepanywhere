@@ -14,9 +14,9 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
+import { DEFAULT_PORT, isBrowserBlockedPort } from "@yep-anywhere/shared";
 
 const CURRENT_VERSION = 1;
-const DEFAULT_PORT = 3400;
 
 export interface NetworkInterface {
   /** Interface name (e.g., "eth0", "wlan0") */
@@ -242,6 +242,9 @@ export class NetworkBindingService {
     // Validate port
     if (!Number.isInteger(port) || port < 1 || port > 65535) {
       throw new Error("Port must be an integer between 1 and 65535");
+    }
+    if (isBrowserBlockedPort(port)) {
+      throw new Error("Port is blocked by browsers and cannot be used");
     }
 
     this.state.localhostPort = port;

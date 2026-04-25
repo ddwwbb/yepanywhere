@@ -324,7 +324,7 @@ npm install -g yepanywhere
 yepanywhere
 \`\`\`
 
-Then open http://localhost:3400 in your browser.
+Then open http://localhost:7777 in your browser.
 
 ## Features
 

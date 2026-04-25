@@ -42,7 +42,7 @@ If you prefer not to use the relay, here are other options. All require you to t
 **Setup:**
 1. Install Tailscale on your dev machine and phone
 2. Sign in with the same account on both
-3. Access Yep Anywhere at `http://<tailscale-ip>:3400`
+3. Access Yep Anywhere at `http://<tailscale-ip>:7777`
 
 **Pros:** Dead simple, encrypted, works behind NAT, free for personal use
 **Cons:** Requires Tailscale account, app on each device
@@ -68,7 +68,7 @@ If you prefer not to use the relay, here are other options. All require you to t
 4. Run the tunnel:
    ```bash
    # Quick test (random URL, no account needed)
-   cloudflared tunnel --url http://localhost:3400
+   cloudflared tunnel --url http://localhost:7777
 
    # Persistent (requires CF account + domain)
    cloudflared tunnel create yep-anywhere
@@ -89,7 +89,7 @@ If you have a server with a public IP (like a Raspberry Pi with port 443 forward
 3. Create `/etc/caddy/Caddyfile`:
    ```
    claude.yourdomain.com {
-       reverse_proxy 127.0.0.1:3400
+       reverse_proxy 127.0.0.1:7777
        basicauth /* {
            youruser $2a$14$hashedpassword
        }
@@ -102,11 +102,11 @@ If you have a server with a public IP (like a Raspberry Pi with port 443 forward
 Set up a reverse SSH tunnel to forward the local port to the server:
 ```bash
 # One-time
-ssh -N -R 3400:localhost:3400 yourserver
+ssh -N -R 7777:localhost:7777 yourserver
 
 # Persistent (install autossh)
 autossh -M 0 -N -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" \
-    -R 3400:localhost:3400 yourserver
+    -R 7777:localhost:7777 yourserver
 ```
 
 For a systemd service, create `~/.config/systemd/user/claude-tunnel.service`:
@@ -116,7 +116,7 @@ Description=SSH tunnel for Yep Anywhere
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/autossh -M 0 -N -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" -R 3400:localhost:3400 yourserver
+ExecStart=/usr/bin/autossh -M 0 -N -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" -R 7777:localhost:7777 yourserver
 Restart=always
 RestartSec=10
 

@@ -9,7 +9,7 @@ pnpm install
 pnpm dev
 ```
 
-Open http://localhost:3400 in your browser.
+Open http://localhost:7777 in your browser.
 
 If you only want the main app and do not want to install the relay workspace, use:
 
@@ -31,7 +31,7 @@ pnpm test:e2e   # E2E tests
 
 ## Port Configuration
 
-Ports are derived from a single `PORT` variable (default: 3400):
+Ports are derived from a single `PORT` variable (default: 7777):
 
 | Port | Purpose |
 |------|---------|
@@ -57,8 +57,8 @@ Server state is stored in `~/.yep-anywhere/` by default:
 Use profiles to run dev and production instances simultaneously:
 
 ```bash
-# Production (default profile, port 3400)
-PORT=3400 pnpm start
+# Production (default profile, port 7777)
+PORT=7777 pnpm start
 
 # Development (dev profile, port 4000)
 PORT=4000 YEP_ANYWHERE_PROFILE=dev pnpm dev
@@ -86,6 +86,6 @@ Environment variables:
 A lightweight HTTP server runs on PORT + 1 for diagnostics when the main server is unresponsive:
 
 ```bash
-curl http://localhost:3401/status          # Server status
-curl -X POST http://localhost:3401/reload  # Restart server
+curl http://localhost:7778/status          # Server status
+curl -X POST http://localhost:7778/reload  # Restart server
 ```

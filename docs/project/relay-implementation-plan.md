@@ -543,7 +543,7 @@ Implementation notes:
 
 1. **Direct mode** (existing): Enter devserver WebSocket URL + SRP credentials
    - For LAN, Tailscale, future Android WebView
-   - URL like `wss://192.168.1.10:3400/ws-relay`
+   - URL like `wss://192.168.1.10:7777/ws-relay`
 
 2. **Relay mode** (new): Enter relay username + SRP credentials
    - For NAT traversal, public internet access
@@ -707,12 +707,12 @@ This can be added later without changing the core relay protocol.
 ### Local Testing (with local relay)
 
 1. Start relay: `cd packages/relay && pnpm dev` (runs on port 3500)
-2. Start yepanywhere: `pnpm dev` (runs on port 3400)
+2. Start yepanywhere: `pnpm dev` (runs on port 7777)
 3. Configure relay in yepanywhere: Settings > Remote Access > Relay URL = `ws://localhost:3500/ws`
 4. Set relay username (e.g., "testuser")
 5. Enable remote access with SRP username/password
 6. Verify Settings shows relay status as "Connected" (green)
-7. Start remote client: `pnpm dev:remote` (runs on port 3402)
+7. Start remote client: `pnpm dev:remote` (runs on port 7779)
 8. Navigate to relay login, enter relay username + SRP credentials
 9. Verify SRP auth completes and app works through relay
 

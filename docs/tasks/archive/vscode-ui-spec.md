@@ -29,7 +29,7 @@ Extracted from the Claude Code VSCode extension CSS:
 /* Text Colors */
 --text-primary: var(--vscode-foreground);           /* #cccccc */
 --text-muted: var(--vscode-descriptionForeground);  /* #9d9d9d */
---text-dimmed: #666666;
+--text-dimmed: #777766;
 
 /* Background Colors */
 --bg-surface: var(--vscode-sideBar-background);     /* #181818 */

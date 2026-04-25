@@ -176,11 +176,11 @@ GET  /api/push/subscriptions     → { subscriptions: SubscriptionInfo[] }
 pnpm -F server test -- --run test/push/PushService.test.ts
 
 # Integration: Start server, hit endpoints
-curl http://localhost:3400/api/push/vapid-public-key
+curl http://localhost:7777/api/push/vapid-public-key
 # Should return { publicKey: "..." }
 
 # Subscribe with mock subscription
-curl -X POST http://localhost:3400/api/push/subscribe \
+curl -X POST http://localhost:7777/api/push/subscribe \
   -H "Content-Type: application/json" \
   -d '{"deviceId":"test-device","subscription":{"endpoint":"https://example.com","keys":{"p256dh":"test","auth":"test"}}}'
 

@@ -28,7 +28,7 @@ export function DirectLoginPage() {
   // Form state - pre-fill from stored credentials
   // All hooks must be before any conditional returns
   const [serverUrl, setServerUrl] = useState(
-    storedUrl ?? "ws://localhost:3400/api/ws",
+    storedUrl ?? "ws://localhost:7777/api/ws",
   );
   const [username, setUsername] = useState(storedUsername ?? "");
   const [password, setPassword] = useState("");
@@ -146,7 +146,7 @@ export function DirectLoginPage() {
               type="text"
               value={serverUrl}
               onChange={(e) => setServerUrl(e.target.value)}
-              placeholder="ws://localhost:3400/api/ws"
+              placeholder="ws://localhost:7777/api/ws"
               disabled={isConnecting}
               autoComplete="url"
               data-testid="ws-url-input"

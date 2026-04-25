@@ -5,6 +5,8 @@ interface ReloadNotifyOptions {
   endpoint?: string;
   /** Whether notifications are enabled (default: true) */
   enabled?: boolean;
+  /** Backend API port for manual reload notifications */
+  apiPort?: number;
 }
 
 /**
@@ -13,7 +15,11 @@ interface ReloadNotifyOptions {
  * instead of auto-reloading.
  */
 export function reloadNotify(options: ReloadNotifyOptions = {}): Plugin {
-  const { endpoint = "/api/dev/frontend-changed", enabled = true } = options;
+  const {
+    endpoint = "/api/dev/frontend-changed",
+    enabled = true,
+    apiPort,
+  } = options;
 
   let server: ViteDevServer | null = null;
 
@@ -42,8 +48,8 @@ export function reloadNotify(options: ReloadNotifyOptions = {}): Plugin {
       }
 
       // Notify the backend about the file change
-      const apiPort = process.env.VITE_API_PORT || "3400";
-      const url = `http://localhost:${apiPort}${endpoint}`;
+      const effectiveApiPort = process.env.VITE_API_PORT || String(apiPort);
+      const url = `http://localhost:${effectiveApiPort}${endpoint}`;
 
       fetch(url, {
         method: "POST",

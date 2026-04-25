@@ -66,6 +66,48 @@ describe("Settings Routes", () => {
     });
   });
 
+  describe("POST /remote-channels/feishu/test", () => {
+    it("sends remote channel test notification", async () => {
+      const remoteChannelService = {
+        sendTestNotification: vi.fn(async () => ({ ok: true })),
+      };
+      const routes = createSettingsRoutes({
+        serverSettingsService: mockServerSettingsService,
+        remoteChannelService,
+      });
+
+      const response = await routes.request("/remote-channels/feishu/test", {
+        method: "POST",
+      });
+
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({ ok: true });
+      expect(remoteChannelService.sendTestNotification).toHaveBeenCalled();
+    });
+
+    it("returns error when test notification fails", async () => {
+      const remoteChannelService = {
+        sendTestNotification: vi.fn(async () => ({
+          ok: false,
+          error: "No enabled remote channel adapter",
+        })),
+      };
+      const routes = createSettingsRoutes({
+        serverSettingsService: mockServerSettingsService,
+        remoteChannelService,
+      });
+
+      const response = await routes.request("/remote-channels/feishu/test", {
+        method: "POST",
+      });
+
+      expect(response.status).toBe(400);
+      await expect(response.json()).resolves.toEqual({
+        error: "No enabled remote channel adapter",
+      });
+    });
+  });
+
   describe("PUT /", () => {
     it("accepts clearing globalInstructions with null", async () => {
       settings = {
@@ -176,6 +218,105 @@ describe("Settings Routes", () => {
         lifecycleWebhookDryRun: false,
       });
     });
+
+    it("accepts remote channel Feishu settings", async () => {
+      const routes = createSettingsRoutes({
+        serverSettingsService: mockServerSettingsService,
+      });
+
+      const response = await routes.request("/", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          remoteChannels: {
+            feishu: {
+              enabled: true,
+              proxyUrl: "socks5://127.0.0.1:7890",
+              appId: "cli_test",
+              appSecret: "secret_test",
+              appChatId: "oc_test",
+            },
+          },
+        }),
+      });
+
+      expect(response.status).toBe(200);
+      expect(mockServerSettingsService.updateSettings).toHaveBeenCalledWith({
+        remoteChannels: {
+          feishu: {
+            enabled: true,
+            proxyUrl: "socks5://127.0.0.1:7890",
+            appId: "cli_test",
+            appSecret: "secret_test",
+            appChatId: "oc_test",
+          },
+        },
+      });
+    });
+
+    it("masks Feishu app secret when reading settings", async () => {
+      settings = {
+        ...settings,
+        remoteChannels: {
+          feishu: {
+            appId: "cli_test",
+            appSecret: "super-secret-value",
+          },
+        },
+      };
+      const routes = createSettingsRoutes({
+        serverSettingsService: mockServerSettingsService,
+      });
+
+      const response = await routes.request("/");
+
+      expect(response.status).toBe(200);
+      const json = await response.json();
+      expect(json.settings.remoteChannels.feishu.appSecret).toBe(
+        "***et-value",
+      );
+    });
+
+    it("keeps existing Feishu app secret when saving masked value", async () => {
+      settings = {
+        ...settings,
+        remoteChannels: {
+          feishu: {
+            appId: "cli_old",
+            appSecret: "existing-secret",
+          },
+        },
+      };
+      const routes = createSettingsRoutes({
+        serverSettingsService: mockServerSettingsService,
+      });
+
+      const response = await routes.request("/", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          remoteChannels: {
+            feishu: {
+              appId: "cli_new",
+              appSecret: "***g-secret",
+            },
+          },
+        }),
+      });
+
+      expect(response.status).toBe(200);
+      expect(mockServerSettingsService.updateSettings).toHaveBeenCalledWith({
+        remoteChannels: {
+          feishu: {
+            enabled: undefined,
+            proxyUrl: undefined,
+            appId: "cli_new",
+            appSecret: "existing-secret",
+          },
+        },
+      });
+    });
+
   });
 
   describe("POST /remote-executors/:host/test", () => {

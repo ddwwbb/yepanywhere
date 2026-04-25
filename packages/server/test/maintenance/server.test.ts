@@ -5,11 +5,11 @@ import {
 } from "../../src/maintenance/server.js";
 
 describe("Maintenance Server", () => {
-  const port = 13401; // Use high port to avoid conflicts
+  const port = 17778; // Use high port to avoid conflicts
   let server: ReturnType<typeof startMaintenanceServer>;
 
   beforeAll(() => {
-    server = startMaintenanceServer({ port, mainServerPort: 3400 });
+    server = startMaintenanceServer({ port, mainServerPort: 7777 });
   });
 
   afterAll(() => {
@@ -45,7 +45,7 @@ describe("Maintenance Server", () => {
       expect(body.memory).toBeDefined();
       expect(body.memory.rss).toBeDefined();
       expect(body.connections.activeHttpConnections).toBe(5);
-      expect(body.mainServerPort).toBe(3400);
+      expect(body.mainServerPort).toBe(7777);
     });
   });
 

@@ -49,7 +49,7 @@ example.com {
         path /manifest.json /sw.js /icon-*.png /favicon.ico /badge-*.png
     }
     handle @pwa_public {
-        reverse_proxy 127.0.0.1:3400
+        reverse_proxy 127.0.0.1:7777
     }
 
     # Everything else requires auth
@@ -57,7 +57,7 @@ example.com {
         basicauth {
             username $2a$14$hashedpasswordhere
         }
-        reverse_proxy 127.0.0.1:3400
+        reverse_proxy 127.0.0.1:7777
     }
 }
 ```
@@ -71,14 +71,14 @@ server {
 
     # PWA files - no auth required
     location ~ ^/(manifest\.json|sw\.js|icon-.*\.png|favicon\.ico|badge-.*\.png)$ {
-        proxy_pass http://127.0.0.1:3400;
+        proxy_pass http://127.0.0.1:7777;
     }
 
     # Everything else requires auth
     location / {
         auth_basic "Restricted";
         auth_basic_user_file /etc/nginx/.htpasswd;
-        proxy_pass http://127.0.0.1:3400;
+        proxy_pass http://127.0.0.1:7777;
     }
 }
 ```

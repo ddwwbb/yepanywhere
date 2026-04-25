@@ -1,4 +1,11 @@
 export {
+  DEFAULT_PORT,
+  DEFAULT_MAINTENANCE_PORT,
+  DEFAULT_VITE_PORT,
+  isBrowserBlockedPort,
+} from "./ports.js";
+
+export {
   isIdeMetadata,
   stripIdeMetadata,
   extractOpenedFilePath,
@@ -45,6 +52,12 @@ export {
 } from "./types.js";
 
 export type { GitStatusInfo, GitFileChange } from "./git-status.js";
+
+export type {
+  RemoteChannelEvent,
+  RemoteChannelEventType,
+  RemoteChannelSeverity,
+} from "./remote-channel.js";
 
 export {
   orderByParentChain,

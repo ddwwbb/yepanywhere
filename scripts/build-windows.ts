@@ -276,7 +276,8 @@ step("Write usage notes", () => {
 ## 行为
 
 - 启动后会打开控制台窗口。
-- 服务默认监听 \`http://localhost:3400\`。
+- 服务默认监听 \`http://localhost:7777\`。
+- 服务默认监听 \`http://localhost:7777\`。
 - 关闭控制台窗口后服务会结束。
 - 需要使用的 Agent CLI（Claude Code、Codex、Gemini、OpenCode 等）仍需在系统中单独安装并可被 PATH 找到。
 

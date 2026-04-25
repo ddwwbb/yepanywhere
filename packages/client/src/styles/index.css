@@ -2128,42 +2128,54 @@ a.sidebar-nav-item {
   opacity: 0.85;
 }
 
-/* Deferred messages - queued server-side */
-.deferred-message {
-  margin-bottom: var(--space-3);
+/* Deferred queue banner - shown above input when messages are waiting */
+.deferred-queue-banner {
+  padding: var(--space-1) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
 }
 
-.deferred-message-bubble {
-  opacity: 0.7;
-  border-left: 3px solid var(--attention-color);
-  padding-left: var(--space-2);
-}
-
-.deferred-message-footer {
+.deferred-queue-item {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-top: var(--space-1);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
 }
 
-.deferred-message-status {
-  font-size: var(--font-size-xs);
-  color: var(--attention-color);
-  font-style: italic;
+.deferred-queue-icon {
+  flex-shrink: 0;
+  color: var(--text-primary);
+  opacity: 0.6;
 }
 
-.deferred-message-cancel {
+.deferred-queue-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.deferred-queue-cancel {
+  flex-shrink: 0;
   background: none;
   border: none;
-  color: var(--text-dimmed);
+  color: var(--text-secondary);
   cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  padding: 0 var(--space-1);
+  padding: var(--space-1);
   border-radius: var(--radius-sm);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s, background-color 0.15s;
 }
 
-.deferred-message-cancel:hover {
+.deferred-queue-cancel:hover {
   color: var(--error-color);
 }
 
@@ -7688,7 +7700,7 @@ a.sidebar-nav-item {
 .device-no-push {
   font-size: var(--font-size-xs);
   padding: 1px 4px;
-  background: var(--bg-muted);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-muted);
   border-radius: var(--radius-sm);
   color: var(--text-muted);

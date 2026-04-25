@@ -32,6 +32,8 @@ export interface SessionMenuProps {
   className?: string;
   /** Use fixed positioning for dropdown (escapes overflow clipping) */
   useFixedPositioning?: boolean;
+  /** Currently bound remote channel bot ID, if any */
+  boundBotId?: string;
 }
 
 export function SessionMenu({
@@ -53,12 +55,20 @@ export function SessionMenu({
   useEllipsisIcon = false,
   className = "",
   useFixedPositioning = false,
+  boundBotId,
 }: SessionMenuProps) {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [isCloning, setIsCloning] = useState(false);
   const [isTerminating, setIsTerminating] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [isBindingBot, setIsBindingBot] = useState(false);
+  const [showBotPicker, setShowBotPicker] = useState(false);
+  const [availableBots, setAvailableBots] = useState<Array<{
+    botId: string;
+    channel: string;
+    name?: string;
+  }> | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState<{
     top: number;
     left?: number;
@@ -108,6 +118,8 @@ export function SessionMenu({
     if (isOpen) {
       setIsOpen(false);
       setDropdownPosition(null);
+      setShowBotPicker(false);
+      setAvailableBots(null);
       triggerRef.current?.blur();
     } else {
       // Calculate position synchronously before opening to avoid flicker
@@ -147,6 +159,8 @@ export function SessionMenu({
   const handleAction = (action: () => void | Promise<void>) => {
     setIsOpen(false);
     setDropdownPosition(null);
+    setShowBotPicker(false);
+    setAvailableBots(null);
     triggerRef.current?.blur();
     action();
   };
@@ -199,6 +213,47 @@ export function SessionMenu({
       console.error("Failed to share session:", error);
     } finally {
       setIsSharing(false);
+    }
+  };
+
+  const handleShowBotPicker = async () => {
+    setIsBindingBot(true);
+    try {
+      const result = await api.getAvailableBots();
+      setAvailableBots(result.bots.filter((b) => !b.boundSessionId));
+      setShowBotPicker(true);
+    } catch (error) {
+      console.error("Failed to load available bots:", error);
+    } finally {
+      setIsBindingBot(false);
+    }
+  };
+
+  const handleBindBot = async (botId: string) => {
+    setIsBindingBot(true);
+    try {
+      await api.bindRemoteChannelBot(botId, sessionId);
+      setShowBotPicker(false);
+      setIsOpen(false);
+      setDropdownPosition(null);
+    } catch (error) {
+      console.error("Failed to bind bot:", error);
+    } finally {
+      setIsBindingBot(false);
+    }
+  };
+
+  const handleUnbindBot = async () => {
+    if (!boundBotId) return;
+    setIsBindingBot(true);
+    try {
+      await api.bindRemoteChannelBot(boundBotId, null);
+      setIsOpen(false);
+      setDropdownPosition(null);
+    } catch (error) {
+      console.error("Failed to unbind bot:", error);
+    } finally {
+      setIsBindingBot(false);
     }
   };
 
@@ -308,6 +363,38 @@ export function SessionMenu({
         </svg>
         {isArchived ? t("sessionMenuUnarchive") : t("sessionMenuArchive")}
       </button>
+      {/* 远程频道绑定 */}
+      <button type="button" onClick={boundBotId ? handleUnbindBot : handleShowBotPicker} disabled={isBindingBot}>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          aria-hidden="true"
+        >
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        </svg>
+        {boundBotId
+          ? (isBindingBot ? t("sessionMenuUnbinding") : t("sessionMenuUnbindChannel"))
+          : (isBindingBot ? t("sessionMenuLoadingBots") : t("sessionMenuBindChannel"))}
+      </button>
+      {showBotPicker && availableBots && (
+        <div style={{ padding: "var(--space-1) var(--space-3)", maxHeight: 150, overflowY: "auto" }}>
+          {availableBots.length === 0 && (
+            <span style={{ fontSize: "0.85em", color: "var(--color-text-secondary)" }}>{t("sessionMenuNoBotsAvailable")}</span>
+          )}
+          {availableBots.map((bot) => (
+            <button key={bot.botId} type="button" style={{ display: "block", width: "100%", textAlign: "left", padding: "var(--space-1) 0" }}
+              onClick={() => void handleBindBot(bot.botId)} disabled={isBindingBot}>
+              <span style={{ fontSize: "0.8em", color: "var(--color-text-secondary)", marginRight: "var(--space-2)" }}>[{bot.channel}]</span>
+              {bot.name || bot.botId.slice(-6)}
+            </button>
+          ))}
+        </div>
+      )}
       {onToggleRead && (
         <button type="button" onClick={() => handleAction(onToggleRead)}>
           <svg

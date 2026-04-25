@@ -173,7 +173,7 @@ pnpm build
 pnpm start
 ```
 
-默认访问地址为 http://localhost:3400，应用会自动检测已安装的 CLI Agent。
+默认访问地址为 http://localhost:7777，应用会自动检测已安装的 CLI Agent。
 
 ### 开发模式
 
@@ -183,7 +183,7 @@ pnpm start
 pnpm dev
 ```
 
-默认端口同样为 `3400`。如需指定端口：
+默认端口同样为 `7777`。如需指定端口：
 
 ```bash
 PORT=4000 pnpm dev
@@ -223,7 +223,7 @@ YEP_ANYWHERE_DATA_DIR=/path/to/data pnpm start
 多实例运行时可使用 profile 区分数据目录：
 
 ```bash
-PORT=3400 pnpm start
+PORT=7777 pnpm start
 PORT=4000 YEP_ANYWHERE_PROFILE=dev pnpm dev
 ```
 
@@ -250,7 +250,8 @@ dist/windows/YepAnywhere/
 1. 进入 `dist/windows/YepAnywhere/`
 2. 双击 `YepAnywhere.exe`
 3. 等待控制台输出启动信息
-4. 打开 http://localhost:3400
+4. 打开 http://localhost:7777
+4. 打开 http://localhost:7777
 5. 关闭控制台窗口后服务结束
 
 如果本机没有可用的 C# 编译器，打包脚本会至少生成 `YepAnywhere.cmd`，双击该文件也可以启动服务。

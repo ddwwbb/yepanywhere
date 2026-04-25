@@ -492,7 +492,7 @@ export interface ConnectionsResponse {
  * Tracks where a browser profile has connected from.
  */
 export interface BrowserProfileOrigin {
-  /** Full origin string (e.g., "https://localhost:3400") */
+  /** Full origin string (e.g., "https://localhost:7777") */
   origin: string;
   /** URL scheme (e.g., "https", "http") */
   scheme: string;

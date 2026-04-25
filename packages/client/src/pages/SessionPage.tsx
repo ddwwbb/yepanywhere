@@ -471,7 +471,7 @@ function SessionPageContent({
 
     try {
       const thinking = getThinkingSetting();
-      await api.queueMessage(
+      const res = await api.queueMessage(
         sessionId,
         text,
         permissionMode,
@@ -480,6 +480,7 @@ function SessionPageContent({
         thinking,
         true, // deferred
       );
+      console.log('[handleQueue] API response:', JSON.stringify(res));
       removePendingMessage(tempId);
       draftControlsRef.current?.clearDraft();
     } catch (err) {
@@ -1123,10 +1124,7 @@ function SessionPageContent({
                   isCompacting={isCompacting}
                   scrollTrigger={scrollTrigger}
                   pendingMessages={pendingMessages}
-                  deferredMessages={deferredMessages}
-                  onCancelDeferred={(tempId) =>
-                    api.cancelDeferredMessage(sessionId, tempId)
-                  }
+
                   markdownAugments={markdownAugments}
                   activeToolApproval={activeToolApproval}
                   hasOlderMessages={pagination?.hasOlderMessages}
@@ -1138,6 +1136,31 @@ function SessionPageContent({
           )}
         </main>
 
+
+        {/* Queued message banner - shown above input when messages are waiting */}
+        {console.log('[SessionPage] deferredMessages:', deferredMessages.length, deferredMessages) && null}
+        {deferredMessages.length > 0 && (
+          <div className="deferred-queue-banner">
+            {deferredMessages.map((qm, i) => (
+              <div key={qm.tempId ?? `deferred-${i}`} className="deferred-queue-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 256 256" className="deferred-queue-icon"><path fill="currentColor" d="M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24Zm0 192a88 88 0 1 1 88-88a88.1 88.1 0 0 1-88 88Zm64-88a8 8 0 0 1-8 8H128a8 8 0 0 1-8-8V72a8 8 0 0 1 16 0v48h56a8 8 0 0 1 0 16Z"/></svg>
+                <span className="deferred-queue-text">
+                  {qm.content.length > 80 ? qm.content.slice(0, 77) + '...' : qm.content}
+                </span>
+                {qm.tempId && (
+                  <button
+                    type="button"
+                    className="deferred-queue-cancel"
+                    onClick={() => api.cancelDeferredMessage(sessionId, qm.tempId as string)}
+                    aria-label={t("toolbarQueueTitle")}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
         <footer className="session-input">
           <div
             className={`session-connection-bar session-connection-${sessionConnectionStatus}`}

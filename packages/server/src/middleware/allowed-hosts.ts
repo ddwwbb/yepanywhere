@@ -109,10 +109,10 @@ export function isAllowedHost(host: string | undefined): boolean {
   if (allowAllHosts()) return true;
 
   // Strip port from host header.
-  // IPv6 with port: [::1]:3400 → ::1
+  // IPv6 with port: [::1]:7777 → ::1
   // IPv6 without port: [::1] → ::1
-  // IPv4 with port: 127.0.0.1:3400 → 127.0.0.1
-  // Hostname with port: example.com:3400 → example.com
+  // IPv4 with port: 127.0.0.1:7777 → 127.0.0.1
+  // Hostname with port: example.com:7777 → example.com
   let hostname: string;
   if (host.startsWith("[")) {
     // IPv6 bracket syntax

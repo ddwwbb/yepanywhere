@@ -346,7 +346,7 @@ export function loadConfig(): Config {
       ?? path.join(os.homedir(), '.claude', 'projects'),
     idleTimeoutMs: parseInt(process.env.IDLE_TIMEOUT_MS ?? '') || 5 * 60 * 1000,
     defaultPermissionMode: process.env.PERMISSION_MODE as any ?? 'default',
-    port: parseInt(process.env.PORT ?? '') || 3400,
+    port: parseInt(process.env.PORT ?? '') || 7777,
   };
 }
 ```
@@ -530,7 +530,7 @@ packages/server/src/
 | `CLAUDE_PROJECTS_DIR` | Where to scan for projects | `~/.claude/projects` |
 | `IDLE_TIMEOUT_MS` | Kill process after idle | `300000` (5 min) |
 | `PERMISSION_MODE` | Default approval mode | `default` |
-| `PORT` | Server port | `3400` |
+| `PORT` | Server port | `7777` |
 | `TEST_REAL_SDK` | Run real SDK tests | unset |
 
 ## Open Questions

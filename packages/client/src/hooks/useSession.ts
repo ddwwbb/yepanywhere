@@ -753,19 +753,26 @@ export function useSession(
           // Let the message be added to show the completed compaction indicator
         }
 
-        // Handle tempId for pending message resolution
-        // When server echoes back tempId, remove from pending queue
+        // Handle tempId for pending and deferred message resolution
         const tempId = sdkMessage.tempId as string | undefined;
         if (msgType === "user" && tempId) {
           removePendingMessage(tempId);
+          setDeferredMessages((prev) =>
+            prev.filter((d) => d.tempId !== tempId),
+          );
         } else if (msgType === "user") {
-          // Fallback for providers that omit tempId on user echo:
-          // clear one matching optimistic pending message by content.
           const incomingText = extractUserMessageText(sdkMessage);
           if (incomingText) {
             setPendingMessages((prev) => {
               const idx = prev.findIndex(
                 (p) => p.content.trim() === incomingText,
+              );
+              if (idx === -1) return prev;
+              return prev.filter((_, i) => i !== idx);
+            });
+            setDeferredMessages((prev) => {
+              const idx = prev.findIndex(
+                (d) => d.content.trim() === incomingText,
               );
               if (idx === -1) return prev;
               return prev.filter((_, i) => i !== idx);
@@ -828,6 +835,7 @@ export function useSession(
           eventType: string;
           messages: DeferredMessage[];
         };
+        console.log("[deferred-queue] SSE event:", deferredData.messages);
         setDeferredMessages(deferredData.messages ?? []);
       } else if (data.eventType === "complete") {
         setProcessState("idle");

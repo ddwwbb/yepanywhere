@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import { DEFAULT_PORT } from "@yep-anywhere/shared";
 import type { Level as LogLevel } from "pino";
 import { getDefaultCodexSessionsDir } from "./projects/codex-scanner.js";
 import type { PermissionMode } from "./sdk/types.js";
@@ -195,7 +196,7 @@ export function loadConfig(): Config {
     projectScanCacheTtlMs,
     idleTimeoutMs: parseIntOrDefault(process.env.IDLE_TIMEOUT, 5 * 60) * 1000,
     defaultPermissionMode: parsePermissionMode(process.env.PERMISSION_MODE),
-    port: parseIntOrDefault(process.env.PORT, 3400),
+    port: parseIntOrDefault(process.env.PORT, DEFAULT_PORT),
     portFile: process.env.PORT_FILE ?? null,
     // Host defaults to 127.0.0.1 for security and consistency (avoids IPv6 ambiguity with "localhost")
     host: process.env.HOST ?? "127.0.0.1",
@@ -210,7 +211,7 @@ export function loadConfig(): Config {
     // Vite port defaults to main port + 2, keeping all ports sequential
     vitePort: parseIntOrDefault(
       process.env.VITE_PORT,
-      parseIntOrDefault(process.env.PORT, 3400) + 2,
+      parseIntOrDefault(process.env.PORT, DEFAULT_PORT) + 2,
     ),
     // Client dist path: Check bundled location first (npm package), then monorepo (dev)
     clientDistPath:
@@ -265,10 +266,7 @@ export function loadConfig(): Config {
       60 *
       1000,
     // CLI override flags (set by cli.ts when --port or --host are used)
-    // Also treat PORT env var as an override when explicitly set (e.g., PORT=0 for test harnesses)
-    cliPortOverride:
-      process.env.CLI_PORT_OVERRIDE === "true" ||
-      process.env.PORT !== undefined,
+    cliPortOverride: process.env.CLI_PORT_OVERRIDE === "true",
     cliHostOverride: process.env.CLI_HOST_OVERRIDE === "true",
     openBrowser: process.env.OPEN_BROWSER === "true",
     httpsSelfSigned: process.env.HTTPS_SELF_SIGNED === "true",

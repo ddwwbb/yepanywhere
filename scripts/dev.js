@@ -97,6 +97,20 @@ function loadEnvFile() {
 
 loadEnvFile();
 
+function loadDefaultPort() {
+  const portsSource = readFileSync(
+    join(rootDir, "packages/shared/src/ports.ts"),
+    "utf-8",
+  );
+  const match = portsSource.match(/DEFAULT_PORT\s*=\s*(\d+)/);
+  if (!match) {
+    throw new Error("Unable to read DEFAULT_PORT from packages/shared/src/ports.ts");
+  }
+  return Number.parseInt(match[1], 10);
+}
+
+const defaultPort = loadDefaultPort();
+
 // Parse CLI arguments
 const args = process.argv.slice(2);
 
@@ -119,7 +133,7 @@ const noFrontendReload = args.includes("--no-frontend-reload");
 // Port configuration: PORT + 0 = server, PORT + 1 = maintenance, PORT + 2 = vite
 const basePort = process.env.PORT
   ? Number.parseInt(process.env.PORT, 10)
-  : 3400;
+  : defaultPort;
 const vitePort = process.env.VITE_PORT
   ? Number.parseInt(process.env.VITE_PORT, 10)
   : basePort + 2;
@@ -149,7 +163,8 @@ const env = {
   // When not using --watch, enable manual reload mode (shows banner on file changes)
   NO_BACKEND_RELOAD: backendWatch ? "" : "true",
   NO_FRONTEND_RELOAD: noFrontendReload ? "true" : "",
-  // Pass vite port to both server and client for consistency
+  // Pass derived ports to child processes for consistency
+  PORT: String(basePort),
   VITE_PORT: String(vitePort),
 };
 

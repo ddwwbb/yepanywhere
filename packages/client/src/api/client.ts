@@ -938,6 +938,85 @@ export const api = {
       ),
     }),
 
+  testFeishuAppRemoteChannel: (botId?: string) =>
+    fetchJSON<{ ok: true }>("/settings/remote-channels/feishu/app/test", {
+      method: "POST",
+      body: JSON.stringify({ botId }),
+    }),
+  startFeishuRemoteChannelRegistration: () =>
+    fetchJSON<{ sessionId: string; verificationUrl: string; interval: number }>(
+      "/settings/remote-channels/feishu/register/start",
+      { method: "POST" },
+    ),
+  pollFeishuRemoteChannelRegistration: (sessionId: string) =>
+    fetchJSON<{
+      status: "waiting" | "completed" | "expired" | "failed";
+      interval?: number;
+      appId?: string;
+      domain?: string;
+      error?: string;
+    }>("/settings/remote-channels/feishu/register/poll", {
+      method: "POST",
+      body: JSON.stringify({ sessionId }),
+    }),
+  cancelFeishuRemoteChannelRegistration: (sessionId: string) =>
+    fetchJSON<{ ok: true }>("/settings/remote-channels/feishu/register/cancel", {
+      method: "POST",
+      body: JSON.stringify({ sessionId }),
+    }),
+  verifyTelegramRemoteChannel: (request: {
+    action?: "verify" | "detect_chat_id";
+    botToken?: string;
+    chatId?: string;
+    proxyUrl?: string;
+  }) =>
+    fetchJSON<{
+      verified?: boolean;
+      detected?: boolean;
+      botName?: string;
+      chatId?: string;
+      error?: string;
+    }>("/settings/remote-channels/telegram/verify", {
+      method: "POST",
+      body: JSON.stringify(request),
+    }),
+  verifyQqRemoteChannel: (request: { appId?: string; appSecret?: string }) =>
+    fetchJSON<{ verified: boolean; gatewayUrl?: string; error?: string }>(
+      "/settings/remote-channels/qq/verify",
+      { method: "POST", body: JSON.stringify(request) },
+    ),
+  startWeixinRemoteChannelLogin: () =>
+    fetchJSON<{ sessionId: string; qrImage: string }>(
+      "/settings/remote-channels/weixin/login/start",
+      { method: "POST" },
+    ),
+  waitWeixinRemoteChannelLogin: (sessionId: string) =>
+    fetchJSON<{
+      status: "waiting" | "scanned" | "confirmed" | "expired" | "failed";
+      accountId?: string;
+      peerUserId?: string;
+      error?: string;
+    }>("/settings/remote-channels/weixin/login/wait", {
+      method: "POST",
+      body: JSON.stringify({ sessionId }),
+    }),
+
+  getAvailableBots: () =>
+    fetchJSON<{
+      bots: Array<{
+        botId: string;
+        channel: string;
+        name?: string;
+        boundSessionId?: string;
+      }>;
+    }>("/settings/remote-channels/available-bots"),
+
+  bindRemoteChannelBot: (botId: string, sessionId: string | null) =>
+    fetchJSON<{ ok: boolean; botId: string; boundSessionId?: string }>(
+      `/settings/remote-channels/bots/${encodeURIComponent(botId)}/bind`,
+      { method: "PUT", body: JSON.stringify({ sessionId }) },
+    ),
+
   // Remote executors API
   getRemoteExecutors: () =>
     fetchJSON<{ executors: string[] }>("/settings/remote-executors"),
@@ -1054,4 +1133,55 @@ export interface ServerSettings {
   lifecycleWebhookToken?: string;
   /** When true, include dryRun=true in lifecycle webhook payloads */
   lifecycleWebhookDryRun?: boolean;
+  /** Remote channel outbound notification settings */
+  remoteChannels?: {
+    feishu?: {
+      enabled?: boolean;
+      bots?: {
+        id: string;
+        name?: string;
+        enabled?: boolean;
+        proxyUrl?: string;
+        appId?: string;
+        appSecret?: string;
+        appChatId?: string;
+        boundSessionId?: string;
+      }[];
+    };
+    telegram?: {
+      enabled?: boolean;
+      bots?: {
+        id: string;
+        name?: string;
+        enabled?: boolean;
+        botToken?: string;
+        chatId?: string;
+        proxyUrl?: string;
+        boundSessionId?: string;
+      }[];
+    };
+    qq?: {
+      enabled?: boolean;
+      bots?: {
+        id: string;
+        name?: string;
+        enabled?: boolean;
+        appId?: string;
+        appSecret?: string;
+        openId?: string;
+        boundSessionId?: string;
+      }[];
+    };
+    weixin?: {
+      enabled?: boolean;
+      bots?: {
+        id: string;
+        name?: string;
+        enabled?: boolean;
+        accountId?: string;
+        peerUserId?: string;
+        boundSessionId?: string;
+      }[];
+    };
+  };
 }

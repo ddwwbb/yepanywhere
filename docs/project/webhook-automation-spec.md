@@ -133,7 +133,7 @@ curl -sS http://127.0.0.1:8787/ \
 The external receiver can decide what to do next with Yep's existing APIs. A minimal "keep going" loop looks like:
 
 ```bash
-curl -sS -X POST http://localhost:3400/api/sessions/session-1/messages \
+curl -sS -X POST http://localhost:7777/api/sessions/session-1/messages \
   -H 'content-type: application/json' \
   -d '{"message":"continue from the last stopping point"}'
 ```

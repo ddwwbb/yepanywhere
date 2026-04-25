@@ -43,7 +43,7 @@ describe("connection reconnect subscription cleanup", () => {
 
   it("SecureConnection.forceReconnect closes existing stream subscriptions", async () => {
     const conn = new SecureConnection(
-      "ws://localhost:3400/api/ws",
+      "ws://localhost:7777/api/ws",
       "test-user",
       "test-password",
     ) as unknown as {

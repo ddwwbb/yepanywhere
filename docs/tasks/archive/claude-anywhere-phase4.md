@@ -832,7 +832,7 @@ export default defineConfig({
   webServer: [
     {
       command: 'pnpm --filter server dev:mock',
-      port: 3400,
+      port: 7777,
       reuseExistingServer: !process.env.CI,
     },
     {
@@ -869,8 +869,8 @@ const sdk = new MockClaudeSDK(mockScenarios);
 const supervisor = new Supervisor(sdk);
 const app = createApp({ supervisor });
 
-serve({ fetch: app.fetch, port: 3400 }, () => {
-  console.log('Mock server running at http://localhost:3400');
+serve({ fetch: app.fetch, port: 7777 }, () => {
+  console.log('Mock server running at http://localhost:7777');
 });
 ```
 
@@ -1115,7 +1115,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3400',
+        target: 'http://localhost:7777',
         changeOrigin: true,
       },
     },

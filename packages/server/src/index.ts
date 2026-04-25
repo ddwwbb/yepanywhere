@@ -357,7 +357,7 @@ const networkBindingService = new NetworkBindingService({
   dataDir: config.dataDir,
   cliPortOverride: config.cliPortOverride ? config.port : undefined,
   cliHostOverride: config.cliHostOverride ? config.host : undefined,
-  defaultPort: 3400,
+  defaultPort: config.port,
 });
 const connectedBrowsersService = new ConnectedBrowsersService(eventBus);
 const serverSettingsService = new ServerSettingsService({

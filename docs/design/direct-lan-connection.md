@@ -18,7 +18,7 @@ WebRTC is the obvious "direct P2P from a web page" technology, but:
 
 ## Why Not mDNS / Local Discovery Alone?
 
-- **Mixed content**: The remote client is served over HTTPS from the relay. Browsers block `ws://192.168.x.x:3400` as insecure mixed content. No way around this without a valid TLS cert.
+- **Mixed content**: The remote client is served over HTTPS from the relay. Browsers block `ws://192.168.x.x:7777` as insecure mixed content. No way around this without a valid TLS cert.
 - **No bootstrap**: The client is loaded from the relay site and has no mechanism to discover local servers without an existing channel.
 
 ## Design: sslip-Style DNS + Wildcard Cert + Relay Discovery
@@ -56,10 +56,10 @@ A wildcard TLS cert for `*.direct.yepanywhere.com` solves the mixed content prob
 ```
 1. Client connects to relay (existing SRP-authenticated flow)
 2. Server advertises its local IP(s) to relay during registration
-3. Relay tells client: "server is also available at 192.168.1.5:3400"
+3. Relay tells client: "server is also available at 192.168.1.5:7777"
 4. Client races two connections in parallel:
    a. Relay path (already connected)
-   b. Direct path: wss://192-168-1-5.direct.yepanywhere.com:3400
+   b. Direct path: wss://192-168-1-5.direct.yepanywhere.com:7777
       - Full SRP handshake over the direct WebSocket
       - NaCl encryption established (same as relay)
 5. If direct connection succeeds → use it as primary, keep relay as fallback

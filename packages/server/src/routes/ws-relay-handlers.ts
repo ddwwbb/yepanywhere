@@ -192,7 +192,7 @@ export type SendFn = (msg: YepMessage) => void;
 export interface RelayHandlerDeps {
   /** The main Hono app to route requests through */
   app: Hono<{ Bindings: HttpBindings }>;
-  /** Base URL for internal requests (e.g., "http://localhost:3400") */
+  /** Base URL for internal requests (e.g., "http://localhost:7777") */
   baseUrl: string;
   /** Supervisor for subscribing to session events */
   supervisor: Supervisor;

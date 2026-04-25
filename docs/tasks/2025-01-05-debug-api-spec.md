@@ -2,7 +2,7 @@
 
 **Date:** 2025-01-05
 **Status:** Proposed
-**Location:** Maintenance server (port 3401)
+**Location:** Maintenance server (port 7778)
 
 ## Motivation
 
@@ -20,7 +20,7 @@ During investigation of Claude SDK message ID behavior, we identified several sc
 
 ### Location: Maintenance Server
 
-The debug API lives on the maintenance server (default port 3401) because:
+The debug API lives on the maintenance server (default port 7778) because:
 
 - Not exposed on main application port
 - Can be disabled in production via `MAINTENANCE_PORT=0`
@@ -322,31 +322,31 @@ All endpoints should return appropriate error codes:
 
 ```bash
 # Create a session
-SESSION=$(curl -X POST http://localhost:3401/debug/sessions/create \
+SESSION=$(curl -X POST http://localhost:7778/debug/sessions/create \
   -H "Content-Type: application/json" \
   -d '{"projectPath": "/home/user/project", "message": "hello", "blocking": true}' \
   | jq -r '.sessionId')
 
 # Send 3 messages rapidly
-curl -X POST "http://localhost:3401/debug/sessions/$SESSION/rapid" \
+curl -X POST "http://localhost:7778/debug/sessions/$SESSION/rapid" \
   -H "Content-Type: application/json" \
   -d '{"messages": ["msg1", "msg2", "msg3"], "blocking": true}'
 
 # Compare SSE vs JSONL
-curl "http://localhost:3401/debug/sessions/$SESSION/compare" | jq .
+curl "http://localhost:7778/debug/sessions/$SESSION/compare" | jq .
 
 # Cleanup
-curl -X DELETE "http://localhost:3401/debug/sessions/$SESSION"
+curl -X DELETE "http://localhost:7778/debug/sessions/$SESSION"
 ```
 
 ### Investigating parent chain behavior
 
 ```bash
 # Get session with full details
-curl "http://localhost:3401/debug/sessions/$SESSION?includeStreamEvents=false" | jq .
+curl "http://localhost:7778/debug/sessions/$SESSION?includeStreamEvents=false" | jq .
 
 # Check parent chain differences
-curl "http://localhost:3401/debug/sessions/$SESSION/compare" \
+curl "http://localhost:7778/debug/sessions/$SESSION/compare" \
   | jq '.comparison.parentUuidDiffs'
 ```
 

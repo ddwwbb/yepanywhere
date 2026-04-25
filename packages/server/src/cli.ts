@@ -9,7 +9,7 @@
  *   yepanywhere --version         # Show version
  *
  * Environment variables:
- *   PORT                          # Server port (default: 3400)
+ *   PORT                          # Server port (default: 7777)
  *   YEP_ANYWHERE_DATA_DIR         # Data directory override
  *   YEP_ANYWHERE_PROFILE          # Profile name (creates ~/.yep-anywhere-{profile}/)
  *   AUTH_ENABLED                  # Enable cookie auth (default: false)
@@ -80,7 +80,7 @@ USAGE:
 OPTIONS:
   --help, -h            Show this help message
   --version, -v         Show version number
-  --port <number>       Server port (default: 3400)
+  --port <number>       Server port (default: 7777)
   --host <address>      Host/interface to bind to (default: localhost)
                         Use 0.0.0.0 to bind all interfaces
   --https-self-signed   Enable HTTPS using a self-signed certificate
@@ -103,7 +103,7 @@ SETUP OPTIONS (for headless installation):
                         --relay: Relay URL (default: wss://relay.yepanywhere.com/ws)
 
 ENVIRONMENT VARIABLES:
-  PORT                          Server port (default: 3400)
+  PORT                          Server port (default: 7777)
   HOST                          Host/interface to bind (default: localhost)
   YEP_ANYWHERE_DATA_DIR         Data directory override
   YEP_ANYWHERE_PROFILE          Profile name (creates ~/.yep-anywhere-{profile}/)
@@ -124,7 +124,7 @@ ENVIRONMENT VARIABLES:
                                 Project scan cache TTL in ms (default: 5000, 0 = rescan every request)
 
 EXAMPLES:
-  # Start with defaults (port 3400, localhost only)
+  # Start with defaults (port 7777, localhost only)
   yepanywhere
 
   # Start on custom port

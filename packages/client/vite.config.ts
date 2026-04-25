@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import { DEFAULT_PORT, DEFAULT_VITE_PORT } from "@yep-anywhere/shared";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { cspPlugin } from "./vite-plugin-csp";
@@ -7,10 +8,10 @@ import { reloadNotify } from "./vite-plugin-reload-notify";
 // NO_FRONTEND_RELOAD: Disable HMR and use manual reload notifications instead
 const noFrontendReload = process.env.NO_FRONTEND_RELOAD === "true";
 
-// Port defaults to 3402 (base port 3400 + 2), can be overridden via VITE_PORT
+// Port defaults to DEFAULT_PORT + 2, can be overridden via VITE_PORT
 const vitePort = process.env.VITE_PORT
   ? Number.parseInt(process.env.VITE_PORT, 10)
-  : 3402;
+  : DEFAULT_VITE_PORT;
 
 // VITE_HOST: Set to "true" to bind to all interfaces (needed in Docker containers)
 const viteHost = process.env.VITE_HOST === "true" ? true : undefined;
@@ -36,7 +37,7 @@ export default defineConfig({
   plugins: [
     react(),
     // When HMR is disabled, use reload-notify plugin to tell backend about changes
-    reloadNotify({ enabled: noFrontendReload }),
+    reloadNotify({ enabled: noFrontendReload, apiPort: DEFAULT_PORT }),
     // Content Security Policy (stricter in production, permissive in dev for HMR)
     cspPlugin({ isRemote: false }),
   ],
@@ -48,7 +49,7 @@ export default defineConfig({
     host: viteHost,
     allowedHosts: ["localhost", ".yepanywhere.com"],
     // HMR configuration for reverse proxy setup
-    // When accessed through backend proxy (port 3400) or Tailscale, HMR needs to
+    // When accessed through backend proxy (port 7777) or Tailscale, HMR needs to
     // connect back through the same proxy path, not directly to Vite's port
     hmr: noFrontendReload
       ? false
@@ -57,7 +58,7 @@ export default defineConfig({
           // This allows HMR to work through any proxy (backend, Tailscale, etc.)
           // The backend will proxy WebSocket connections to us
         },
-    // No proxy needed - backend (port 3400) proxies to us, not the other way around
-    // Users access http://localhost:3400 and backend forwards non-API requests here
+    // No proxy needed - backend (port 7777) proxies to us, not the other way around
+    // Users access http://localhost:7777 and backend forwards non-API requests here
   },
 });

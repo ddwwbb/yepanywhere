@@ -34,6 +34,7 @@ import type {
   RemoteAccessService,
   RemoteSessionService,
 } from "./remote-access/index.js";
+import { RemoteChannelService } from "./remote-channels/index.js";
 import { createRemoteAccessRoutes } from "./remote-access/index.js";
 import { createActivityRoutes } from "./routes/activity.js";
 import { createBrowserProfilesRoutes } from "./routes/browser-profiles.js";
@@ -412,12 +413,25 @@ export function createApp(options: AppOptions): AppResult {
     });
   }
 
+  let remoteChannelService: RemoteChannelService | undefined;
   if (options.eventBus && options.serverSettingsService) {
     new LifecycleWebhookService({
       eventBus: options.eventBus,
       supervisor,
       serverSettingsService: options.serverSettingsService,
     });
+
+    if (options.dataDir) {
+      remoteChannelService = new RemoteChannelService({
+        eventBus: options.eventBus,
+        serverSettingsService: options.serverSettingsService,
+        dataDir: options.dataDir,
+        yepUrl:
+          options.serverHost && options.serverPort
+            ? `http://${options.serverHost}:${options.serverPort}`
+            : undefined,
+      });
+    }
   }
 
   // Health check (outside /api — needs CORS for Tauri desktop app)
@@ -673,6 +687,7 @@ export function createApp(options: AppOptions): AppResult {
       "/api/settings",
       createSettingsRoutes({
         serverSettingsService: options.serverSettingsService,
+        remoteChannelService,
         onAllowedHostsChanged: updateAllowedHosts,
         onRemoteSessionPersistenceChanged: options.remoteSessionService
           ? (enabled) =>

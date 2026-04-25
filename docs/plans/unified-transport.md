@@ -44,7 +44,7 @@ The [subscription unification plan](./unify-subscription-handlers.md) eliminates
 ### What We Lose
 
 - **DevTools SSE inspector.** SSE streams show up nicely in Chrome DevTools EventStream tab. WebSocket messages show up in the Messages tab but are less readable. This is a real debugging convenience loss, but we can compensate with structured logging.
-- **Simplicity of curl debugging.** `curl -N localhost:3400/api/sessions/x/stream` just works for SSE. WebSocket requires wscat or similar. Again, a minor convenience.
+- **Simplicity of curl debugging.** `curl -N localhost:7777/api/sessions/x/stream` just works for SSE. WebSocket requires wscat or similar. Again, a minor convenience.
 
 ### Architecture After
 
