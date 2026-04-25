@@ -959,6 +959,7 @@
   "sessionMenuLoadingBots": "加载中...",
   "sessionMenuUnbinding": "解绑中...",
   "sessionMenuNoBotsAvailable": "没有可用的机器人",
+  "sessionMenuBotBoundReplace": "（替换绑定）",
   "bridge.title": "远程桥接",
   "bridge.description": "将 Yep 通知桥接到外部聊天平台，实现会话生命周期和状态变更的实时推送。",
   "bridge.overview": "总览",

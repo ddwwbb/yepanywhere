@@ -959,6 +959,7 @@
   "sessionMenuLoadingBots": "読み込み中...",
   "sessionMenuUnbinding": "アンバインド中...",
   "sessionMenuNoBotsAvailable": "利用可能な Bot がありません",
+  "sessionMenuBotBoundReplace": "(バインド先を変更)",
   "bridge.title": "リモートブリッジ",
   "bridge.description": "Yep通知を外部チャットプラットフォームにブリッジし、セッションライフサイクルとステータス変更をリアルタイムでプッシュします。",
   "bridge.overview": "概要",

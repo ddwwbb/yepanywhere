@@ -959,6 +959,7 @@
   "sessionMenuLoadingBots": "Loading...",
   "sessionMenuUnbinding": "Unbinding...",
   "sessionMenuNoBotsAvailable": "No bots available",
+  "sessionMenuBotBoundReplace": "(replace binding)",
   "bridge.title": "Remote Bridge",
   "bridge.description": "Bridge Yep notifications to external chat platforms for real-time session lifecycle and status updates.",
   "bridge.overview": "Overview",

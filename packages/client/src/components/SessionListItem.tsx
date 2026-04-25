@@ -31,6 +31,8 @@ interface SessionListItemProps {
   provider?: ProviderName;
   /** SSH host for remote execution (undefined = local) */
   executor?: string;
+  /** Whether this session is bound to a remote channel bot */
+  hasBotBinding?: boolean;
 
   // Feature toggles
   mode: "card" | "compact";
@@ -97,6 +99,7 @@ export function SessionListItem({
   status,
   provider,
   executor,
+  hasBotBinding = false,
   // Feature toggles
   mode,
   showProjectName = false,
@@ -276,6 +279,10 @@ export function SessionListItem({
       return <span className="session-badge session-badge-external">Ext</span>;
     }
 
+    if (hasBotBinding) {
+      return <span className="session-badge session-badge-bot">Bot</span>;
+    }
+
     // Priority 1: Needs input
     if (pendingInputType) {
       const label = pendingInputType === "tool-approval" ? "Appr" : "Q";
@@ -384,6 +391,9 @@ export function SessionListItem({
                 {isNewSession && <ThinkingIndicator />}
                 {displayTitle}
                 {hasDraft && <span className="session-draft-badge">Draft</span>}
+                {hasBotBinding && (
+                  <span className="session-badge session-badge-bot">Bot</span>
+                )}
                 {isArchived && (
                   <span className="session-archived-badge">Archived</span>
                 )}

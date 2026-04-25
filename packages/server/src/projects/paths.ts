@@ -57,7 +57,7 @@
  * 4. Use `getSessionFilePath()` to construct paths to specific session files.
  */
 
-import { open } from "node:fs/promises";
+import { access, open, readdir } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, isAbsolute, join, sep } from "node:path";
 import type { UrlProjectId } from "@yep-anywhere/shared";
@@ -228,6 +228,54 @@ export async function readCwdFromSessionFile(
   } finally {
     await fd?.close();
   }
+}
+
+/**
+ * 根据 sessionId 查找对应的 projectPath。
+ * 扫描 CLAUDE_PROJECTS_DIR 下的子目录，查找匹配的 session 文件并读取 cwd。
+ */
+export async function findProjectPathBySessionId(
+  sessionId: string,
+): Promise<string | null> {
+  try {
+    const entries = await readdir(CLAUDE_PROJECTS_DIR, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+
+      const dirPath = join(CLAUDE_PROJECTS_DIR, entry.name);
+      const sessionFile = join(dirPath, `${sessionId}.jsonl`);
+
+      // 直接检查文件是否存在
+      try {
+        await access(sessionFile);
+        const cwd = await readCwdFromSessionFile(sessionFile);
+        if (cwd) return cwd;
+      } catch {
+        // 文件不存在，检查嵌套目录（hostname 子目录）
+      }
+
+      // 检查嵌套目录（hostname/project/ 结构）
+      try {
+        const subEntries = await readdir(dirPath, { withFileTypes: true });
+        for (const sub of subEntries) {
+          if (!sub.isDirectory()) continue;
+          const nestedFile = join(dirPath, sub.name, `${sessionId}.jsonl`);
+          try {
+            await access(nestedFile);
+            const cwd = await readCwdFromSessionFile(nestedFile);
+            if (cwd) return cwd;
+          } catch {
+            continue;
+          }
+        }
+      } catch {
+        continue;
+      }
+    }
+  } catch {
+    // projects 目录不存在或不可读
+  }
+  return null;
 }
 
 /**

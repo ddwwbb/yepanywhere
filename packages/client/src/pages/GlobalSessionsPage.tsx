@@ -1,7 +1,7 @@
 import { ALL_PROVIDERS, type ProviderName } from "@yep-anywhere/shared";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { type GlobalSessionItem, api } from "../api/client";
+import { type GlobalSessionItem, type ServerSettings, api } from "../api/client";
 import { BulkActionBar } from "../components/BulkActionBar";
 import {
   FilterDropdown,
@@ -12,6 +12,7 @@ import { SessionListItem } from "../components/SessionListItem";
 import { useDrafts } from "../hooks/useDrafts";
 import { useGlobalSessions } from "../hooks/useGlobalSessions";
 import { useRemoteBasePath } from "../hooks/useRemoteBasePath";
+import { useServerSettings } from "../hooks/useServerSettings";
 import { useI18n } from "../i18n";
 import { useNavigationLayout } from "../layouts";
 import { getSessionDisplayTitle, toUrlProjectId } from "../utils";
@@ -36,6 +37,23 @@ const PROVIDER_COLORS: Record<ProviderName, string> = {
   opencode: "#9333ea", // Purple for OpenCode
 };
 
+type RemoteChannels = ServerSettings["remoteChannels"];
+
+function getBotBoundSessionIds(remoteChannels: RemoteChannels): Set<string> {
+  const ids = new Set<string>();
+  for (const channel of [
+    remoteChannels?.feishu,
+    remoteChannels?.telegram,
+    remoteChannels?.qq,
+    remoteChannels?.weixin,
+  ]) {
+    for (const bot of channel?.bots ?? []) {
+      if (bot.boundSessionId) ids.add(bot.boundSessionId);
+    }
+  }
+  return ids;
+}
+
 /**
  * Global sessions page showing all sessions across all projects.
  * Supports filtering by project, status, provider, and search query.
@@ -46,6 +64,11 @@ export function GlobalSessionsPage() {
   const { openSidebar, isWideScreen, toggleSidebar, isSidebarCollapsed } =
     useNavigationLayout();
   const basePath = useRemoteBasePath();
+  const { settings } = useServerSettings();
+  const botBoundSessionIds = useMemo(
+    () => getBotBoundSessionIds(settings?.remoteChannels),
+    [settings?.remoteChannels],
+  );
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Get filter params from URL
@@ -834,6 +857,7 @@ export function GlobalSessionsPage() {
                         basePath={basePath}
                         messageCount={session.messageCount}
                         hasDraft={drafts.has(session.id)}
+                        hasBotBinding={botBoundSessionIds.has(session.id)}
                         onDelete={handleDeleteSession(
                           session.id,
                           session.projectId,

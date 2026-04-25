@@ -1444,6 +1444,11 @@ a.sidebar-nav-item {
   color: var(--status-badge-external-text);
 }
 
+.recent-sessions-badge.bot {
+  background-color: color-mix(in srgb, var(--app-yep-green) 16%, transparent);
+  color: var(--app-yep-green);
+}
+
 .session-messages {
   flex: 1;
   overflow-y: auto;
@@ -6794,6 +6799,11 @@ a.sidebar-nav-item {
 .session-badge-needs-input {
   background: var(--status-badge-input-bg);
   color: var(--status-badge-input-text);
+}
+
+.session-badge-bot {
+  background: color-mix(in srgb, var(--app-yep-green) 16%, transparent);
+  color: var(--app-yep-green);
 }
 
 .session-badge-executor {

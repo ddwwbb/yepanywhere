@@ -1005,6 +1005,8 @@ export const api = {
       status: "waiting" | "scanned" | "confirmed" | "expired" | "failed";
       accountId?: string;
       peerUserId?: string;
+      botToken?: string;
+      baseUrl?: string;
       error?: string;
     }>("/settings/remote-channels/weixin/login/wait", {
       method: "POST",
@@ -1197,6 +1199,10 @@ export interface ServerSettings {
         enabled?: boolean;
         accountId?: string;
         peerUserId?: string;
+        botToken?: string;
+        baseUrl?: string;
+        contextToken?: string;
+        getUpdatesBuf?: string;
         boundSessionId?: string;
       }[];
     };

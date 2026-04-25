@@ -119,10 +119,12 @@ function redactSettings(settings: ServerSettings): ServerSettings {
   const feishu = settings.remoteChannels?.feishu;
   const telegram = settings.remoteChannels?.telegram;
   const qq = settings.remoteChannels?.qq;
+  const weixin = settings.remoteChannels?.weixin;
   const hasFeishuSecret = feishu?.bots?.some((b) => b.appSecret);
   const hasTelegramSecret = telegram?.bots?.some((b) => b.botToken);
   const hasQqSecret = qq?.bots?.some((b) => b.appSecret);
-  if (!hasFeishuSecret && !hasTelegramSecret && !hasQqSecret) {
+  const hasWeixinSecret = weixin?.bots?.some((b) => b.botToken);
+  if (!hasFeishuSecret && !hasTelegramSecret && !hasQqSecret && !hasWeixinSecret) {
     return settings;
   }
 
@@ -138,6 +140,9 @@ function redactSettings(settings: ServerSettings): ServerSettings {
         : undefined,
       qq: qq
         ? { ...qq, bots: qq.bots?.map((b) => ({ ...b, appSecret: maskSecret(b.appSecret) })) }
+        : undefined,
+      weixin: weixin
+        ? { ...weixin, bots: weixin.bots?.map((b) => ({ ...b, botToken: maskSecret(b.botToken) })) }
         : undefined,
     },
   };
@@ -162,6 +167,8 @@ interface WeixinLoginSession {
   status: "waiting" | "scanned" | "confirmed" | "expired" | "failed";
   accountId?: string;
   peerUserId?: string;
+  botToken?: string;
+  baseUrl?: string;
   error?: string;
 }
 
@@ -529,7 +536,9 @@ async function pollWeixinLogin(
   if (!response.ok) throw new Error(`Weixin QR poll returned HTTP ${response.status}`);
   const body = (await response.json()) as {
     status?: "wait" | "scaned" | "confirmed" | "expired";
+    bot_token?: string;
     ilink_bot_id?: string;
+    baseurl?: string;
     ilink_user_id?: string;
     errmsg?: string;
   };
@@ -542,17 +551,8 @@ async function pollWeixinLogin(
     session.status = "confirmed";
     session.accountId = accountId;
     session.peerUserId = body.ilink_user_id;
-    const settings = serverSettingsService.getSettings();
-    await serverSettingsService.updateSettings({
-      remoteChannels: {
-        ...settings.remoteChannels,
-        weixin: {
-          ...settings.remoteChannels?.weixin,
-          accountId,
-          peerUserId: body.ilink_user_id,
-        },
-      },
-    });
+    session.botToken = body.bot_token;
+    session.baseUrl = body.baseurl;
   }
   if (!body.status && body.errmsg) {
     session.status = "failed";
@@ -676,13 +676,32 @@ function parseWeixinBots(
     if (typeof b.id !== "string" || !b.id) return null;
     const accountId = parseBotField(b, "accountId", 200);
     const peerUserId = parseBotField(b, "peerUserId", 200);
-    if (accountId === null || peerUserId === null) return null;
+    const botTokenInput = parseBotField(b, "botToken", 1000);
+    const baseUrl = parseBotField(b, "baseUrl", 2000);
+    const contextToken = parseBotField(b, "contextToken", 2000);
+    const getUpdatesBuf = parseBotField(b, "getUpdatesBuf", 2000);
+    if (
+      accountId === null ||
+      peerUserId === null ||
+      botTokenInput === null ||
+      baseUrl === null ||
+      contextToken === null ||
+      getUpdatesBuf === null
+    ) return null;
+    const existing = existingBots?.find((eb) => eb.id === b.id);
+    const botToken = botTokenInput?.startsWith(MASKED_SECRET_PREFIX)
+      ? existing?.botToken
+      : botTokenInput;
     result.push({
       id: b.id,
       name: parseBotField(b, "name", 200) ?? undefined,
       enabled: typeof b.enabled === "boolean" ? b.enabled : undefined,
       accountId: accountId ?? undefined,
       peerUserId: peerUserId ?? undefined,
+      botToken,
+      baseUrl: baseUrl ?? undefined,
+      contextToken: contextToken ?? existing?.contextToken,
+      getUpdatesBuf: getUpdatesBuf ?? existing?.getUpdatesBuf,
       boundSessionId: parseBotField(b, "boundSessionId", 200) ?? undefined,
     });
   }
@@ -743,18 +762,12 @@ function parseRemoteChannels(
       return null;
     } else {
       const weixinInput = weixinRaw as Record<string, unknown>;
-      const accountId = parseOptionalString(weixinInput.accountId, 200);
-      const peerUserId = parseOptionalString(weixinInput.peerUserId, 200);
-
-      if (accountId === null || peerUserId === null) return null;
-
+      const existingBots = existingSettings.remoteChannels?.weixin?.bots;
+      const bots = "bots" in weixinInput ? parseWeixinBots(weixinInput.bots, existingBots) : undefined;
+      if (bots === null) return null;
       parsed.weixin = {
-        enabled:
-          typeof weixinInput.enabled === "boolean"
-            ? weixinInput.enabled
-            : undefined,
-        accountId,
-        peerUserId,
+        enabled: typeof weixinInput.enabled === "boolean" ? weixinInput.enabled : undefined,
+        bots: bots ?? [],
       };
     }
   }
@@ -876,7 +889,7 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
   });
 
   app.post("/remote-channels/feishu/app/test", async (c) => {
-    const body = await c.req.json<{ botId?: string }>().catch(() => ({}));
+    const body = await c.req.json<{ botId?: string }>().catch(() => ({ botId: undefined }));
     const feishu = serverSettingsService.getSettings().remoteChannels?.feishu;
     const bot = feishu?.bots?.find((b) => b.id === body.botId);
     if (!bot?.appId || !bot.appSecret) {
@@ -1014,6 +1027,8 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
         status: session.status,
         accountId: session.accountId,
         peerUserId: session.peerUserId,
+        botToken: session.botToken,
+        baseUrl: session.baseUrl,
         error: session.error,
       });
     } catch (err) {
@@ -1101,7 +1116,7 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
    */
   app.put("/remote-channels/bots/:botId/bind", async (c) => {
     const { botId } = c.req.param();
-    const body = await c.req.json<{ sessionId?: string | null }>().catch(() => ({}));
+    const body = await c.req.json<{ sessionId?: string | null }>().catch(() => ({ sessionId: undefined }));
     const sessionId = body.sessionId ?? null;
 
     const settings = serverSettingsService.getSettings();
@@ -1134,7 +1149,7 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
       }
 
       const updatedBots = [...channelSettings.bots];
-      updatedBots[botIndex] = { ...updatedBots[botIndex], boundSessionId: sessionId ?? undefined };
+      updatedBots[botIndex] = { ...updatedBots[botIndex]!, boundSessionId: sessionId ?? undefined };
       updatedRc[channel] = { ...channelSettings, bots: updatedBots };
       break;
     }

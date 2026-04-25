@@ -426,6 +426,7 @@ export function createApp(options: AppOptions): AppResult {
       remoteChannelService = new RemoteChannelService({
         eventBus: options.eventBus,
         serverSettingsService: options.serverSettingsService,
+        supervisor,
         dataDir: options.dataDir,
         yepUrl:
           options.serverHost && options.serverPort
@@ -435,10 +436,13 @@ export function createApp(options: AppOptions): AppResult {
 
       // 恢复桥接自动启动状态
       if (options.serverSettingsService.getSetting("bridgeAutoStart")) {
-        const result = remoteChannelService.start();
-        if (result.started) {
-          console.log("[remote-channel] Bridge auto-started from saved preference");
-        }
+        remoteChannelService.start().then((result) => {
+          if (result.started) {
+            console.log("[remote-channel] Bridge auto-started from saved preference");
+          }
+        }).catch((err) => {
+          console.error("[remote-channel] Bridge auto-start failed:", err);
+        });
       }
     }
   }

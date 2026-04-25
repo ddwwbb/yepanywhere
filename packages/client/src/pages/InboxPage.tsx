@@ -12,7 +12,7 @@ import { useNavigationLayout } from "../layouts";
  */
 export function InboxPage() {
   const { t } = useI18n();
-  const { openSidebar, isWideScreen } = useNavigationLayout();
+  const { openSidebar, isWideScreen, toggleSidebar, isSidebarCollapsed } = useNavigationLayout();
   const { projects } = useProjects();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -53,6 +53,9 @@ export function InboxPage() {
               : t("inboxTitle")
           }
           onOpenSidebar={openSidebar}
+          onToggleSidebar={toggleSidebar}
+          isWideScreen={isWideScreen}
+          isSidebarCollapsed={isSidebarCollapsed}
         />
 
         <InboxContent

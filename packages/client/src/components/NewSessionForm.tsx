@@ -145,6 +145,7 @@ export function NewSessionForm({
   const { executors: remoteExecutors, loading: executorsLoading } =
     useRemoteExecutors();
   const availableProviders = getAvailableProviders(providers);
+  const installedProviders = providers.filter((p) => p.installed);
   const resolvedPlaceholder = placeholder ?? t("newSessionPlaceholder");
   const modeLabels: Record<PermissionMode, string> = {
     default: t("modeDefaultLabel"),
@@ -781,12 +782,12 @@ export function NewSessionForm({
       <div className="new-session-input-area">{inputArea}</div>
 
       {/* Provider Selection */}
-      {!providersLoading && availableProviders.length > 1 && (
+      {!providersLoading && installedProviders.length > 1 && (
         <div className="new-session-provider-section">
           <h3>{t("newSessionProviderTitle")}</h3>
           <div className="provider-options">
-            {providers.map((p) => {
-              const isAvailable = p.installed && (p.authenticated || p.enabled);
+            {installedProviders.map((p) => {
+              const isAvailable = p.authenticated || p.enabled;
               const isSelected = selectedProvider === p.name;
               return (
                 <button
@@ -799,9 +800,7 @@ export function NewSessionForm({
                     !isAvailable
                       ? t("newSessionProviderUnavailable", {
                           provider: p.displayName,
-                          reason: !p.installed
-                            ? t("newSessionProviderNotInstalled")
-                            : t("newSessionProviderNotAuthenticated"),
+                          reason: t("newSessionProviderNotAuthenticated"),
                         })
                       : p.displayName
                   }
@@ -813,9 +812,7 @@ export function NewSessionForm({
                     </span>
                     {!isAvailable && (
                       <span className="provider-option-status">
-                        {!p.installed
-                          ? t("newSessionProviderStatusNotInstalled")
-                          : t("newSessionProviderStatusNotAuthenticated")}
+                        {t("newSessionProviderStatusNotAuthenticated")}
                       </span>
                     )}
                   </div>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { GlobalSessionItem } from "../api/client";
+import type { GlobalSessionItem, ServerSettings } from "../api/client";
 import { useOptionalRemoteConnection } from "../contexts/RemoteConnectionContext";
 import { useDrafts } from "../hooks/useDrafts";
 import { useGlobalSessions } from "../hooks/useGlobalSessions";
@@ -8,6 +8,7 @@ import { useNeedsAttentionBadge } from "../hooks/useNeedsAttentionBadge";
 import { resolvePreferredProjectId } from "../hooks/useRecentProject";
 import { useRecentProjects } from "../hooks/useRecentProjects";
 import { useRemoteBasePath } from "../hooks/useRemoteBasePath";
+import { useServerSettings } from "../hooks/useServerSettings";
 import { useVersion } from "../hooks/useVersion";
 import { useI18n } from "../i18n";
 import { getSessionDisplayTitle, toUrlProjectId } from "../utils";
@@ -24,6 +25,23 @@ const SWIPE_THRESHOLD = 50; // Minimum distance to trigger close
 const SWIPE_ENGAGE_THRESHOLD = 15; // Minimum horizontal distance before swipe engages
 const RECENT_SESSIONS_INITIAL = 12; // Initial number of recent sessions to show
 const RECENT_SESSIONS_INCREMENT = 10; // How many more to show on each expand
+
+type RemoteChannels = ServerSettings["remoteChannels"];
+
+function getBotBoundSessionIds(remoteChannels: RemoteChannels): Set<string> {
+  const ids = new Set<string>();
+  for (const channel of [
+    remoteChannels?.feishu,
+    remoteChannels?.telegram,
+    remoteChannels?.qq,
+    remoteChannels?.weixin,
+  ]) {
+    for (const bot of channel?.bots ?? []) {
+      if (bot.boundSessionId) ids.add(bot.boundSessionId);
+    }
+  }
+  return ids;
+}
 
 interface SidebarProps {
   isOpen: boolean;
@@ -86,6 +104,12 @@ export function Sidebar({
   // Server capabilities for feature gating
   const { version: versionInfo } = useVersion();
   const capabilities = versionInfo?.capabilities ?? [];
+
+  const { settings } = useServerSettings();
+  const botBoundSessionIds = useMemo(
+    () => getBotBoundSessionIds(settings?.remoteChannels),
+    [settings?.remoteChannels],
+  );
 
   // Global inbox count
   const inboxCount = useNeedsAttentionBadge();
@@ -471,6 +495,7 @@ export function Sidebar({
                       basePath={basePath}
                       messageCount={session.messageCount}
                       hasDraft={drafts.has(session.id)}
+                      hasBotBinding={botBoundSessionIds.has(session.id)}
                     />
                   ))}
               </ul>
@@ -525,6 +550,7 @@ export function Sidebar({
                       basePath={basePath}
                       messageCount={session.messageCount}
                       hasDraft={drafts.has(session.id)}
+                      hasBotBinding={botBoundSessionIds.has(session.id)}
                     />
                   ))}
               </ul>

@@ -959,6 +959,7 @@
   "sessionMenuLoadingBots": "Chargement...",
   "sessionMenuUnbinding": "Déliage...",
   "sessionMenuNoBotsAvailable": "Aucun bot disponible",
+  "sessionMenuBotBoundReplace": "(remplacer la liaison)",
   "bridge.title": "Pont Distant",
   "bridge.description": "Reliez les notifications Yep aux plateformes de chat externes pour des mises à jour en temps réel.",
   "bridge.overview": "Aperçu",

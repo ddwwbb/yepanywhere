@@ -1,12 +1,30 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
-import type { GlobalSessionItem } from "../api/client";
+import type { GlobalSessionItem, ServerSettings } from "../api/client";
 import type { AgentActivity } from "../hooks/useFileActivity";
 import { useGlobalSessions } from "../hooks/useGlobalSessions";
+import { useServerSettings } from "../hooks/useServerSettings";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 
 const MAX_RECENT_SESSIONS = 10;
+
+type RemoteChannels = ServerSettings["remoteChannels"];
+
+function getBotBoundSessionIds(remoteChannels: RemoteChannels): Set<string> {
+  const ids = new Set<string>();
+  for (const channel of [
+    remoteChannels?.feishu,
+    remoteChannels?.telegram,
+    remoteChannels?.qq,
+    remoteChannels?.weixin,
+  ]) {
+    for (const bot of channel?.bots ?? []) {
+      if (bot.boundSessionId) ids.add(bot.boundSessionId);
+    }
+  }
+  return ids;
+}
 
 interface RecentSessionsDropdownProps {
   /** Current session ID (will be excluded from list) */
@@ -48,7 +66,13 @@ function getDisplayTitle(session: GlobalSessionItem): string {
 }
 
 /** Compact status indicator */
-function StatusIndicator({ session }: { session: GlobalSessionItem }) {
+function StatusIndicator({
+  session,
+  hasBotBinding,
+}: {
+  session: GlobalSessionItem;
+  hasBotBinding: boolean;
+}) {
   const activity = session.activity as AgentActivity | undefined;
 
   // In-turn/thinking indicator
@@ -65,6 +89,10 @@ function StatusIndicator({ session }: { session: GlobalSessionItem }) {
   // External session
   if (session.ownership.owner === "external") {
     return <span className="recent-sessions-badge external">Ext</span>;
+  }
+
+  if (hasBotBinding) {
+    return <span className="recent-sessions-badge bot">Bot</span>;
   }
 
   return null;
@@ -85,6 +113,11 @@ export function RecentSessionsDropdown({
     limit: MAX_RECENT_SESSIONS + 5,
     includeStats: false,
   });
+  const { settings } = useServerSettings();
+  const botBoundSessionIds = useMemo(
+    () => getBotBoundSessionIds(settings?.remoteChannels),
+    [settings?.remoteChannels],
+  );
 
   // Filter out current session and limit
   const recentSessions = sessions
@@ -185,7 +218,10 @@ export function RecentSessionsDropdown({
                 </span>
               </div>
               <div className="recent-session-meta">
-                <StatusIndicator session={session} />
+                <StatusIndicator
+                  session={session}
+                  hasBotBinding={botBoundSessionIds.has(session.id)}
+                />
                 <span className="recent-session-time">
                   {formatRelativeTime(session.updatedAt)}
                 </span>

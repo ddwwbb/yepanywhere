@@ -20,6 +20,20 @@ export interface RemoteChannelFeishuBot {
   appSecret?: string;
   appChatId?: string;
   boundSessionId?: string;
+  /** 飞书域名: feishu | lark | 自定义 */
+  domain?: "feishu" | "lark" | string;
+  /** 私信策略: open | allowlist | disabled */
+  dmPolicy?: "open" | "allowlist" | "disabled";
+  /** 私信白名单 (open_id 列表) */
+  allowFrom?: string[];
+  /** 群聊策略: open | allowlist | disabled */
+  groupPolicy?: "open" | "allowlist" | "disabled";
+  /** 群聊白名单 (chat_id 列表) */
+  groupAllowFrom?: string[];
+  /** 群聊是否需要 @提及才响应 */
+  requireMention?: boolean;
+  /** 是否按话题隔离会话 */
+  threadSession?: boolean;
 }
 
 export interface RemoteChannelTelegramBot {
@@ -49,6 +63,10 @@ export interface RemoteChannelWeixinBot {
   enabled?: boolean;
   accountId?: string;
   peerUserId?: string;
+  botToken?: string;
+  baseUrl?: string;
+  contextToken?: string;
+  getUpdatesBuf?: string;
   boundSessionId?: string;
 }
 
@@ -64,11 +82,15 @@ export interface RemoteChannelTelegramSettings {
 
 export interface RemoteChannelQqSettings {
   enabled?: boolean;
+  appId?: string;
+  appSecret?: string;
   bots?: RemoteChannelQqBot[];
 }
 
 export interface RemoteChannelWeixinSettings {
   enabled?: boolean;
+  accountId?: string;
+  peerUserId?: string;
   bots?: RemoteChannelWeixinBot[];
 }
 

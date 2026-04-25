@@ -41,32 +41,32 @@ export function RemoteChannelsSettings() {
           bots={rc?.feishu?.bots ?? []}
           enabled={rc?.feishu?.enabled ?? false}
           rc={rc}
-          updateSetting={updateSetting}
-          t={t}
+          updateSetting={updateSetting as (key: string, value: unknown) => Promise<void>}
+          t={t as (key: string) => string}
           setStatus={setStatus}
         />
         <TelegramChannelCard
           bots={rc?.telegram?.bots ?? []}
           enabled={rc?.telegram?.enabled ?? false}
           rc={rc}
-          updateSetting={updateSetting}
-          t={t}
+          updateSetting={updateSetting as (key: string, value: unknown) => Promise<void>}
+          t={t as (key: string) => string}
           setStatus={setStatus}
         />
         <QqChannelCard
           bots={rc?.qq?.bots ?? []}
           enabled={rc?.qq?.enabled ?? false}
           rc={rc}
-          updateSetting={updateSetting}
-          t={t}
+          updateSetting={updateSetting as (key: string, value: unknown) => Promise<void>}
+          t={t as (key: string) => string}
           setStatus={setStatus}
         />
         <WeixinChannelCard
           bots={rc?.weixin?.bots ?? []}
           enabled={rc?.weixin?.enabled ?? false}
           rc={rc}
-          updateSetting={updateSetting}
-          t={t}
+          updateSetting={updateSetting as (key: string, value: unknown) => Promise<void>}
+          t={t as (key: string) => string}
           setStatus={setStatus}
         />
       </div>
@@ -172,7 +172,7 @@ function FeishuChannelCard({
   const updateDraft = (botId: string, field: string, value: string) => {
     setDrafts((prev) => ({
       ...prev,
-      [botId]: { ...(prev[botId] ?? {}), [field]: value },
+      [botId]: { ...(prev[botId] ?? ({} as FeishuBot)), [field]: value },
     }));
   };
 
@@ -387,7 +387,7 @@ function TelegramChannelCard({
   const updateDraft = (botId: string, field: string, value: string) => {
     setDrafts((prev) => ({
       ...prev,
-      [botId]: { ...(prev[botId] ?? {}), [field]: value },
+      [botId]: { ...(prev[botId] ?? ({} as TelegramBot)), [field]: value },
     }));
   };
 
@@ -565,7 +565,7 @@ function QqChannelCard({
   const updateDraft = (botId: string, field: string, value: string) => {
     setDrafts((prev) => ({
       ...prev,
-      [botId]: { ...(prev[botId] ?? {}), [field]: value },
+      [botId]: { ...(prev[botId] ?? ({} as QqBot)), [field]: value },
     }));
   };
 
@@ -682,6 +682,10 @@ function QqChannelCard({
 interface WeixinBot extends BotItem {
   accountId?: string;
   peerUserId?: string;
+  botToken?: string;
+  baseUrl?: string;
+  contextToken?: string;
+  getUpdatesBuf?: string;
 }
 
 function WeixinChannelCard({
@@ -712,7 +716,12 @@ function WeixinChannelCard({
     (bot: WeixinBot): boolean => {
       const d = drafts[bot.id];
       if (!d) return false;
-      return d.accountId !== bot.accountId || d.peerUserId !== bot.peerUserId;
+      return (
+        d.accountId !== bot.accountId ||
+        d.peerUserId !== bot.peerUserId ||
+        d.botToken !== bot.botToken ||
+        d.baseUrl !== bot.baseUrl
+      );
     },
     [drafts],
   );
@@ -720,7 +729,7 @@ function WeixinChannelCard({
   const updateDraft = (botId: string, field: string, value: string) => {
     setDrafts((prev) => ({
       ...prev,
-      [botId]: { ...(prev[botId] ?? {}), [field]: value },
+      [botId]: { ...(prev[botId] ?? ({} as WeixinBot)), [field]: value },
     }));
   };
 
@@ -797,6 +806,8 @@ function WeixinChannelCard({
         if (result.status === "confirmed") {
           updateDraft(botId, "accountId", result.accountId ?? "");
           updateDraft(botId, "peerUserId", result.peerUserId ?? "");
+          updateDraft(botId, "botToken", result.botToken ?? "");
+          updateDraft(botId, "baseUrl", result.baseUrl ?? "");
           setStatus(t("remoteChannelsWeixinLoginConfirmed"));
         } else {
           setStatus(result.error || t("remoteChannelsWeixinLoginFailed"));
@@ -847,6 +858,10 @@ function WeixinChannelCard({
             )}
             <BotField label={t("remoteChannelsWeixinPeerUserIdTitle")} value={d.peerUserId ?? ""}
               onChange={(v) => updateDraft(bot.id, "peerUserId", v)} />
+            <BotField label="Bot Token" value={d.botToken ?? ""} type="password"
+              onChange={(v) => updateDraft(bot.id, "botToken", v)} />
+            <BotField label="Base URL" value={d.baseUrl ?? ""} placeholder="https://ilinkai.weixin.qq.com"
+              onChange={(v) => updateDraft(bot.id, "baseUrl", v)} />
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "var(--space-2)" }}>
               <button type="button" className="settings-button"
                 disabled={isSaving[bot.id] || !hasChanges(bot)}

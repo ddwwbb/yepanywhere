@@ -194,7 +194,7 @@ export function AgentsPage() {
   const { t } = useI18n();
   const { processes, terminatedProcesses, loading, error } = useProcesses();
 
-  const { openSidebar, isWideScreen } = useNavigationLayout();
+  const { openSidebar, isWideScreen, toggleSidebar, isSidebarCollapsed } = useNavigationLayout();
 
   // Split processes into active (in-turn/waiting-input) and idle
   const activeProcesses = processes.filter(
@@ -216,6 +216,9 @@ export function AgentsPage() {
         <PageHeader
           title={t("agentsTitle" as never)}
           onOpenSidebar={openSidebar}
+          onToggleSidebar={toggleSidebar}
+          isWideScreen={isWideScreen}
+          isSidebarCollapsed={isSidebarCollapsed}
         />
 
         <main className="page-scroll-container">

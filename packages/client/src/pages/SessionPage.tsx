@@ -1093,11 +1093,11 @@ function SessionPageContent({
           </div>
         )}
 
-        {hasPendingToolCalls && (
+        {hasPendingToolCalls ? (
           <div className="external-session-warning pending-tool-warning">
             {t("sessionPendingElsewhereWarning")}
           </div>
-        )}
+        ) : null}
 
         <main className="session-messages">
           {loading ? (
@@ -1138,7 +1138,7 @@ function SessionPageContent({
 
 
         {/* Queued message banner - shown above input when messages are waiting */}
-        {console.log('[SessionPage] deferredMessages:', deferredMessages.length, deferredMessages) && null}
+        {/* eslint-disable no-console */}
         {deferredMessages.length > 0 && (
           <div className="deferred-queue-banner">
             {deferredMessages.map((qm, i) => (

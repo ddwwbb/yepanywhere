@@ -71,6 +71,7 @@ export function SessionMenu({
     botId: string;
     channel: string;
     name?: string;
+    boundSessionId?: string;
   }> | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState<{
     top: number;
@@ -223,7 +224,7 @@ export function SessionMenu({
     setIsBindingBot(true);
     try {
       const result = await api.getAvailableBots();
-      setAvailableBots(result.bots.filter((b) => !b.boundSessionId));
+      setAvailableBots(result.bots);
       setShowBotPicker(true);
     } catch (error) {
       console.error("Failed to load available bots:", error);
@@ -394,6 +395,11 @@ export function SessionMenu({
               onClick={() => void handleBindBot(bot.botId)} disabled={isBindingBot}>
               <span style={{ fontSize: "0.8em", color: "var(--color-text-secondary)", marginRight: "var(--space-2)" }}>[{bot.channel}]</span>
               {bot.name || bot.botId.slice(-6)}
+              {bot.boundSessionId && (
+                <span style={{ fontSize: "0.75em", color: "var(--color-text-tertiary)", marginLeft: "var(--space-2)" }}>
+                  {t("sessionMenuBotBoundReplace")}
+                </span>
+              )}
             </button>
           ))}
         </div>

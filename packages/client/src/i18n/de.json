@@ -959,6 +959,7 @@
   "sessionMenuLoadingBots": "Laden...",
   "sessionMenuUnbinding": "Lösen...",
   "sessionMenuNoBotsAvailable": "Keine Bots verfügbar",
+  "sessionMenuBotBoundReplace": "(Bindung ersetzen)",
   "bridge.title": "Remote-Bridge",
   "bridge.description": "Yep-Benachrichtigungen an externe Chat-Plattformen brücken.",
   "bridge.overview": "Übersicht",

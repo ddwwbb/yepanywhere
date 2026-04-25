@@ -959,6 +959,7 @@
   "sessionMenuLoadingBots": "Cargando...",
   "sessionMenuUnbinding": "Desvinculando...",
   "sessionMenuNoBotsAvailable": "No hay bots disponibles",
+  "sessionMenuBotBoundReplace": "(reemplazar enlace)",
   "bridge.title": "Puente Remoto",
   "bridge.description": "Conecte las notificaciones de Yep a plataformas de chat externas para actualizaciones en tiempo real.",
   "bridge.overview": "Resumen",

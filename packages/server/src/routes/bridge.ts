@@ -36,7 +36,7 @@ export function createBridgeRoutes(deps: BridgeRoutesDeps): Hono {
           return c.json({ ok: false, reason: "bridge_not_available" });
         }
 
-        const result = remoteChannelService.start();
+        const result = await remoteChannelService.start();
         if (!result.started) {
           return c.json({ ok: false, reason: result.reason ?? "unknown_error" });
         }
@@ -46,7 +46,7 @@ export function createBridgeRoutes(deps: BridgeRoutesDeps): Hono {
       }
 
       if (action === "stop") {
-        remoteChannelService?.stop();
+        await remoteChannelService?.stop();
         await serverSettingsService?.updateSettings({ bridgeAutoStart: false });
         return c.json({ ok: true, status: remoteChannelService?.getStatus() ?? { running: false, startedAt: null, adapters: [] } });
       }
