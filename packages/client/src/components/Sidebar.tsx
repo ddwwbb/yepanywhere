@@ -401,6 +401,13 @@ export function Sidebar({
               onClick={onNavigate}
               basePath={basePath}
             />
+            <SidebarNavItem
+              to="/bridge"
+              icon={SidebarIcons.bridge}
+              label={t("sidebarBridge")}
+              onClick={onNavigate}
+              basePath={basePath}
+            />
             {/* Switch Host - show whenever we have a remote connection */}
             {remoteConnection && (
               <button

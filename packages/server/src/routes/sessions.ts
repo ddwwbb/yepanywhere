@@ -10,6 +10,8 @@ import {
   isUrlProjectId,
   thinkingOptionToConfig,
 } from "@yep-anywhere/shared";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 import { Hono } from "hono";
 import { augmentTextBlocks } from "../augments/markdown-augments.js";
 import type { SessionMetadataService } from "../metadata/index.js";
@@ -1481,6 +1483,128 @@ export function createSessionsRoutes(deps: SessionsDeps): Hono {
       starredCount,
       archivedCount,
     });
+  });
+
+  // DELETE /api/sessions/:sessionId - Delete a session and its files
+  routes.delete("/sessions/:sessionId", async (c) => {
+    const sessionId = c.req.param("sessionId");
+
+    // 禁止删除正在运行的会话
+    const process = deps.supervisor.getProcessForSession(sessionId);
+    if (process) {
+      return c.json({ error: "Cannot delete an active session" }, 409);
+    }
+
+    let body: { projectId?: string } = {};
+    try {
+      body = await c.req.json();
+    } catch {
+      // Body is optional
+    }
+
+    const projectId = body.projectId;
+    if (!projectId || !isUrlProjectId(projectId)) {
+      return c.json({ error: "Valid projectId is required" }, 400);
+    }
+
+    const project = await deps.scanner.getProject(projectId);
+    if (!project) {
+      return c.json({ error: "Project not found" }, 404);
+    }
+
+    // 查找会话文件路径
+    let filePath: string | null = null;
+    let sessionDir: string | null = null;
+
+    // 先用主 reader 查找
+    const reader = deps.readerFactory(project);
+    filePath = (await reader.getSessionFilePath?.(sessionId)) ?? null;
+    if (!filePath && project.sessionDir) {
+      // Claude reader 不实现 getSessionFilePath，按约定路径查找
+      const candidate = path.join(project.sessionDir, `${sessionId}.jsonl`);
+      try {
+        await fs.access(candidate);
+        filePath = candidate;
+      } catch {
+        // 不存在，继续查找其他 provider
+      }
+    }
+
+    // 如果主 reader 没找到，尝试 Codex reader
+    if (!filePath) {
+      const codexReader = getCodexReader(project.path);
+      if (codexReader) {
+        filePath = await codexReader.getSessionFilePath(sessionId);
+      }
+    }
+
+    // 如果还没找到，尝试 Gemini reader
+    if (!filePath) {
+      const geminiReader =
+        deps.geminiReaderFactory?.(project.path) ??
+        (deps.geminiSessionsDir
+          ? new GeminiSessionReader({
+              sessionsDir: deps.geminiSessionsDir,
+              projectPath: project.path,
+              hashToCwd: deps.geminiScanner?.getHashToCwd(),
+            })
+          : null);
+      if (geminiReader) {
+        filePath = await geminiReader.getSessionFilePath(sessionId);
+      }
+    }
+
+    if (!filePath) {
+      return c.json({ error: "Session file not found" }, 404);
+    }
+
+    try {
+      // 删除会话文件
+      await fs.unlink(filePath);
+
+      // 删除关联的 agent 文件（Claude 子代理会话）
+      const dir = path.dirname(filePath);
+      const subagentsDir = path.join(dir, "subagents");
+      for (const scanDir of [subagentsDir, dir]) {
+        try {
+          const files = await fs.readdir(scanDir);
+          const agentFiles = files.filter(
+            (f) => f.startsWith(`agent-${sessionId}`) && f.endsWith(".jsonl"),
+          );
+          await Promise.all(
+            agentFiles.map((f) => fs.unlink(path.join(scanDir, f)).catch(() => {})),
+          );
+        } catch {
+          // 目录不存在，忽略
+        }
+      }
+
+      // 清理元数据
+      if (deps.sessionMetadataService) {
+        await deps.sessionMetadataService.clearSession(sessionId);
+      }
+
+      // 清理通知数据
+      if (deps.notificationService) {
+        await deps.notificationService.clearSession(sessionId);
+      }
+
+      // 发送事件通知前端
+      if (deps.eventBus) {
+        deps.eventBus.emit({
+          type: "session-deleted",
+          sessionId,
+          projectId: projectId as UrlProjectId,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      return c.json({ deleted: true });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to delete session";
+      return c.json({ error: message }, 500);
+    }
   });
 
   // PUT /api/sessions/:sessionId/metadata - Update session metadata (title, archived, starred)

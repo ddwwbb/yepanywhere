@@ -58,6 +58,7 @@ import { createServerAdminRoutes } from "./routes/server-admin.js";
 import { createServerInfoRoutes } from "./routes/server-info.js";
 import { createSessionsRoutes } from "./routes/sessions.js";
 import { createSettingsRoutes } from "./routes/settings.js";
+import { createBridgeRoutes } from "./routes/bridge.js";
 import { createSharingRoutes } from "./routes/sharing.js";
 import { ClaudeOllamaProvider } from "./sdk/providers/claude-ollama.js";
 
@@ -431,6 +432,14 @@ export function createApp(options: AppOptions): AppResult {
             ? `http://${options.serverHost}:${options.serverPort}`
             : undefined,
       });
+
+      // 恢复桥接自动启动状态
+      if (options.serverSettingsService.getSetting("bridgeAutoStart")) {
+        const result = remoteChannelService.start();
+        if (result.started) {
+          console.log("[remote-channel] Bridge auto-started from saved preference");
+        }
+      }
     }
   }
 
@@ -705,6 +714,12 @@ export function createApp(options: AppOptions): AppResult {
       }),
     );
   }
+
+  // Bridge routes (remote bridge status and control)
+  app.route(
+    "/api/bridge",
+    createBridgeRoutes({ remoteChannelService, serverSettingsService: options.serverSettingsService }),
+  );
 
   // Sharing routes (session snapshot sharing via Worker)
   if (options.sharingService) {

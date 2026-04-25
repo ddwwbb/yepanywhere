@@ -1043,7 +1043,7 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
     if (rc.feishu?.enabled) {
       for (const bot of rc.feishu.bots ?? []) {
         if (bot.enabled === false) continue;
-        if (!bot.appId || !bot.appSecret || !bot.appChatId) continue;
+        if (!bot.appId || !bot.appSecret) continue;
         bots.push({
           botId: bot.id,
           channel: "feishu",

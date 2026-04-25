@@ -39,6 +39,7 @@ export interface RemoteChannelQqBot {
   appId?: string;
   appSecret?: string;
   openId?: string;
+  proxyUrl?: string;
   boundSessionId?: string;
 }
 
@@ -112,6 +113,8 @@ export interface ServerSettings {
   lifecycleWebhookDryRun?: boolean;
   /** Remote channel outbound notification settings */
   remoteChannels?: RemoteChannelSettings;
+  /** Whether the bridge should auto-start on server boot (persisted across restarts) */
+  bridgeAutoStart?: boolean;
 }
 
 /** Default settings */

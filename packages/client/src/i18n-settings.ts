@@ -113,12 +113,6 @@ export function getSettingsCategories(
       description: t("settingsRemoteDescription"),
     },
     {
-      id: "remote-channels",
-      label: t("settingsRemoteChannelsTitle"),
-      icon: "📣",
-      description: t("settingsRemoteChannelsDescription"),
-    },
-    {
       id: "providers",
       label: t("settingsProvidersTitle"),
       icon: "🔌",

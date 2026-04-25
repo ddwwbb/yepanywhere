@@ -8,6 +8,7 @@ import {
 import {
   type ProcessStateEvent,
   type SessionCreatedEvent,
+  type SessionDeletedEvent,
   type SessionMetadataChangedEvent,
   type SessionSeenEvent,
   type SessionStatusEvent,
@@ -361,6 +362,11 @@ export function useGlobalSessions(options: UseGlobalSessionsOptions = {}) {
     );
   }, []);
 
+  // Handle session deletion
+  const handleSessionDeleted = useCallback((event: SessionDeletedEvent) => {
+    setSessions((prev) => prev.filter((s) => s.id !== event.sessionId));
+  }, []);
+
   // Subscribe to SSE events
   useFileActivity({
     onSessionStatusChange: handleSessionStatusChange,
@@ -369,6 +375,7 @@ export function useGlobalSessions(options: UseGlobalSessionsOptions = {}) {
     onSessionMetadataChange: handleSessionMetadataChange,
     onSessionSeen: handleSessionSeen,
     onSessionUpdated: handleSessionUpdated,
+    onSessionDeleted: handleSessionDeleted,
     onReconnect: fetch,
   });
 

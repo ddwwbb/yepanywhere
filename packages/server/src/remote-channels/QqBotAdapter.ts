@@ -3,14 +3,14 @@ import { formatNotificationText } from "./format-text.js";
 import { postThroughTunnel } from "./proxy-tunnel.js";
 import type { RemoteChannelAdapter, RemoteChannelDeliveryResult } from "./types.js";
 
-const FEISHU_AUTH_URL = "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal";
-const FEISHU_MESSAGE_URL = "https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=chat_id";
+const QQ_TOKEN_URL = "https://bots.qq.com/app/getAppAccessToken";
+const QQ_SEND_URL = "https://api.sgroup.qq.com/v2/users";
 
-export interface FeishuAppAdapterOptions {
+export interface QqBotAdapterOptions {
   botId: string;
   appId: string;
   appSecret: string;
-  appChatId?: string;
+  openId: string;
   proxyUrl?: string;
   boundSessionId?: string;
   fetchImpl?: typeof fetch;
@@ -18,25 +18,25 @@ export interface FeishuAppAdapterOptions {
   maxTextLength?: number;
 }
 
-export class FeishuAppAdapter implements RemoteChannelAdapter {
-  readonly channel = "feishu";
+export class QqBotAdapter implements RemoteChannelAdapter {
+  readonly channel = "qq";
   readonly botId: string;
   readonly boundSessionId?: string;
 
   private readonly appId: string;
   private readonly appSecret: string;
-  private readonly appChatId?: string;
+  private readonly openId: string;
   private readonly proxyUrl?: string;
   private readonly fetchImpl: typeof fetch;
   private readonly timeoutMs: number;
   private readonly maxTextLength: number;
 
-  constructor(options: FeishuAppAdapterOptions) {
+  constructor(options: QqBotAdapterOptions) {
     this.botId = options.botId;
     this.boundSessionId = options.boundSessionId;
     this.appId = options.appId;
     this.appSecret = options.appSecret;
-    this.appChatId = options.appChatId;
+    this.openId = options.openId;
     this.proxyUrl = options.proxyUrl;
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.timeoutMs = options.timeoutMs ?? 10_000;
@@ -44,37 +44,35 @@ export class FeishuAppAdapter implements RemoteChannelAdapter {
   }
 
   async send(event: RemoteChannelEvent): Promise<RemoteChannelDeliveryResult> {
-    if (!this.appChatId) {
-      return { ok: false, channel: this.channel, error: "No appChatId configured" };
-    }
-
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
 
     try {
-      const tokenResult = await this.getTenantAccessToken(controller.signal);
+      const tokenResult = await this.getAccessToken(controller.signal);
       if (!tokenResult.ok) {
         return { ok: false, channel: this.channel, error: tokenResult.error };
       }
 
+      const text = formatNotificationText(event, this.maxTextLength);
       const body = JSON.stringify({
-        receive_id: this.appChatId,
-        msg_type: "text",
-        content: JSON.stringify({ text: formatNotificationText(event, this.maxTextLength) }),
+        content: text,
+        msg_type: 0,
+        msg_id: event.id,
       });
 
+      const url = `${QQ_SEND_URL}/${encodeURIComponent(this.openId)}/messages`;
       const response = this.proxyUrl
         ? await postThroughTunnel(
-            new URL(FEISHU_MESSAGE_URL),
+            new URL(url),
             new URL(this.proxyUrl),
             443,
             body,
             controller.signal,
           )
-        : await this.fetchImpl(FEISHU_MESSAGE_URL, {
+        : await this.fetchImpl(url, {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${tokenResult.token}`,
+              Authorization: `QQBot ${tokenResult.token}`,
               "Content-Type": "application/json",
             },
             body,
@@ -85,20 +83,16 @@ export class FeishuAppAdapter implements RemoteChannelAdapter {
         return {
           ok: false,
           channel: this.channel,
-          error: `Feishu IM API returned HTTP ${response.status}`,
+          error: `QQ send message returned HTTP ${response.status}`,
         };
       }
 
-      const responseBody = (await response.json()) as { code?: number; msg?: string };
-      if (responseBody.code !== 0) {
-        return {
-          ok: false,
-          channel: this.channel,
-          error: responseBody.msg ?? `Feishu IM API error code ${responseBody.code}`,
-        };
-      }
-
-      return { ok: true, channel: this.channel };
+      const responseBody = (await response.json()) as { id?: string; message?: string };
+      return {
+        ok: true,
+        channel: this.channel,
+        messageId: responseBody.id,
+      };
     } catch (error) {
       return {
         ok: false,
@@ -110,23 +104,20 @@ export class FeishuAppAdapter implements RemoteChannelAdapter {
     }
   }
 
-  private async getTenantAccessToken(
+  private async getAccessToken(
     signal: AbortSignal,
   ): Promise<{ ok: true; token: string } | { ok: false; error?: string }> {
-    const body = JSON.stringify({
-      app_id: this.appId,
-      app_secret: this.appSecret,
-    });
+    const body = JSON.stringify({ appId: this.appId, clientSecret: this.appSecret });
 
     const response = this.proxyUrl
       ? await postThroughTunnel(
-          new URL(FEISHU_AUTH_URL),
+          new URL(QQ_TOKEN_URL),
           new URL(this.proxyUrl),
           443,
           body,
           signal,
         )
-      : await this.fetchImpl(FEISHU_AUTH_URL, {
+      : await this.fetchImpl(QQ_TOKEN_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body,
@@ -134,21 +125,14 @@ export class FeishuAppAdapter implements RemoteChannelAdapter {
         });
 
     if (!response.ok) {
-      return { ok: false, error: `Feishu auth returned HTTP ${response.status}` };
+      return { ok: false, error: `QQ token returned HTTP ${response.status}` };
     }
 
-    const result = (await response.json()) as {
-      code?: number;
-      msg?: string;
-      tenant_access_token?: string;
-    };
-    if (result.code !== 0 || !result.tenant_access_token) {
-      return {
-        ok: false,
-        error: result.msg ?? `Feishu auth failed with code ${result.code}`,
-      };
+    const result = (await response.json()) as { access_token?: string; message?: string };
+    if (!result.access_token) {
+      return { ok: false, error: result.message ?? "QQ token response missing access_token" };
     }
 
-    return { ok: true, token: result.tenant_access_token };
+    return { ok: true, token: result.access_token };
   }
 }

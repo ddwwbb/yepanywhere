@@ -139,6 +139,7 @@ export function createGlobalSessionsRoutes(deps: GlobalSessionsDeps): Hono {
       case "session-updated":
       case "session-seen":
       case "session-metadata-changed":
+      case "session-deleted":
         return true;
       default:
         return false;

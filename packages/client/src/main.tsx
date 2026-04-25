@@ -11,6 +11,7 @@ import { initializeFontSize } from "./hooks/useFontSize";
 import { initializeTabSize } from "./hooks/useTabSize";
 import { initializeTheme } from "./hooks/useTheme";
 import { NavigationLayout } from "./layouts";
+import { BridgePage } from "./pages/BridgePage";
 import { ActivityPage } from "./pages/ActivityPage";
 import { AgentsPage } from "./pages/AgentsPage";
 import { EmulatorPage } from "./pages/EmulatorPage";
@@ -59,6 +60,7 @@ createRoot(rootElement).render(
               <Route path="/inbox" element={<InboxPage />} />
               <Route path="/settings" element={<SettingsLayout />} />
               <Route path="/settings/:category" element={<SettingsLayout />} />
+              <Route path="/bridge" element={<BridgePage />} />
               {/* Project-scoped pages */}
               <Route
                 path="/projects/:projectId"

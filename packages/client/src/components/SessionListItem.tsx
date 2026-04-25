@@ -49,6 +49,7 @@ interface SessionListItemProps {
   onToggleArchive?: () => void;
   onToggleRead?: () => void;
   onRename?: () => void;
+  onDelete?: () => void;
 
   // Selection (for All Sessions page)
   isCurrent?: boolean;
@@ -111,6 +112,7 @@ export function SessionListItem({
   onToggleArchive,
   onToggleRead,
   onRename,
+  onDelete,
   // Selection
   isCurrent = false,
   isSelected = false,
@@ -462,6 +464,7 @@ export function SessionListItem({
               `${basePath}/projects/${projectId}/sessions/${newSessionId}`,
             );
           }}
+          onDelete={onDelete}
           useEllipsisIcon
           useFixedPositioning
           className="session-list-item__menu"

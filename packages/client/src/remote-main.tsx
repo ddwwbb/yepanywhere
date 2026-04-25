@@ -31,6 +31,7 @@ import { initializeTabSize } from "./hooks/useTabSize";
 import { initializeTheme } from "./hooks/useTheme";
 import { I18nProvider } from "./i18n";
 import { NavigationLayout } from "./layouts";
+import { BridgePage } from "./pages/BridgePage";
 import { ActivityPage } from "./pages/ActivityPage";
 import { AgentsPage } from "./pages/AgentsPage";
 import { DirectLoginPage } from "./pages/DirectLoginPage";
@@ -77,6 +78,7 @@ const APP_ROUTES = (
       <Route path="devices/:deviceId" element={<EmulatorPage />} />
       <Route path="settings" element={<SettingsLayout />} />
       <Route path="settings/:category" element={<SettingsLayout />} />
+      <Route path="bridge" element={<BridgePage />} />
       <Route path="new-session" element={<NewSessionPage />} />
       <Route
         path="projects/:projectId/sessions/:sessionId"

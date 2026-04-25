@@ -4,6 +4,7 @@ import {
   type FileType,
   type ProcessStateEvent,
   type SessionCreatedEvent,
+  type SessionDeletedEvent,
   type SessionMetadataChangedEvent,
   type SessionSeenEvent,
   type SessionStatusEvent,
@@ -19,6 +20,7 @@ export type {
   FileType,
   ProcessStateEvent,
   SessionCreatedEvent,
+  SessionDeletedEvent,
   SessionMetadataChangedEvent,
   SessionSeenEvent,
   SessionStatusEvent,
@@ -44,6 +46,8 @@ interface UseFileActivityOptions {
   onSessionMetadataChange?: (event: SessionMetadataChangedEvent) => void;
   /** Callback when session content changes (auto-generated title, messageCount) */
   onSessionUpdated?: (event: SessionUpdatedEvent) => void;
+  /** Callback when a session is deleted */
+  onSessionDeleted?: (event: SessionDeletedEvent) => void;
   /** Callback when SSE connection is re-established after being disconnected */
   onReconnect?: () => void;
 }
@@ -64,6 +68,7 @@ export function useFileActivity(options: UseFileActivityOptions = {}) {
     onProcessStateChange,
     onSessionMetadataChange,
     onSessionUpdated,
+    onSessionDeleted,
     onReconnect,
   } = options;
 
@@ -87,6 +92,8 @@ export function useFileActivity(options: UseFileActivityOptions = {}) {
   onSessionMetadataChangeRef.current = onSessionMetadataChange;
   const onSessionUpdatedRef = useRef(onSessionUpdated);
   onSessionUpdatedRef.current = onSessionUpdated;
+  const onSessionDeletedRef = useRef(onSessionDeleted);
+  onSessionDeletedRef.current = onSessionDeleted;
   const onReconnectRef = useRef(onReconnect);
   onReconnectRef.current = onReconnect;
   const maxEventsRef = useRef(maxEvents);
@@ -147,6 +154,12 @@ export function useFileActivity(options: UseFileActivityOptions = {}) {
     unsubscribers.push(
       activityBus.on("session-updated", (data) => {
         onSessionUpdatedRef.current?.(data);
+      }),
+    );
+
+    unsubscribers.push(
+      activityBus.on("session-deleted", (data) => {
+        onSessionDeletedRef.current?.(data);
       }),
     );
 

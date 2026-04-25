@@ -8,6 +8,7 @@ interface BulkActionBarProps {
   onUnstar: () => Promise<void>;
   onMarkRead: () => Promise<void>;
   onMarkUnread: () => Promise<void>;
+  onDelete: () => Promise<void>;
   onClearSelection: () => void;
   isPending?: boolean;
   /** True if any selected item can be archived (is not archived) */
@@ -40,6 +41,7 @@ export function BulkActionBar({
   onUnstar,
   onMarkRead,
   onMarkUnread,
+  onDelete,
   onClearSelection,
   isPending = false,
   canArchive = true,
@@ -282,6 +284,30 @@ export function BulkActionBar({
             <span>{t("bulkMarkUnread")}</span>
           </button>
         )}
+
+        <button
+          type="button"
+          className="bulk-action-button bulk-action-button--danger"
+          onClick={onDelete}
+          disabled={isPending}
+          title={t("bulkDeleteSelected")}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          </svg>
+          <span>{t("bulkDelete")}</span>
+        </button>
       </div>
     </div>
   );

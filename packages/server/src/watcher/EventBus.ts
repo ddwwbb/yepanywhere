@@ -145,6 +145,14 @@ export interface SessionMetadataChangedEvent {
   timestamp: string;
 }
 
+/** Event emitted when a session is deleted by the user */
+export interface SessionDeletedEvent {
+  type: "session-deleted";
+  sessionId: string;
+  projectId: UrlProjectId;
+  timestamp: string;
+}
+
 /** Event emitted when a session process is aborted by this server */
 export interface SessionAbortedEvent {
   type: "session-aborted";
@@ -229,6 +237,7 @@ export type BusEvent =
   | QueueRequestRemovedEvent
   | WorkerActivityEvent
   | SessionMetadataChangedEvent
+  | SessionDeletedEvent
   | SessionAbortedEvent
   | SessionUpdatedEvent
   | NetworkBindingChangedEvent

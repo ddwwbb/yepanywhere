@@ -496,6 +496,37 @@ export function GlobalSessionsPage() {
     }
   }, [selectedIds, isBulkActionPending, handleClearSelection]);
 
+  const handleBulkDelete = useCallback(async () => {
+    if (isBulkActionPending) return;
+    const confirmed = window.confirm(
+      t("bulkDeleteConfirm", { count: selectedIds.size }),
+    );
+    if (!confirmed) return;
+    setIsBulkActionPending(true);
+    try {
+      const selectedSessions = sessions.filter((s) => selectedIds.has(s.id));
+      await Promise.all(
+        selectedSessions.map((s) => api.deleteSession(s.id, s.projectId)),
+      );
+      handleClearSelection();
+    } finally {
+      setIsBulkActionPending(false);
+    }
+  }, [selectedIds, sessions, isBulkActionPending, handleClearSelection, t]);
+
+  const handleDeleteSession = useCallback(
+    (sessionId: string, projectId: string) => async () => {
+      const confirmed = window.confirm(t("deleteSessionConfirm"));
+      if (!confirmed) return;
+      try {
+        await api.deleteSession(sessionId, projectId);
+      } catch (err) {
+        console.error("Failed to delete session:", err);
+      }
+    },
+    [t],
+  );
+
   // "Archive all" for filtered results (no manual selection needed)
   const handleArchiveAllFiltered = useCallback(async () => {
     if (isBulkActionPending) return;
@@ -803,6 +834,10 @@ export function GlobalSessionsPage() {
                         basePath={basePath}
                         messageCount={session.messageCount}
                         hasDraft={drafts.has(session.id)}
+                        onDelete={handleDeleteSession(
+                          session.id,
+                          session.projectId,
+                        )}
                       />
                     </div>
                   ))}
@@ -834,6 +869,7 @@ export function GlobalSessionsPage() {
               onUnstar={handleBulkUnstar}
               onMarkRead={handleBulkMarkRead}
               onMarkUnread={handleBulkMarkUnread}
+              onDelete={handleBulkDelete}
               onClearSelection={handleClearSelection}
               isPending={isBulkActionPending}
               canArchive={bulkActionState.canArchive}

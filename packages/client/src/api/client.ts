@@ -627,6 +627,16 @@ export const api = {
     }),
 
   /**
+   * Delete a session and its associated files.
+   * Cannot delete sessions with active processes.
+   */
+  deleteSession: (sessionId: string, projectId: string) =>
+    fetchJSON<{ deleted: boolean }>(`/sessions/${sessionId}`, {
+      method: "DELETE",
+      body: JSON.stringify({ projectId }),
+    }),
+
+  /**
    * Clone a session, creating a new session with the same conversation history.
    * Supported for Claude and Codex sessions.
    */
@@ -1137,6 +1147,13 @@ export interface ServerSettings {
   remoteChannels?: {
     feishu?: {
       enabled?: boolean;
+      domain?: "feishu" | "lark";
+      dmPolicy?: "open" | "pairing" | "allowlist" | "disabled";
+      allowFrom?: string;
+      groupPolicy?: "open" | "allowlist" | "disabled";
+      groupAllowFrom?: string;
+      requireMention?: boolean;
+      threadSession?: boolean;
       bots?: {
         id: string;
         name?: string;

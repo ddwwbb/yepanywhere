@@ -22,6 +22,8 @@ export interface SessionMenuProps {
   onClone?: (newSessionId: string) => void | Promise<void>;
   /** Called to terminate the session's process */
   onTerminate?: () => void | Promise<void>;
+  /** Called to delete the session (with confirmation handled by caller) */
+  onDelete?: () => void | Promise<void>;
   /** Use "..." icon instead of chevron */
   useEllipsisIcon?: boolean;
   /** Whether session sharing is configured */
@@ -50,6 +52,7 @@ export function SessionMenu({
   onRename,
   onClone,
   onTerminate,
+  onDelete,
   sharingConfigured,
   onShare,
   useEllipsisIcon = false,
@@ -441,6 +444,29 @@ export function SessionMenu({
           {isTerminating
             ? t("sessionMenuTerminating")
             : t("sessionMenuTerminate")}
+        </button>
+      )}
+      {onDelete && (
+        <button
+          type="button"
+          className="session-menu-delete-button"
+          onClick={() => handleAction(onDelete)}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          </svg>
+          {t("sessionMenuDelete")}
         </button>
       )}
     </div>
