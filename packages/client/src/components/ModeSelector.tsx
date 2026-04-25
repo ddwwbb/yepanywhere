@@ -10,11 +10,11 @@ const MODE_ORDER: PermissionMode[] = [
   "bypassPermissions",
 ];
 
-const MODE_LABELS: Record<PermissionMode, string> = {
-  default: "Ask before edits",
-  acceptEdits: "Edit automatically",
-  plan: "Plan mode",
-  bypassPermissions: "Bypass permissions",
+const MODE_LABEL_KEYS: Record<PermissionMode, string> = {
+  default: "modeDefaultLabel",
+  acceptEdits: "modeAcceptEditsLabel",
+  plan: "modePlanLabel",
+  bypassPermissions: "modeBypassPermissionsLabel",
 };
 
 // Breakpoint for desktop behavior (should match CSS)
@@ -146,8 +146,15 @@ export function ModeSelector({
     }
   };
 
+  const modeLabels: Record<PermissionMode, string> = {
+    default: t(MODE_LABEL_KEYS.default as never),
+    acceptEdits: t(MODE_LABEL_KEYS.acceptEdits as never),
+    plan: t(MODE_LABEL_KEYS.plan as never),
+    bypassPermissions: t(MODE_LABEL_KEYS.bypassPermissions as never),
+  };
+
   // Display text: show "Hold" when held, otherwise show mode label
-  const displayLabel = isHeld ? t("modeHold" as never) : MODE_LABELS[mode];
+  const displayLabel = isHeld ? t("modeHold" as never) : modeLabels[mode];
   const displayDotClass = isHeld ? "mode-hold" : `mode-${mode}`;
 
   // Shared options content used by both mobile sheet and desktop dropdown
@@ -203,7 +210,7 @@ export function ModeSelector({
           aria-pressed={!isHeld && mode === m}
         >
           <span className={`mode-dot mode-${m}`} />
-          <span className="mode-selector-label">{MODE_LABELS[m]}</span>
+          <span className="mode-selector-label">{modeLabels[m]}</span>
           {!isHeld && mode === m && (
             <span className="mode-selector-check" aria-hidden="true">
               <svg

@@ -391,9 +391,6 @@ export function SessionListItem({
                 {isNewSession && <ThinkingIndicator />}
                 {displayTitle}
                 {hasDraft && <span className="session-draft-badge">Draft</span>}
-                {hasBotBinding && (
-                  <span className="session-badge session-badge-bot">Bot</span>
-                )}
                 {isArchived && (
                   <span className="session-archived-badge">Archived</span>
                 )}
@@ -421,6 +418,7 @@ export function SessionListItem({
                     {customBadge.label}
                   </span>
                 )}
+                {hasBotBinding && <span className="status-badge status-bot">Bot</span>}
                 {showStatusBadge && status && (
                   <SessionStatusBadge
                     status={status}

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { GlobalSessionItem, ServerSettings } from "../api/client";
+import { api, type GlobalSessionItem, type ServerSettings } from "../api/client";
 import { useOptionalRemoteConnection } from "../contexts/RemoteConnectionContext";
 import { useDrafts } from "../hooks/useDrafts";
 import { useGlobalSessions } from "../hooks/useGlobalSessions";
@@ -232,6 +232,19 @@ export function Sidebar({
     navigate("/login");
     onNavigate();
   };
+
+  const handleDeleteSession = useCallback(
+    (sessionId: string, projectId: string) => async () => {
+      const confirmed = window.confirm(t("deleteSessionConfirm"));
+      if (!confirmed) return;
+      try {
+        await api.deleteSession(sessionId, projectId);
+      } catch (err) {
+        console.error("Failed to delete session:", err);
+      }
+    },
+    [t],
+  );
 
   // Starred sessions come from dedicated fetch (filtered by server)
   // Filter out archived just in case
@@ -496,6 +509,10 @@ export function Sidebar({
                       messageCount={session.messageCount}
                       hasDraft={drafts.has(session.id)}
                       hasBotBinding={botBoundSessionIds.has(session.id)}
+                      onDelete={handleDeleteSession(
+                        session.id,
+                        session.projectId,
+                      )}
                     />
                   ))}
               </ul>
@@ -551,6 +568,10 @@ export function Sidebar({
                       messageCount={session.messageCount}
                       hasDraft={drafts.has(session.id)}
                       hasBotBinding={botBoundSessionIds.has(session.id)}
+                      onDelete={handleDeleteSession(
+                        session.id,
+                        session.projectId,
+                      )}
                     />
                   ))}
               </ul>
@@ -603,6 +624,7 @@ export function Sidebar({
                     basePath={basePath}
                     messageCount={session.messageCount}
                     hasDraft={drafts.has(session.id)}
+                    onDelete={handleDeleteSession(session.id, session.projectId)}
                   />
                 ))}
               </ul>
