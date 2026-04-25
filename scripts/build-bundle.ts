@@ -25,8 +25,11 @@ const SHARED_DIST = path.join(ROOT_DIR, "packages/shared/dist");
 // Staging directory for npm publishing (keeps workspace package.json intact)
 const STAGING_DIR = path.join(ROOT_DIR, "dist/npm-package");
 
-// Version for npm package - set via NPM_VERSION env var (from git tag in CI) or fallback
-const NPM_VERSION = process.env.NPM_VERSION || "0.4.8";
+// Version for npm package - set via NPM_VERSION env var (from git tag in CI) or root package.json
+const rootPackageJson = JSON.parse(
+  fs.readFileSync(path.join(ROOT_DIR, "package.json"), "utf-8"),
+) as { version?: string };
+const NPM_VERSION = process.env.NPM_VERSION || rootPackageJson.version || "0.0.0";
 
 interface StepResult {
   step: string;

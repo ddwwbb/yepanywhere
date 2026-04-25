@@ -227,6 +227,36 @@ PORT=3400 pnpm start
 PORT=4000 YEP_ANYWHERE_PROFILE=dev pnpm dev
 ```
 
+### Windows 双击启动包
+
+可以生成一个稳定的 Windows 目录包：
+
+```bash
+pnpm build:windows
+```
+
+打包完成后输出目录为：
+
+```text
+dist/windows/YepAnywhere/
+├─ YepAnywhere.exe
+├─ YepAnywhere.cmd
+├─ node/
+└─ app/
+```
+
+使用方式：
+
+1. 进入 `dist/windows/YepAnywhere/`
+2. 双击 `YepAnywhere.exe`
+3. 等待控制台输出启动信息
+4. 打开 http://localhost:3400
+5. 关闭控制台窗口后服务结束
+
+如果本机没有可用的 C# 编译器，打包脚本会至少生成 `YepAnywhere.cmd`，双击该文件也可以启动服务。
+
+> Windows 包会内置当前 Node.js 运行时和 Yep Anywhere 应用文件，但 Claude Code、Codex、Gemini、OpenCode 等 Agent CLI 仍需单独安装，并确保能在系统 `PATH` 中找到。
+
 ## 远程访问
 
 **最简方式：** 使用免费公共中继 — 在设置中配置，或通过 CLI 命令完成无头配置：
