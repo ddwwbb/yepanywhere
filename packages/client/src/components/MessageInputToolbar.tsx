@@ -1,11 +1,15 @@
-import type { UploadedFile } from "@yep-anywhere/shared";
+import type { SlashCommand } from "@yep-anywhere/shared";
 import type { RefObject } from "react";
 import { useModelSettings } from "../hooks/useModelSettings";
 import { useI18n } from "../i18n";
 import type { ContextUsage, PermissionMode } from "../types";
 import { ContextUsageIndicator } from "./ContextUsageIndicator";
+import { McpServerButton } from "./McpServerButton";
 import { ModeSelector } from "./ModeSelector";
-import { SlashCommandButton } from "./SlashCommandButton";
+import {
+  SlashCommandButton,
+  type SlashCommandItem,
+} from "./SlashCommandButton";
 import { VoiceInputButton, type VoiceInputButtonRef } from "./VoiceInputButton";
 
 export interface MessageInputToolbarProps {
@@ -32,8 +36,13 @@ export interface MessageInputToolbarProps {
   voiceDisabled?: boolean;
 
   // Slash commands
-  slashCommands?: string[];
-  onSelectSlashCommand?: (command: string) => void;
+  slashCommands?: SlashCommand[];
+  onSelectSlashCommand?: (command: SlashCommandItem) => void;
+
+  // Runtime controls
+  onOpenModelSwitch?: () => void;
+  processId?: string;
+  mcpServers?: string[];
 
   // Context usage
   contextUsage?: ContextUsage;
@@ -72,6 +81,9 @@ export function MessageInputToolbar({
   voiceDisabled,
   slashCommands = [],
   onSelectSlashCommand,
+  onOpenModelSwitch,
+  processId,
+  mcpServers = [],
   contextUsage,
   isRunning,
   isThinking,
@@ -180,6 +192,26 @@ export function MessageInputToolbar({
             onTranscript={onVoiceTranscript}
             onInterimTranscript={onInterimTranscript}
             onListeningStart={onListeningStart}
+            disabled={voiceDisabled}
+          />
+        )}
+        {onOpenModelSwitch && (
+          <button
+            type="button"
+            className="model-selector-button"
+            onClick={onOpenModelSwitch}
+            disabled={voiceDisabled}
+            title="Switch model"
+            aria-label="Switch model"
+          >
+            <span className="model-selector-icon">◆</span>
+            <span className="model-selector-label">Model</span>
+          </button>
+        )}
+        {processId && (
+          <McpServerButton
+            processId={processId}
+            initialServers={mcpServers}
             disabled={voiceDisabled}
           />
         )}

@@ -210,6 +210,54 @@ export function createProcessesRoutes(deps: ProcessesDeps): Hono {
     return c.json({ commands });
   });
 
+  // GET /api/processes/:processId/mcp-servers - Get current MCP server status
+  routes.get("/:processId/mcp-servers", async (c) => {
+    const processId = c.req.param("processId");
+
+    const process = deps.supervisor.getProcess(processId);
+    if (!process) {
+      return c.json({ error: "Process not found" }, 404);
+    }
+
+    const mcpServers = await process.getMcpServerStatus();
+    if (mcpServers === null) {
+      return c.json(
+        { error: "MCP server control not supported for this process" },
+        400,
+      );
+    }
+
+    return c.json({ mcpServers });
+  });
+
+  // PUT /api/processes/:processId/mcp-servers/:serverName - Enable or disable an MCP server
+  routes.put("/:processId/mcp-servers/:serverName", async (c) => {
+    const processId = c.req.param("processId");
+    const serverName = c.req.param("serverName");
+
+    const process = deps.supervisor.getProcess(processId);
+    if (!process) {
+      return c.json({ error: "Process not found" }, 404);
+    }
+
+    const body = await c.req.json<{ enabled?: boolean }>();
+    const enabled = body.enabled;
+    if (typeof enabled !== "boolean") {
+      return c.json({ error: "enabled must be a boolean" }, 400);
+    }
+
+    const success = await process.toggleMcpServer(serverName, enabled);
+    if (!success) {
+      return c.json(
+        { error: "MCP server control not supported for this process" },
+        400,
+      );
+    }
+
+    const mcpServers = await process.getMcpServerStatus();
+    return c.json({ success: true, mcpServers: mcpServers ?? [] });
+  });
+
   // POST /api/processes/:processId/model - Change model mid-session
   // Body: { model?: string } - model to switch to, or undefined for default
   routes.post("/:processId/model", async (c) => {

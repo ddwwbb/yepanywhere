@@ -374,6 +374,8 @@ export class Supervisor {
       supportedModels,
       supportedCommands,
       setModel,
+      mcpServerStatus,
+      toggleMcpServer,
     } = result;
 
     const tempSessionId = randomUUID();
@@ -394,6 +396,8 @@ export class Supervisor {
       supportedModelsFn: supportedModels,
       supportedCommandsFn: supportedCommands,
       setModelFn: setModel,
+      mcpServerStatusFn: mcpServerStatus,
+      toggleMcpServerFn: toggleMcpServer,
       permissionMode: effectiveMode,
       provider: "claude", // Real SDK is always Claude
       model: modelSettings?.model,
@@ -477,6 +481,8 @@ export class Supervisor {
       supportedModels,
       supportedCommands,
       setModel,
+      mcpServerStatus,
+      toggleMcpServer,
     } = result;
 
     const options: ProcessConstructorOptions = {
@@ -496,6 +502,8 @@ export class Supervisor {
       supportedModelsFn: supportedModels,
       supportedCommandsFn: supportedCommands,
       setModelFn: setModel,
+      mcpServerStatusFn: mcpServerStatus,
+      toggleMcpServerFn: toggleMcpServer,
       permissionMode: effectiveMode,
       provider: "claude", // Real SDK is always Claude
       model: modelSettings?.model,
@@ -574,6 +582,8 @@ export class Supervisor {
       supportedModels,
       supportedCommands,
       setModel,
+      mcpServerStatus,
+      toggleMcpServer,
     } = result;
 
     const tempSessionId = randomUUID();
@@ -595,6 +605,8 @@ export class Supervisor {
       supportedModelsFn: supportedModels,
       supportedCommandsFn: supportedCommands,
       setModelFn: setModel,
+      mcpServerStatusFn: mcpServerStatus,
+      toggleMcpServerFn: toggleMcpServer,
       permissionMode: effectiveMode,
       provider: activeProvider.name,
       model: modelSettings?.model,
@@ -675,6 +687,8 @@ export class Supervisor {
       supportedModels,
       supportedCommands,
       setModel,
+      mcpServerStatus,
+      toggleMcpServer,
     } = result;
 
     const options: ProcessConstructorOptions = {
@@ -695,6 +709,8 @@ export class Supervisor {
       supportedModelsFn: supportedModels,
       supportedCommandsFn: supportedCommands,
       setModelFn: setModel,
+      mcpServerStatusFn: mcpServerStatus,
+      toggleMcpServerFn: toggleMcpServer,
       permissionMode: effectiveMode,
       provider: activeProvider.name,
       model: modelSettings?.model,

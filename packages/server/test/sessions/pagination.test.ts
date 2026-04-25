@@ -281,4 +281,136 @@ describe("sliceAtCompactBoundaries", () => {
     expect(result.pagination.totalCompactions).toBe(2);
     expect(result.pagination.hasOlderMessages).toBe(true);
   });
+
+  it("limits sessions without compactions when messageLimit is provided", () => {
+    const messages = [
+      msg("user", "u1"),
+      msg("assistant", "a1"),
+      msg("user", "u2"),
+      msg("assistant", "a2"),
+      msg("user", "u3"),
+    ];
+
+    const result = sliceAtCompactBoundaries(messages, 2, undefined, {
+      messageLimit: 2,
+    });
+
+    expect(result.messages).toEqual([
+      msg("user", "u2"),
+      msg("assistant", "a2"),
+      msg("user", "u3"),
+    ]);
+    expect(result.pagination).toEqual({
+      hasOlderMessages: true,
+      totalMessageCount: 5,
+      returnedMessageCount: 3,
+      truncatedBeforeMessageId: "u2",
+      totalCompactions: 0,
+    } satisfies PaginationInfo);
+  });
+
+  it("keeps old no-compaction behavior when messageLimit is not provided", () => {
+    const messages = [
+      msg("user", "u1"),
+      msg("assistant", "a1"),
+      msg("user", "u2"),
+    ];
+
+    const result = sliceAtCompactBoundaries(messages, 2);
+
+    expect(result.messages).toEqual(messages);
+    expect(result.pagination.hasOlderMessages).toBe(false);
+  });
+
+  it("loads older no-compaction chunks with beforeMessageId and messageLimit", () => {
+    const messages = [
+      msg("user", "u1"),
+      msg("assistant", "a1"),
+      msg("user", "u2"),
+      msg("assistant", "a2"),
+      msg("user", "u3"),
+    ];
+
+    const first = sliceAtCompactBoundaries(messages, 2, undefined, {
+      messageLimit: 2,
+    });
+    const second = sliceAtCompactBoundaries(
+      messages,
+      2,
+      first.pagination.truncatedBeforeMessageId,
+      { messageLimit: 2 },
+    );
+    expect(first.messages.map((m) => m.uuid)).toEqual(["u2", "a2", "u3"]);
+    expect(second.messages.map((m) => m.uuid)).toEqual(["u1", "a1"]);
+    expect(second.pagination.hasOlderMessages).toBe(false);
+    expect(second.pagination.truncatedBeforeMessageId).toBeUndefined();
+  });
+
+  it("does not repeat the full session when beforeMessageId points to the first message", () => {
+    const messages = [msg("user", "u1"), msg("assistant", "a1")];
+
+    const result = sliceAtCompactBoundaries(messages, 2, "u1", {
+      messageLimit: 2,
+    });
+
+    expect(result.messages).toEqual([]);
+    expect(result.pagination.hasOlderMessages).toBe(false);
+    expect(result.pagination.returnedMessageCount).toBe(0);
+  });
+
+  it("applies messageLimit when beforeMessageId is not found", () => {
+    const messages = [
+      msg("user", "u1"),
+      msg("assistant", "a1"),
+      msg("user", "u2"),
+    ];
+
+    const result = sliceAtCompactBoundaries(messages, 2, "missing", {
+      messageLimit: 1,
+    });
+
+    expect(result.messages).toEqual([msg("user", "u2")]);
+    expect(result.pagination.hasOlderMessages).toBe(true);
+    expect(result.pagination.truncatedBeforeMessageId).toBe("u2");
+  });
+
+  it("applies messageLimit after compact-boundary slicing when the tail chunk is still large", () => {
+    const messages = [
+      msg("user", "u1"),
+      compactBoundary("cb1"),
+      msg("assistant", "a1"),
+      compactBoundary("cb2"),
+      msg("user", "u2"),
+      msg("assistant", "a2"),
+      msg("user", "u3"),
+      msg("assistant", "a3"),
+    ];
+
+    const result = sliceAtCompactBoundaries(messages, 1, undefined, {
+      messageLimit: 2,
+    });
+
+    expect(result.messages.map((m) => m.uuid)).toEqual(["u3", "a3"]);
+    expect(result.pagination.hasOlderMessages).toBe(true);
+    expect(result.pagination.truncatedBeforeMessageId).toBe("u3");
+    expect(result.pagination.totalCompactions).toBe(2);
+  });
+
+  it("uses a nearby safe user message as the limited window start", () => {
+    const messages = [
+      msg("user", "u1"),
+      msg("assistant", "a1"),
+      msg("user", "u2"),
+      msg("assistant", "a2"),
+      msg("assistant", "a3"),
+    ];
+
+    const result = sliceAtCompactBoundaries(messages, 2, undefined, {
+      messageLimit: 2,
+    });
+
+    expect(result.messages.map((m) => m.uuid)).toEqual(["u2", "a2", "a3"]);
+    expect(result.pagination.returnedMessageCount).toBe(3);
+    expect(result.pagination.truncatedBeforeMessageId).toBe("u2");
+  });
 });

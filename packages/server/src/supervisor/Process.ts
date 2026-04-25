@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import type {
   EffortLevel,
+  McpServerStatus,
   ModelInfo,
   PermissionRules,
   ProviderName,
@@ -80,6 +81,10 @@ export interface ProcessConstructorOptions extends ProcessOptions {
   supportedCommandsFn?: () => Promise<SlashCommand[]>;
   /** Function to change model mid-session (SDK 0.2.7+) */
   setModelFn?: (model?: string) => Promise<void>;
+  /** Function to get current MCP server status. */
+  mcpServerStatusFn?: () => Promise<McpServerStatus[]>;
+  /** Function to enable or disable an MCP server. */
+  toggleMcpServerFn?: (serverName: string, enabled: boolean) => Promise<void>;
 }
 
 export class Process {
@@ -157,6 +162,10 @@ export class Process {
 
   /** Function to change model mid-session (SDK 0.2.7+) */
   private setModelFn: ((model?: string) => Promise<void>) | null;
+  private mcpServerStatusFn: (() => Promise<McpServerStatus[]>) | null;
+  private toggleMcpServerFn:
+    | ((serverName: string, enabled: boolean) => Promise<void>)
+    | null;
 
   /** Resolvers waiting for the real session ID */
   private sessionIdResolvers: Array<(id: string) => void> = [];
@@ -218,6 +227,8 @@ export class Process {
     this.supportedCommandsFn = options.supportedCommandsFn ?? null;
     this._pidResolver = options.pid;
     this.setModelFn = options.setModelFn ?? null;
+    this.mcpServerStatusFn = options.mcpServerStatusFn ?? null;
+    this.toggleMcpServerFn = options.toggleMcpServerFn ?? null;
     this._isProcessAlive = options.isProcessAlive ?? null;
     this._lastMessageTime = new Date();
 
@@ -432,6 +443,10 @@ export class Process {
     return this.setModelFn !== null;
   }
 
+  get supportsMcpControl(): boolean {
+    return this.mcpServerStatusFn !== null && this.toggleMcpServerFn !== null;
+  }
+
   /**
    * Get the list of available models from the SDK.
    * Only supported by Claude SDK 0.2.7+.
@@ -465,6 +480,24 @@ export class Process {
    * @param model - New model to use, or undefined to use default
    * @returns true if the change was applied, false if not supported
    */
+  async getMcpServerStatus(): Promise<McpServerStatus[] | null> {
+    if (!this.mcpServerStatusFn) {
+      return null;
+    }
+    return this.mcpServerStatusFn();
+  }
+
+  async toggleMcpServer(
+    serverName: string,
+    enabled: boolean,
+  ): Promise<boolean> {
+    if (!this.toggleMcpServerFn) {
+      return false;
+    }
+    await this.toggleMcpServerFn(serverName, enabled);
+    return true;
+  }
+
   async setModel(model?: string): Promise<boolean> {
     if (!this.setModelFn) {
       return false;

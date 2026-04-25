@@ -97,6 +97,17 @@ function isCodexProviderName(
   return provider === "codex" || provider === "codex-oss";
 }
 
+const MAX_SESSION_MESSAGE_LIMIT = 1000;
+
+function parseSessionMessageLimit(
+  rawLimit: string | undefined,
+): number | undefined {
+  if (rawLimit === undefined) return undefined;
+  const parsed = Number(rawLimit);
+  if (!Number.isInteger(parsed) || parsed <= 0) return undefined;
+  return Math.min(parsed, MAX_SESSION_MESSAGE_LIMIT);
+}
+
 export interface SessionsDeps {
   supervisor: Supervisor;
   scanner: ProjectScanner;
@@ -527,12 +538,14 @@ export function createSessionsRoutes(deps: SessionsDeps): Hono {
   //   ?afterMessageId=<id> - incremental forward-fetch (append new messages)
   //   ?tailCompactions=<n> - return only last N compact boundaries worth of messages
   //   ?beforeMessageId=<id> - cursor for loading older chunks (used with tailCompactions)
+  //   ?messageLimit=<n> - cap the returned message window for initial/older loads
   routes.get("/projects/:projectId/sessions/:sessionId", async (c) => {
     const projectId = c.req.param("projectId");
     const sessionId = c.req.param("sessionId");
     const afterMessageId = c.req.query("afterMessageId");
     const tailCompactionsParam = c.req.query("tailCompactions");
     const beforeMessageId = c.req.query("beforeMessageId");
+    const messageLimit = parseSessionMessageLimit(c.req.query("messageLimit"));
     const tailCompactions =
       tailCompactionsParam !== undefined
         ? Number.parseInt(tailCompactionsParam, 10)
@@ -740,6 +753,7 @@ export function createSessionsRoutes(deps: SessionsDeps): Hono {
         session.messages,
         tailCompactions,
         beforeMessageId,
+        { messageLimit },
       );
       session = { ...session, messages: sliced.messages };
       paginationInfo = sliced.pagination;

@@ -1,5 +1,6 @@
 // Provider abstraction types for multi-provider support
 import type {
+  McpServerStatus,
   ModelInfo,
   PermissionMode,
   SlashCommand,
@@ -112,6 +113,10 @@ export interface AgentSession {
    * Only supported by Claude SDK 0.2.7+.
    */
   setModel?: (model?: string) => Promise<void>;
+  /** Get current MCP server status when supported by the provider. */
+  mcpServerStatus?: () => Promise<McpServerStatus[]>;
+  /** Enable or disable an MCP server when supported by the provider. */
+  toggleMcpServer?: (serverName: string, enabled: boolean) => Promise<void>;
 }
 
 /**

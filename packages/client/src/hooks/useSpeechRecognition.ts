@@ -144,7 +144,9 @@ export function useSpeechRecognition(
 ): UseSpeechRecognitionReturn {
   const { lang, onResult, onInterimResult, onEnd, onError } = options;
 
-  const [isSupported] = useState(() => !!getSpeechRecognition());
+  const [isSupported, setIsSupported] = useState(
+    () => !!getSpeechRecognition(),
+  );
   const [isListening, setIsListening] = useState(false);
   const [status, setStatus] = useState<SpeechRecognitionStatus>("idle");
   const [interimTranscript, setInterimTranscript] = useState("");
@@ -175,6 +177,17 @@ export function useSpeechRecognition(
     onErrorRef.current = onError;
   }, [onResult, onInterimResult, onEnd, onError]);
 
+  useEffect(() => {
+    const updateSupport = () => setIsSupported(!!getSpeechRecognition());
+    updateSupport();
+    window.addEventListener("focus", updateSupport);
+    document.addEventListener("visibilitychange", updateSupport);
+    return () => {
+      window.removeEventListener("focus", updateSupport);
+      document.removeEventListener("visibilitychange", updateSupport);
+    };
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -190,6 +203,7 @@ export function useSpeechRecognition(
 
   const startListening = useCallback(() => {
     const SpeechRecognitionAPI = getSpeechRecognition();
+    setIsSupported(!!SpeechRecognitionAPI);
     if (!SpeechRecognitionAPI) {
       setError("Speech recognition not supported");
       setStatus("error");

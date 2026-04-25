@@ -1,6 +1,7 @@
 import {
   type MarkdownAugment,
   type ProviderName,
+  type SlashCommand,
   getModelContextWindow,
 } from "@yep-anywhere/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -42,6 +43,28 @@ const THROTTLE_MS = 500;
 
 // Re-export StreamingMarkdownCallbacks for consumers
 export type { StreamingMarkdownCallbacks } from "./useStreamingContent";
+
+function normalizeSlashCommands(value: unknown): SlashCommand[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((command) => {
+    if (typeof command === "string") {
+      return { name: command, description: "" };
+    }
+    if (!command || typeof command !== "object") return [];
+    const item = command as {
+      name?: unknown;
+      description?: unknown;
+      argumentHint?: unknown;
+    };
+    if (typeof item.name !== "string") return [];
+    return {
+      name: item.name,
+      description: typeof item.description === "string" ? item.description : "",
+      argumentHint:
+        typeof item.argumentHint === "string" ? item.argumentHint : undefined,
+    };
+  });
+}
 
 /** Pending message waiting for server confirmation */
 export interface PendingMessage {
@@ -151,7 +174,7 @@ export function useSession(
   }, [sessionId]);
 
   // Slash commands available for this session (from init message)
-  const [slashCommands, setSlashCommands] = useState<string[]>([]);
+  const [slashCommands, setSlashCommands] = useState<SlashCommand[]>([]);
   // Tools available for this session (from init message)
   const [sessionTools, setSessionTools] = useState<string[]>([]);
   // MCP servers available for this session (from init message)
@@ -209,7 +232,7 @@ export function useSession(
       // Set slash commands from API response so the "/" button appears reliably
       // (the SSE init message that normally carries these is discarded after ~30s)
       if (result.slashCommands?.length) {
-        setSlashCommands(result.slashCommands.map((c) => c.name));
+        setSlashCommands(result.slashCommands);
       }
     },
     [applyServerModeUpdate],
@@ -729,7 +752,7 @@ export function useSession(
         // Extract slash_commands, tools, and mcp_servers from init messages
         if (msgType === "system" && sdkMessage.subtype === "init") {
           if (Array.isArray(sdkMessage.slash_commands)) {
-            setSlashCommands(sdkMessage.slash_commands as string[]);
+            setSlashCommands(normalizeSlashCommands(sdkMessage.slash_commands));
           }
           if (Array.isArray(sdkMessage.tools)) {
             setSessionTools(sdkMessage.tools as string[]);
@@ -835,7 +858,6 @@ export function useSession(
           eventType: string;
           messages: DeferredMessage[];
         };
-        console.log("[deferred-queue] SSE event:", deferredData.messages);
         setDeferredMessages(deferredData.messages ?? []);
       } else if (data.eventType === "complete") {
         setProcessState("idle");

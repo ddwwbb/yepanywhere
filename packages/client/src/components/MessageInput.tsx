@@ -1,4 +1,4 @@
-import type { UploadedFile } from "@yep-anywhere/shared";
+import type { SlashCommand, UploadedFile } from "@yep-anywhere/shared";
 import {
   type ClipboardEvent,
   type KeyboardEvent,
@@ -16,6 +16,7 @@ import { useI18n } from "../i18n";
 import { hasCoarsePointer } from "../lib/deviceDetection";
 import type { ContextUsage, PermissionMode } from "../types";
 import { MessageInputToolbar } from "./MessageInputToolbar";
+import type { SlashCommandItem } from "./SlashCommandButton";
 import type { VoiceInputButtonRef } from "./VoiceInputButton";
 
 /** Progress info for an in-flight upload */
@@ -73,9 +74,10 @@ interface Props {
   /** Whether the provider supports thinking toggle (default: true) */
   supportsThinkingToggle?: boolean;
   /** Available slash commands (without "/" prefix) */
-  slashCommands?: string[];
-  /** Callback for custom client-side commands (e.g., "model"). Return true if handled. */
-  onCustomCommand?: (command: string) => boolean;
+  slashCommands?: SlashCommand[];
+  onOpenModelSwitch?: () => void;
+  processId?: string;
+  mcpServers?: string[];
 }
 
 export function MessageInput({
@@ -103,7 +105,9 @@ export function MessageInput({
   supportsPermissionMode = true,
   supportsThinkingToggle = true,
   slashCommands = [],
-  onCustomCommand,
+  onOpenModelSwitch,
+  processId,
+  mcpServers = [],
 }: Props) {
   const { t } = useI18n();
   const [text, setText, controls] = useDraftPersistence(draftKey);
@@ -113,6 +117,8 @@ export function MessageInput({
   // User-controlled collapse state (independent of external collapse from approval panel)
   const [userCollapsed, setUserCollapsed] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState("");
+  const [selectedSlashCommand, setSelectedSlashCommand] =
+    useState<SlashCommandItem | null>(null);
 
   // Combined display text: committed text + interim transcript
   const displayText = interimTranscript
@@ -149,45 +155,69 @@ export function MessageInput({
   }, [controls, onDraftControlsReady]);
 
   const handleSubmit = useCallback(() => {
-    // Stop voice recording and get any pending interim text
     const pendingVoice = voiceButtonRef.current?.stopAndFinalize() ?? "";
+    const commandText = selectedSlashCommand
+      ? `/${selectedSlashCommand.name}`
+      : "";
 
-    // Combine committed text with any pending voice text
     let finalText = text.trimEnd();
     if (pendingVoice) {
       finalText = finalText ? `${finalText} ${pendingVoice}` : pendingVoice;
+    }
+    if (commandText) {
+      finalText = finalText ? `${commandText} ${finalText}` : commandText;
     }
 
     const hasContent = finalText.trim() || attachments.length > 0;
     if (hasContent && !disabled) {
       const message = finalText.trim();
-      // Clear input state but keep localStorage for failure recovery
       controls.clearInput();
+      setSelectedSlashCommand(null);
       setInterimTranscript("");
       onSend(message);
       // Refocus the textarea so user can continue typing
       textareaRef.current?.focus();
     }
-  }, [text, disabled, controls, onSend, attachments.length]);
+  }, [
+    text,
+    selectedSlashCommand,
+    disabled,
+    controls,
+    onSend,
+    attachments.length,
+  ]);
 
   const handleQueue = useCallback(() => {
-    // Stop voice recording and get any pending interim text
     const pendingVoice = voiceButtonRef.current?.stopAndFinalize() ?? "";
+    const commandText = selectedSlashCommand
+      ? `/${selectedSlashCommand.name}`
+      : "";
 
     let finalText = text.trimEnd();
     if (pendingVoice) {
       finalText = finalText ? `${finalText} ${pendingVoice}` : pendingVoice;
+    }
+    if (commandText) {
+      finalText = finalText ? `${commandText} ${finalText}` : commandText;
     }
 
     const hasContent = finalText.trim() || attachments.length > 0;
     if (hasContent && !disabled && onQueue) {
       const message = finalText.trim();
       controls.clearInput();
+      setSelectedSlashCommand(null);
       setInterimTranscript("");
       onQueue(message);
       textareaRef.current?.focus();
     }
-  }, [text, disabled, controls, onQueue, attachments.length]);
+  }, [
+    text,
+    selectedSlashCommand,
+    disabled,
+    controls,
+    onQueue,
+    attachments.length,
+  ]);
 
   const handleKeyDown = (e: KeyboardEvent) => {
     // Ctrl+Space toggles voice input
@@ -300,27 +330,10 @@ export function MessageInput({
     setInterimTranscript(transcript);
   }, []);
 
-  // Handle slash command selection - insert command into text
-  const handleSlashCommand = useCallback(
-    (command: string) => {
-      // Check if this is a custom client-side command (strip leading "/")
-      const bare = command.startsWith("/") ? command.slice(1) : command;
-      if (onCustomCommand?.(bare)) {
-        return; // Custom command handled, don't insert text
-      }
-      // If text is empty or ends with whitespace, just append the command
-      // Otherwise, add a space before it
-      const trimmed = text.trimEnd();
-      if (trimmed) {
-        setText(`${trimmed} ${command} `);
-      } else {
-        setText(`${command} `);
-      }
-      // Focus the textarea so user can continue typing
-      textareaRef.current?.focus();
-    },
-    [text, setText, onCustomCommand],
-  );
+  const handleSlashCommand = useCallback((command: SlashCommandItem) => {
+    setSelectedSlashCommand(command);
+    textareaRef.current?.focus();
+  }, []);
 
   return (
     <div className="message-input-wrapper">
@@ -354,6 +367,29 @@ export function MessageInput({
       <div
         className={`message-input ${collapsed ? "message-input-collapsed" : ""} ${interimTranscript ? "voice-recording" : ""}`}
       >
+        {selectedSlashCommand && (
+          <div className="selected-command-list">
+            <span
+              className={`selected-command-chip ${selectedSlashCommand.category ?? "slash"}`}
+            >
+              <span className="selected-command-icon">
+                {selectedSlashCommand.category === "skill" ? "◇" : "/"}
+              </span>
+              <span className="selected-command-name">
+                /{selectedSlashCommand.name}
+              </span>
+              <button
+                type="button"
+                className="selected-command-remove"
+                onClick={() => setSelectedSlashCommand(null)}
+                aria-label="Remove selected slash command"
+              >
+                ×
+              </button>
+            </span>
+          </div>
+        )}
+
         <textarea
           ref={textareaRef}
           value={displayText}
@@ -437,13 +473,18 @@ export function MessageInput({
             voiceDisabled={disabled}
             slashCommands={slashCommands}
             onSelectSlashCommand={handleSlashCommand}
+            onOpenModelSwitch={onOpenModelSwitch}
+            processId={processId}
+            mcpServers={mcpServers}
             contextUsage={contextUsage}
             isRunning={isRunning}
             isThinking={isThinking}
             onStop={onStop}
             onSend={handleSubmit}
             onQueue={onQueue ? handleQueue : undefined}
-            canSend={!!(text.trim() || attachments.length > 0)}
+            canSend={
+              !!(text.trim() || selectedSlashCommand || attachments.length > 0)
+            }
             disabled={disabled}
           />
         )}

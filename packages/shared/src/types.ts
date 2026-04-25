@@ -70,6 +70,26 @@ export interface SlashCommand {
   argumentHint?: string;
 }
 
+export interface McpServerStatus {
+  name: string;
+  status: "connected" | "failed" | "needs-auth" | "pending" | "disabled";
+  scope?: string;
+  error?: string;
+  serverInfo?: {
+    name: string;
+    version: string;
+  };
+  tools?: Array<{
+    name: string;
+    description?: string;
+    annotations?: {
+      readOnly?: boolean;
+      destructive?: boolean;
+      openWorld?: boolean;
+    };
+  }>;
+}
+
 /**
  * Provider info for UI display.
  */

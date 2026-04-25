@@ -1,3 +1,4 @@
+import type { SlashCommand } from "@yep-anywhere/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type PaginationInfo, api } from "../api/client";
 import {
@@ -12,6 +13,8 @@ import {
 } from "../lib/mergeMessages";
 import { getProvider } from "../providers/registry";
 import type { Message, Session, SessionStatus } from "../types";
+
+const SESSION_MESSAGE_PAGE_LIMIT = 200;
 
 /** Content from a subagent (Task tool) */
 export interface AgentContent {
@@ -32,11 +35,7 @@ export interface SessionLoadResult {
   session: Session;
   status: SessionStatus;
   pendingInputRequest?: unknown;
-  slashCommands?: Array<{
-    name: string;
-    description: string;
-    argumentHint?: string;
-  }> | null;
+  slashCommands?: SlashCommand[] | null;
 }
 
 /** Options for useSessionMessages */
@@ -295,7 +294,10 @@ export function useSessionMessages(
     setAgentContent({});
 
     api
-      .getSession(projectId, sessionId, undefined, { tailCompactions: 2 })
+      .getSession(projectId, sessionId, undefined, {
+        tailCompactions: 2,
+        messageLimit: SESSION_MESSAGE_PAGE_LIMIT,
+      })
       .then((data) => {
         setSession(data.session);
         setPagination(data.pagination);
@@ -481,6 +483,7 @@ export function useSessionMessages(
       const data = await api.getSession(projectId, sessionId, undefined, {
         tailCompactions: 2,
         beforeMessageId: pagination.truncatedBeforeMessageId,
+        messageLimit: SESSION_MESSAGE_PAGE_LIMIT,
       });
       setMessages((prev) => {
         const taggedOlder = data.messages.map((m) => ({

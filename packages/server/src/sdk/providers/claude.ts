@@ -5,6 +5,7 @@ import {
   type SDKMessage as AgentSDKMessage,
   type Query,
   type CanUseTool as SDKCanUseTool,
+  type McpServerStatus as SdkMcpServerStatus,
   type SpawnedProcess,
   query,
 } from "@anthropic-ai/claude-agent-sdk";
@@ -552,6 +553,19 @@ export class ClaudeProvider implements AgentProvider {
         }));
       },
       setModel: (model?: string) => sdkQuery.setModel(model),
+      mcpServerStatus: async () => {
+        const statuses = await sdkQuery.mcpServerStatus();
+        return statuses.map((status: SdkMcpServerStatus) => ({
+          name: status.name,
+          status: status.status,
+          scope: status.scope,
+          error: status.error,
+          serverInfo: status.serverInfo,
+          tools: status.tools,
+        }));
+      },
+      toggleMcpServer: (serverName: string, enabled: boolean) =>
+        sdkQuery.toggleMcpServer(serverName, enabled),
     };
   }
 

@@ -28,6 +28,7 @@ export type {
   ProviderInfo,
   ModelInfo,
   SlashCommand,
+  McpServerStatus,
   PermissionMode,
   NewSessionDefaults,
   ModelOption,

@@ -6,6 +6,7 @@ import type {
   EnrichedRecentEntry,
   FileContentResponse,
   GitStatusInfo,
+  McpServerStatus,
   NewSessionDefaults,
   PendingInputType,
   ProviderInfo,
@@ -376,7 +377,11 @@ export const api = {
     projectId: string,
     sessionId: string,
     afterMessageId?: string,
-    options?: { tailCompactions?: number; beforeMessageId?: string },
+    options?: {
+      tailCompactions?: number;
+      beforeMessageId?: string;
+      messageLimit?: number;
+    },
   ) => {
     const params = new URLSearchParams();
     if (afterMessageId) params.set("afterMessageId", afterMessageId);
@@ -384,6 +389,8 @@ export const api = {
       params.set("tailCompactions", String(options.tailCompactions));
     if (options?.beforeMessageId)
       params.set("beforeMessageId", options.beforeMessageId);
+    if (options?.messageLimit !== undefined)
+      params.set("messageLimit", String(options.messageLimit));
     const qs = params.toString();
     return fetchJSON<{
       session: Session;
@@ -548,6 +555,21 @@ export const api = {
     fetchJSON<{ success: boolean; model?: string }>(
       `/processes/${processId}/model`,
       { method: "POST", body: JSON.stringify({ model }) },
+    ),
+
+  getProcessMcpServers: (processId: string) =>
+    fetchJSON<{ mcpServers: McpServerStatus[] }>(
+      `/processes/${processId}/mcp-servers`,
+    ),
+
+  setProcessMcpServerEnabled: (
+    processId: string,
+    serverName: string,
+    enabled: boolean,
+  ) =>
+    fetchJSON<{ success: boolean; mcpServers: McpServerStatus[] }>(
+      `/processes/${processId}/mcp-servers/${encodeURIComponent(serverName)}`,
+      { method: "PUT", body: JSON.stringify({ enabled }) },
     ),
 
   respondToInput: (

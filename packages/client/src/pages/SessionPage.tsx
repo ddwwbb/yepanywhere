@@ -1,4 +1,8 @@
-import type { ProviderName, UploadedFile } from "@yep-anywhere/shared";
+import type {
+  ProviderName,
+  SlashCommand,
+  UploadedFile,
+} from "@yep-anywhere/shared";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
@@ -196,15 +200,10 @@ function SessionPageContent({
   // Connection for uploads (uses WebSocket when enabled)
   const connection = useConnection();
 
-  // Inject custom client-side commands alongside SDK-discovered ones
-  const allSlashCommands = useMemo(() => {
-    if (status.owner === "self") {
-      return slashCommands.includes("model")
-        ? slashCommands
-        : ["model", ...slashCommands];
-    }
-    return slashCommands;
-  }, [slashCommands, status.owner]);
+  const allSlashCommands = useMemo<SlashCommand[]>(
+    () => (status.owner === "self" ? slashCommands : []),
+    [slashCommands, status.owner],
+  );
 
   // Get provider capabilities based on session's provider
   const { providers } = useProviders();
@@ -217,8 +216,6 @@ function SessionPageContent({
     currentProviderInfo?.supportsPermissionMode ?? true;
   const supportsThinkingToggle =
     currentProviderInfo?.supportsThinkingToggle ?? true;
-  const supportsSlashCommands =
-    currentProviderInfo?.supportsSlashCommands ?? false;
 
   // Inline title editing state
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -471,16 +468,15 @@ function SessionPageContent({
 
     try {
       const thinking = getThinkingSetting();
-      const res = await api.queueMessage(
+      await api.queueMessage(
         sessionId,
         text,
         permissionMode,
         currentAttachments.length > 0 ? currentAttachments : undefined,
         tempId,
         thinking,
-        true, // deferred
+        true,
       );
-      console.log('[handleQueue] API response:', JSON.stringify(res));
       removePendingMessage(tempId);
       draftControlsRef.current?.clearDraft();
     } catch (err) {
@@ -501,13 +497,12 @@ function SessionPageContent({
     [setSessionModel, showToast, t],
   );
 
-  const handleCustomCommand = useCallback((command: string) => {
-    if (command === "model") {
-      setShowModelSwitchModal(true);
-      return true;
-    }
-    return false;
+  const handleOpenModelSwitch = useCallback(() => {
+    setShowModelSwitchModal(true);
   }, []);
+
+  const activeProcessId =
+    status.owner === "self" ? status.processId : undefined;
 
   const handleAbort = async () => {
     if (status.owner === "self" && status.processId) {
@@ -1124,7 +1119,6 @@ function SessionPageContent({
                   isCompacting={isCompacting}
                   scrollTrigger={scrollTrigger}
                   pendingMessages={pendingMessages}
-
                   markdownAugments={markdownAugments}
                   activeToolApproval={activeToolApproval}
                   hasOlderMessages={pagination?.hasOlderMessages}
@@ -1136,25 +1130,56 @@ function SessionPageContent({
           )}
         </main>
 
-
         {/* Queued message banner - shown above input when messages are waiting */}
-        {/* eslint-disable no-console */}
         {deferredMessages.length > 0 && (
           <div className="deferred-queue-banner">
             {deferredMessages.map((qm, i) => (
-              <div key={qm.tempId ?? `deferred-${i}`} className="deferred-queue-item">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 256 256" className="deferred-queue-icon"><path fill="currentColor" d="M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24Zm0 192a88 88 0 1 1 88-88a88.1 88.1 0 0 1-88 88Zm64-88a8 8 0 0 1-8 8H128a8 8 0 0 1-8-8V72a8 8 0 0 1 16 0v48h56a8 8 0 0 1 0 16Z"/></svg>
+              <div
+                key={qm.tempId ?? `deferred-${i}`}
+                className="deferred-queue-item"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 256 256"
+                  className="deferred-queue-icon"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24Zm0 192a88 88 0 1 1 88-88a88.1 88.1 0 0 1-88 88Zm64-88a8 8 0 0 1-8 8H128a8 8 0 0 1-8-8V72a8 8 0 0 1 16 0v48h56a8 8 0 0 1 0 16Z"
+                  />
+                </svg>
                 <span className="deferred-queue-text">
-                  {qm.content.length > 80 ? qm.content.slice(0, 77) + '...' : qm.content}
+                  {qm.content.length > 80
+                    ? `${qm.content.slice(0, 77)}...`
+                    : qm.content}
                 </span>
                 {qm.tempId && (
                   <button
                     type="button"
                     className="deferred-queue-cancel"
-                    onClick={() => api.cancelDeferredMessage(sessionId, qm.tempId as string)}
+                    onClick={() =>
+                      api.cancelDeferredMessage(sessionId, qm.tempId as string)
+                    }
                     aria-label={t("toolbarQueueTitle")}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
                   </button>
                 )}
               </div>
@@ -1204,6 +1229,11 @@ function SessionPageContent({
                     isRunning={status.owner === "self"}
                     isThinking={processState === "in-turn"}
                     onStop={handleAbort}
+                    onOpenModelSwitch={
+                      activeProcessId ? handleOpenModelSwitch : undefined
+                    }
+                    processId={activeProcessId}
+                    mcpServers={mcpServers}
                     pendingApproval={
                       approvalCollapsed
                         ? {
@@ -1260,8 +1290,12 @@ function SessionPageContent({
                 onAttach={handleAttach}
                 onRemoveAttachment={handleRemoveAttachment}
                 uploadProgress={uploadProgress}
-                slashCommands={status.owner === "self" ? allSlashCommands : []}
-                onCustomCommand={handleCustomCommand}
+                slashCommands={allSlashCommands}
+                onOpenModelSwitch={
+                  activeProcessId ? handleOpenModelSwitch : undefined
+                }
+                processId={activeProcessId}
+                mcpServers={mcpServers}
               />
             )}
           </div>

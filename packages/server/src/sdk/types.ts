@@ -2,7 +2,11 @@
 
 // Re-export PermissionMode from shared
 export type { PermissionMode } from "@yep-anywhere/shared";
-import type { PermissionMode, UploadedFile } from "@yep-anywhere/shared";
+import type {
+  McpServerStatus,
+  PermissionMode,
+  UploadedFile,
+} from "@yep-anywhere/shared";
 
 export interface ContentBlock {
   type: "text" | "tool_use" | "tool_result" | "image" | "thinking";
@@ -178,6 +182,10 @@ export interface StartSessionResult {
    * Only supported by Claude SDK 0.2.7+.
    */
   setModel?: (model?: string) => Promise<void>;
+  /** Get current MCP server status when supported by the provider. */
+  mcpServerStatus?: () => Promise<McpServerStatus[]>;
+  /** Enable or disable an MCP server when supported by the provider. */
+  toggleMcpServer?: (serverName: string, enabled: boolean) => Promise<void>;
 }
 
 export interface RealClaudeSDKInterface {

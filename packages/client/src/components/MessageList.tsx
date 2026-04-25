@@ -71,7 +71,7 @@ interface Props {
   /** Whether older messages are currently being loaded */
   loadingOlder?: boolean;
   /** Callback to load the next chunk of older messages */
-  onLoadOlderMessages?: () => void;
+  onLoadOlderMessages?: () => void | Promise<void>;
 }
 
 export const MessageList = memo(function MessageList({
@@ -92,6 +92,7 @@ export const MessageList = memo(function MessageList({
   const shouldAutoScrollRef = useRef(true);
   const isInitialLoadRef = useRef(true);
   const isProgrammaticScrollRef = useRef(false);
+  const isAutoLoadingOlderRef = useRef(false);
   const lastHeightRef = useRef(0);
   const followUpScrollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [thinkingExpanded, setThinkingExpanded] = useState(false);
@@ -143,31 +144,42 @@ export const MessageList = memo(function MessageList({
   }, []);
 
   // Load older messages with scroll position preservation
-  const handleLoadOlder = useCallback(() => {
-    if (!onLoadOlderMessages) return;
+  const triggerLoadOlder = useCallback(async () => {
+    if (!onLoadOlderMessages || loadingOlder || isAutoLoadingOlderRef.current) {
+      return;
+    }
+    isAutoLoadingOlderRef.current = true;
     const container = containerRef.current?.parentElement;
     if (!container) {
-      onLoadOlderMessages();
+      try {
+        await onLoadOlderMessages();
+      } finally {
+        isAutoLoadingOlderRef.current = false;
+      }
       return;
     }
     // Capture scroll state before prepending older messages
     const scrollHeightBefore = container.scrollHeight;
     const scrollTopBefore = container.scrollTop;
-    onLoadOlderMessages();
-    // Restore scroll position after React re-renders with prepended messages
-    requestAnimationFrame(() => {
+    try {
+      await onLoadOlderMessages();
+    } finally {
+      // Restore scroll position after React re-renders with prepended messages
       requestAnimationFrame(() => {
-        const scrollHeightAfter = container.scrollHeight;
-        const heightDelta = scrollHeightAfter - scrollHeightBefore;
-        isProgrammaticScrollRef.current = true;
-        container.scrollTop = scrollTopBefore + heightDelta;
-        lastHeightRef.current = container.scrollHeight;
         requestAnimationFrame(() => {
-          isProgrammaticScrollRef.current = false;
+          const scrollHeightAfter = container.scrollHeight;
+          const heightDelta = scrollHeightAfter - scrollHeightBefore;
+          isProgrammaticScrollRef.current = true;
+          container.scrollTop = scrollTopBefore + heightDelta;
+          lastHeightRef.current = container.scrollHeight;
+          requestAnimationFrame(() => {
+            isProgrammaticScrollRef.current = false;
+            isAutoLoadingOlderRef.current = false;
+          });
         });
       });
-    });
-  }, [onLoadOlderMessages]);
+    }
+  }, [loadingOlder, onLoadOlderMessages]);
 
   // Track scroll position to determine if user is near bottom.
   // Ignore programmatic scrolls - only user-initiated scrolls should affect auto-scroll state.
@@ -177,11 +189,16 @@ export const MessageList = memo(function MessageList({
     const container = containerRef.current?.parentElement;
     if (!container) return;
 
-    const threshold = 100; // pixels from bottom
+    const bottomThreshold = 100;
+    const topThreshold = 120;
     const distanceFromBottom =
       container.scrollHeight - container.scrollTop - container.clientHeight;
-    shouldAutoScrollRef.current = distanceFromBottom < threshold;
-  }, []);
+    shouldAutoScrollRef.current = distanceFromBottom < bottomThreshold;
+
+    if (hasOlderMessages && container.scrollTop <= topThreshold) {
+      void triggerLoadOlder();
+    }
+  }, [hasOlderMessages, triggerLoadOlder]);
 
   // Attach scroll listener to parent container
   useEffect(() => {
@@ -255,21 +272,16 @@ export const MessageList = memo(function MessageList({
   return (
     <div className="message-list" ref={containerRef}>
       {hasOlderMessages && (
-        <div className="load-older-messages">
-          <button
-            type="button"
-            className="load-older-button"
-            onClick={handleLoadOlder}
-            disabled={loadingOlder}
-          >
+        <div className="load-older-messages" aria-live="polite">
+          <div className="load-older-status">
             {loadingOlder ? (
               <>
-                <span className="spinning">&#x21BB;</span> Loading...
+                <span className="spinning">&#x21BB;</span> Loading older messages...
               </>
             ) : (
-              "Load older messages"
+              "Scroll up to load older messages"
             )}
-          </button>
+          </div>
         </div>
       )}
       {turnGroups.map((group) => {

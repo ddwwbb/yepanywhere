@@ -33,3 +33,39 @@ describe("api.updateServerSettings", () => {
     expect(request?.body).toBe(JSON.stringify({ globalInstructions: null }));
   });
 });
+
+describe("api.getSession", () => {
+  const fetchMock = vi.fn<typeof fetch>();
+
+  beforeEach(() => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        session: {},
+        messages: [],
+        ownership: { owner: "none" },
+      }),
+    } as Response);
+
+    vi.stubGlobal("fetch", fetchMock);
+    window.history.replaceState({}, "", "/");
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("serializes compact pagination options", async () => {
+    await api.getSession("project", "session", undefined, {
+      tailCompactions: 2,
+      beforeMessageId: "m10",
+      messageLimit: 200,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url] = fetchMock.mock.calls[0] ?? [];
+    expect(String(url)).toBe(
+      "/api/projects/project/sessions/session?tailCompactions=2&beforeMessageId=m10&messageLimit=200",
+    );
+  });
+});
