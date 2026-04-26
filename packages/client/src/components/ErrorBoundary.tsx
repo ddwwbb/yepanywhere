@@ -142,15 +142,15 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-// Inline styles to ensure they work even if CSS fails to load
+// 内联样式确保 CSS 加载失败时仍可用，颜色值与 design tokens 对齐
 const styles: Record<string, React.CSSProperties> = {
   container: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    minHeight: "100vh",
+    minHeight: "100dvh",
     padding: "20px",
-    backgroundColor: "#1a1a2e",
+    backgroundColor: "#09090b",
     color: "#e4e4e7",
     fontFamily:
       '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -159,9 +159,9 @@ const styles: Record<string, React.CSSProperties> = {
     maxWidth: "500px",
     width: "100%",
     padding: "32px",
-    backgroundColor: "#16162a",
+    backgroundColor: "#18181b",
     borderRadius: "12px",
-    border: "1px solid #3f3f46",
+    border: "1px solid #27272a",
   },
   title: {
     margin: "0 0 20px 0",
@@ -175,7 +175,7 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: "#422006",
     border: "1px solid #92400e",
     borderRadius: "8px",
-    color: "#fcd34d",
+    color: "#fbbf24",
   },
   versionHint: {
     margin: "8px 0 0 0",
@@ -232,7 +232,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: "15px",
     fontWeight: 500,
     color: "#fff",
-    backgroundColor: "#6366f1",
+    backgroundColor: "#10b981",
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
@@ -245,7 +245,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 500,
     color: "#a1a1aa",
     backgroundColor: "transparent",
-    border: "1px solid #3f3f46",
+    border: "1px solid #27272a",
     borderRadius: "8px",
     textAlign: "center",
     textDecoration: "none",

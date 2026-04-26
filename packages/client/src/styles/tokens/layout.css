@@ -1,0 +1,35 @@
+/* ==========================================================================
+   Design Tokens: Layout
+   布局常量 — header、sidebar、tabbar、触控、安全区、内容最大宽度
+   ========================================================================== */
+
+:root {
+  /* 头部 */
+  --header-height: 56px;
+
+  /* 侧边栏 */
+  --sidebar-width:     280px;
+  --sidebar-collapsed: 56px;
+  --sidebar-max:       560px;
+
+  /* 底部导航栏 */
+  --tabbar-height: 64px;
+
+  /* 触控目标最小尺寸 */
+  --touch-target: 44px;
+
+  /* 安全区 */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-padding-bottom: env(safe-area-inset-bottom, 16px);
+
+  /* 内容区最大宽度 */
+  --content-max: 830px;
+
+  /*
+   * 断点说明（CSS @media 无法引用变量，此仅作文档）：
+   *   mobile  : < 768px    — 底部导航、单列
+   *   tablet  : 768-1099px — 侧边栏可收缩
+   *   desktop : ≥ 1100px   — 侧边栏常驻
+   */
+}

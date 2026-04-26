@@ -1,0 +1,325 @@
+/* ==========================================================================
+   Design Tokens: Colors
+   统一管理所有颜色变量，按 调色板 → 品牌色 → 语义色 → 主题覆盖 分层
+   ========================================================================== */
+
+:root {
+  /* ── 品牌色（主题无关） ── */
+  --color-brand:         #10b981;
+  --color-brand-hover:   #059669;
+  --color-brand-light:   #34d399;
+  --color-brand-alpha:   rgba(16, 185, 129, 0.15);
+
+  /* ── Claude 辅助色（主题无关） ── */
+  --color-claude-ivory:  #faf9f5;
+  --color-claude-slate:  #09090b;
+  --color-claude-orange: #f59e0b;
+
+  /* ── Provider 色（主题无关） ── */
+  --provider-claude:   var(--color-claude-orange);
+  --provider-codex:    #10a37f;
+  --provider-codex-oss: #f97316;
+  --provider-gemini:   #3b82f6;
+  --provider-opencode: #a855f7;
+
+  /* ── 语义色（每主题覆盖） ── */
+  --color-primary:        var(--color-brand);
+  --color-primary-hover:  var(--color-brand-hover);
+  --color-error:          #ef4444;
+  --color-success:        var(--color-brand);
+  --color-warning:        #f59e0b;
+  --color-info:           #3b82f6;
+  --color-link:           #3b82f6;
+  --color-thinking:       var(--color-claude-orange);
+
+  /* Spinner */
+  --app-spinner-foreground: var(--color-thinking);
+}
+
+/* ==========================================================================
+   Theme: Very Dark (Deep Zinc/Slate - Premium Dark Mode)
+   ========================================================================== */
+[data-theme="verydark"] {
+  color-scheme: dark;
+
+  /* 背景层级 */
+  --bg-surface:   #09090b;
+  --bg-secondary: #18181b;
+  --bg-tertiary:  #27272a;
+  --bg-hover:     #27272a;
+  --bg-code:      #000000;
+  --bg-input:     #18181b;
+  --bg-overlay:   rgba(9, 9, 11, 0.8);
+  --bg-glass:     rgba(24, 24, 27, 0.65);
+  --bg-user-message: #27272a;
+
+  /* 文本层级 */
+  --text-primary:   #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted:     #71717a;
+  --text-dimmed:    #52525b;
+
+  /* 边框 */
+  --border-default: #27272a;
+  --border-subtle:  #18181b;
+  --border-input:   #3f3f46;
+
+  /* 语义色覆盖 */
+  --color-link:       #3b82f6;
+  --color-error:      #ef4444;
+  --color-success:    #10b981;
+  --color-warning:    #f59e0b;
+  --color-info:       #3b82f6;
+  --color-focus:      var(--color-brand);
+  --color-warning-badge-bg: #9a3412;
+
+  /* Timeline */
+  --timeline-dot-default: #71717a;
+  --timeline-dot-tool:    #10b981;
+  --timeline-dot-error:   #ef4444;
+  --timeline-dot-warning: #f59e0b;
+  --timeline-dot-working: #f97316;
+  --timeline-line-color:  #27272a;
+
+  /* Status Badges */
+  --status-badge-idle-bg:     #27272a;
+  --status-badge-idle-text:   #a1a1aa;
+  --status-badge-owned-bg:    rgba(16, 185, 129, 0.15);
+  --status-badge-owned-text:  #34d399;
+  --status-badge-external-bg: rgba(245, 158, 11, 0.15);
+  --status-badge-external-text: #fbbf24;
+  --status-badge-running-bg:  rgba(249, 115, 22, 0.15);
+  --status-badge-running-text: #fb923c;
+  --status-badge-input-bg:    rgba(59, 130, 246, 0.15);
+  --status-badge-input-text:  #60a5fa;
+
+  /* Shiki Syntax Highlighting (GitHub Dark) */
+  --shiki-foreground:            #e1e4e8;
+  --shiki-background:            transparent;
+  --shiki-token-constant:        #79b8ff;
+  --shiki-token-string:          #9ecbff;
+  --shiki-token-comment:         #6a737d;
+  --shiki-token-keyword:         #f97583;
+  --shiki-token-parameter:       #ffab70;
+  --shiki-token-function:        #b392f0;
+  --shiki-token-string-expression: #85e89d;
+  --shiki-token-punctuation:     #e1e4e8;
+  --shiki-token-link:            #79b8ff;
+  --shiki-token-deleted:         #f97583;
+  --shiki-token-inserted:        #85e89d;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================================================
+   Theme: Dark (Softer Gray)
+   ========================================================================== */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-surface:   #18181b;
+  --bg-secondary: #27272a;
+  --bg-tertiary:  #3f3f46;
+  --bg-hover:     #3f3f46;
+  --bg-code:      #09090b;
+  --bg-input:     #27272a;
+  --bg-overlay:   rgba(24, 24, 27, 0.8);
+  --bg-glass:     rgba(39, 39, 42, 0.65);
+  --bg-user-message: #3f3f46;
+
+  --text-primary:   #f4f4f5;
+  --text-secondary: #d4d4d8;
+  --text-muted:     #a1a1aa;
+  --text-dimmed:    #71717a;
+
+  --border-default: #3f3f46;
+  --border-subtle:  #27272a;
+  --border-input:   #52525b;
+
+  --color-link:       #60a5fa;
+  --color-error:      #f87171;
+  --color-success:    #34d399;
+  --color-warning:    #fbbf24;
+  --color-info:       #60a5fa;
+  --color-focus:      var(--color-brand);
+  --color-warning-badge-bg: #9a3412;
+
+  --timeline-dot-default: #a1a1aa;
+  --timeline-dot-tool:    #34d399;
+  --timeline-dot-error:   #f87171;
+  --timeline-dot-warning: #fbbf24;
+  --timeline-dot-working: #fb923c;
+  --timeline-line-color:  #3f3f46;
+
+  --status-badge-idle-bg:     #3f3f46;
+  --status-badge-idle-text:   #d4d4d8;
+  --status-badge-owned-bg:    rgba(52, 211, 153, 0.2);
+  --status-badge-owned-text:  #6ee7b7;
+  --status-badge-external-bg: rgba(251, 191, 36, 0.2);
+  --status-badge-external-text: #fcd34d;
+  --status-badge-running-bg:  rgba(251, 146, 60, 0.2);
+  --status-badge-running-text: #fdba74;
+  --status-badge-input-bg:    rgba(96, 165, 250, 0.2);
+  --status-badge-input-text:  #93c5fd;
+
+  --shiki-foreground:            #e1e4e8;
+  --shiki-background:            transparent;
+  --shiki-token-constant:        #79b8ff;
+  --shiki-token-string:          #9ecbff;
+  --shiki-token-comment:         #6a737d;
+  --shiki-token-keyword:         #f97583;
+  --shiki-token-parameter:       #ffab70;
+  --shiki-token-function:        #b392f0;
+  --shiki-token-string-expression: #85e89d;
+  --shiki-token-punctuation:     #e1e4e8;
+  --shiki-token-link:            #79b8ff;
+  --shiki-token-deleted:         #f97583;
+  --shiki-token-inserted:        #85e89d;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================================================
+   Theme: Light (Modern White/Zinc)
+   ========================================================================== */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-surface:   #ffffff;
+  --bg-secondary: #f4f4f5;
+  --bg-tertiary:  #e4e4e7;
+  --bg-hover:     #e4e4e7;
+  --bg-code:      #f8fafc;
+  --bg-input:     #ffffff;
+  --bg-overlay:   rgba(255, 255, 255, 0.8);
+  --bg-glass:     rgba(255, 255, 255, 0.75);
+  --bg-user-message: #f4f4f5;
+
+  --text-primary:   #09090b;
+  --text-secondary: #3f3f46;
+  --text-muted:     #71717a;
+  --text-dimmed:    #a1a1aa;
+
+  --border-default: #e4e4e7;
+  --border-subtle:  #f4f4f5;
+  --border-input:   #d4d4d8;
+
+  --color-link:       #2563eb;
+  --color-error:      #dc2626;
+  --color-success:    #059669;
+  --color-warning:    #d97706;
+  --color-info:       #2563eb;
+  --color-focus:      var(--color-brand);
+  --color-warning-badge-bg: #fef3c7;
+
+  --timeline-dot-default: #a1a1aa;
+  --timeline-dot-tool:    #059669;
+  --timeline-dot-error:   #dc2626;
+  --timeline-dot-warning: #d97706;
+  --timeline-dot-working: #ea580c;
+  --timeline-line-color:  #e4e4e7;
+
+  --status-badge-idle-bg:     #f4f4f5;
+  --status-badge-idle-text:   #52525b;
+  --status-badge-owned-bg:    #d1fae5;
+  --status-badge-owned-text:  #047857;
+  --status-badge-external-bg: #fef3c7;
+  --status-badge-external-text: #b45309;
+  --status-badge-running-bg:  #ffedd5;
+  --status-badge-running-text: #c2410c;
+  --status-badge-input-bg:    #dbeafe;
+  --status-badge-input-text:  #1d4ed8;
+
+  --shiki-foreground:            #24292e;
+  --shiki-background:            transparent;
+  --shiki-token-constant:        #005cc5;
+  --shiki-token-string:          #032f62;
+  --shiki-token-comment:         #6a737d;
+  --shiki-token-keyword:         #d73a49;
+  --shiki-token-parameter:       #e36209;
+  --shiki-token-function:        #6f42c1;
+  --shiki-token-string-expression: #22863a;
+  --shiki-token-punctuation:     #24292e;
+  --shiki-token-link:            #005cc5;
+  --shiki-token-deleted:         #d73a49;
+  --shiki-token-inserted:        #22863a;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* ==========================================================================
+   Theme: Auto (默认 verydark，跟随系统偏好)
+   ========================================================================== */
+[data-theme="auto"] {
+  color-scheme: light dark;
+
+  --bg-surface:   #09090b;
+  --bg-secondary: #18181b;
+  --bg-tertiary:  #27272a;
+  --bg-hover:     #27272a;
+  --bg-code:      #000000;
+  --bg-input:     #18181b;
+  --bg-overlay:   rgba(9, 9, 11, 0.8);
+  --bg-glass:     rgba(24, 24, 27, 0.65);
+  --bg-user-message: #27272a;
+
+  --text-primary:   #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted:     #71717a;
+  --text-dimmed:    #52525b;
+
+  --border-default: #27272a;
+  --border-subtle:  #18181b;
+  --border-input:   #3f3f46;
+
+  --color-link:       #3b82f6;
+  --color-error:      #ef4444;
+  --color-success:    #10b981;
+  --color-warning:    #f59e0b;
+  --color-info:       #3b82f6;
+  --color-focus:      var(--color-brand);
+  --color-warning-badge-bg: #9a3412;
+
+  --timeline-dot-default: #71717a;
+  --timeline-dot-tool:    #10b981;
+  --timeline-dot-error:   #ef4444;
+  --timeline-dot-warning: #f59e0b;
+  --timeline-dot-working: #f97316;
+  --timeline-line-color:  #27272a;
+
+  --status-badge-idle-bg:     #27272a;
+  --status-badge-idle-text:   #a1a1aa;
+  --status-badge-owned-bg:    rgba(16, 185, 129, 0.15);
+  --status-badge-owned-text:  #34d399;
+  --status-badge-external-bg: rgba(245, 158, 11, 0.15);
+  --status-badge-external-text: #fbbf24;
+  --status-badge-running-bg:  rgba(249, 115, 22, 0.15);
+  --status-badge-running-text: #fb923c;
+  --status-badge-input-bg:    rgba(59, 130, 246, 0.15);
+  --status-badge-input-text:  #60a5fa;
+
+  --shiki-foreground:            #e1e4e8;
+  --shiki-background:            transparent;
+  --shiki-token-constant:        #79b8ff;
+  --shiki-token-string:          #9ecbff;
+  --shiki-token-comment:         #6a737d;
+  --shiki-token-keyword:         #f97583;
+  --shiki-token-parameter:       #ffab70;
+  --shiki-token-function:        #b392f0;
+  --shiki-token-string-expression: #85e89d;
+  --shiki-token-punctuation:     #e1e4e8;
+  --shiki-token-link:            #79b8ff;
+  --shiki-token-deleted:         #f97583;
+  --shiki-token-inserted:        #85e89d;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}

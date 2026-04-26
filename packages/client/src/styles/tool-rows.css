@@ -171,7 +171,7 @@
 .tool-name {
   flex-shrink: 0;
   font-weight: 600;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   color: var(--text-primary, #ccc);
 }
 
@@ -179,7 +179,7 @@
 .tool-summary {
   flex: 1;
   min-width: 0;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   color: var(--text-muted, #888);
   white-space: nowrap;
   overflow: hidden;
@@ -191,7 +191,7 @@
   flex-shrink: 0;
   width: 16px;
   text-align: center;
-  font-size: var(--font-size-xs);
+  font-size: var(--text-xs);
   color: var(--text-dimmed, #666);
   transition: transform 0.15s;
 }
@@ -229,12 +229,12 @@
 .tool-no-result {
   color: var(--text-muted, #888);
   font-style: italic;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 .tool-use-expanded,
 .tool-result-expanded {
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 /* ==========================================================================
@@ -244,7 +244,7 @@
 .tool-pending-message {
   color: var(--text-muted, #888);
   font-style: italic;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 .tool-row.status-pending .tool-summary {
@@ -264,7 +264,7 @@
   flex-shrink: 0;
   color: var(--warning-color, #d7ba7d);
   font-weight: bold;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
   display: flex;
   align-items: center;
 }

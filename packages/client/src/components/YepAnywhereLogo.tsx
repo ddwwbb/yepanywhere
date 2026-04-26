@@ -32,8 +32,8 @@ export function YepAnywhereLogo({
               x2="100%"
               y2="100%"
             >
-              <stop offset="0%" stopColor="var(--app-yep-green)" />
-              <stop offset="100%" stopColor="var(--app-yep-green-dark)" />
+              <stop offset="0%" stopColor="var(--color-brand)" />
+              <stop offset="100%" stopColor="var(--color-brand-hover)" />
             </linearGradient>
           </defs>
           <rect

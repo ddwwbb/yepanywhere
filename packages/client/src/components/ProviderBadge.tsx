@@ -98,7 +98,7 @@ export function ProviderBadge({
     ? "provider-badge-dot-inline thinking"
     : "provider-badge-dot-inline";
   const dotStyle = isThinking
-    ? { backgroundColor: "var(--thinking-color)" }
+    ? { backgroundColor: "var(--color-thinking)" }
     : { backgroundColor: color };
 
   return (

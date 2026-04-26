@@ -23,7 +23,7 @@ export const SidebarIcons = {
   agents: <Activity size={18} strokeWidth={2} />,
   settings: <Settings size={18} strokeWidth={2} />,
   allSessions: <MessagesSquare size={18} strokeWidth={2} />,
-  newSession: <PlusCircle size={20} strokeWidth={2.5} color="var(--app-yep-green)" />,
+  newSession: <PlusCircle size={20} strokeWidth={2.5} color="var(--color-brand)" />,
   sourceControl: <GitBranch size={18} strokeWidth={2} />,
   recents: <History size={18} strokeWidth={2} />,
   emulator: <Smartphone size={18} strokeWidth={2} />,

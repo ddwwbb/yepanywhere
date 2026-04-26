@@ -1,0 +1,41 @@
+/* ==========================================================================
+   Design Tokens: Spacing & Shape
+   间距（4px 刻度）、圆角
+   ========================================================================== */
+
+:root {
+  /* 间距 — 统一使用数字刻度 */
+  --space-0:  0;
+  --space-1:  4px;     /* 0.25rem */
+  --space-2:  8px;     /* 0.5rem */
+  --space-3:  12px;    /* 0.75rem */
+  --space-4:  16px;    /* 1rem */
+  --space-5:  20px;    /* 1.25rem */
+  --space-6:  24px;    /* 1.5rem */
+  --space-7:  28px;    /* 1.75rem */
+  --space-8:  32px;    /* 2rem */
+  --space-10: 40px;    /* 2.5rem */
+  --space-12: 48px;    /* 3rem */
+  --space-16: 64px;    /* 4rem */
+
+  /* 兼容旧语义间距（渐进迁移后删除） */
+  --space-xs: var(--space-1);
+  --space-sm: var(--space-2);
+  --space-md: var(--space-4);
+  --space-lg: var(--space-6);
+  --space-xl: var(--space-8);
+
+  /* 圆角 */
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  24px;
+  --radius-full: 9999px;
+
+  /* 阴影（由主题覆盖，此处为默认值） */
+  --shadow-sm:  0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 0 15px var(--color-brand-alpha);
+}

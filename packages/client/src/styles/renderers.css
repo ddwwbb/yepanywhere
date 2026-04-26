@@ -6,12 +6,12 @@
 
 .code-block {
   background: var(--bg-code);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 0.75rem;
   overflow-x: auto;
   font-family: "SF Mono", Monaco, "Cascadia Code", "Consolas", monospace;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   line-height: 1.5;
   margin: 0.5rem 0;
   white-space: pre-wrap;
@@ -20,7 +20,7 @@
 }
 
 .code-block-error {
-  border-color: var(--error-color);
+  border-color: var(--color-error);
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
 }
 
@@ -30,7 +30,7 @@
 
 .text-block,
 .text-content {
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   line-height: 1.5;
   color: var(--text-primary);
   position: relative;
@@ -158,12 +158,12 @@
 .streaming-blocks pre,
 .streaming-block pre {
   background: var(--bg-code);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   padding: var(--space-2);
   overflow-x: auto;
   font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -192,7 +192,7 @@
 .streaming-blocks a,
 .streaming-block a,
 .streaming-pending a {
-  color: var(--link-color);
+  color: var(--color-link);
   text-decoration: none;
 }
 
@@ -252,7 +252,7 @@
 .streaming-block blockquote {
   margin: var(--space-2) 0;
   padding-left: var(--space-3);
-  border-left: 3px solid var(--border-color);
+  border-left: 3px solid var(--border-default);
   color: var(--text-muted);
 }
 
@@ -279,14 +279,14 @@
   border-collapse: collapse;
   margin: var(--space-2) 0;
   width: 100%;
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
 }
 
 .streaming-blocks th,
 .streaming-blocks td,
 .streaming-block th,
 .streaming-block td {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   padding: var(--space-1) var(--space-2);
   text-align: left;
 }
@@ -308,12 +308,12 @@
 
 .text-block pre {
   background: var(--bg-code);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   padding: var(--space-2);
   overflow-x: auto;
   font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -334,7 +334,7 @@
 }
 
 .text-block a {
-  color: var(--link-color);
+  color: var(--color-link);
   text-decoration: none;
 }
 
@@ -345,7 +345,7 @@
 .text-block blockquote {
   margin: var(--space-2) 0;
   padding-left: var(--space-3);
-  border-left: 3px solid var(--border-color);
+  border-left: 3px solid var(--border-default);
   color: var(--text-muted);
 }
 
@@ -361,7 +361,7 @@
 
 .text-block hr {
   border: none;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-default);
   margin: var(--space-3) 0;
 }
 
@@ -369,12 +369,12 @@
   border-collapse: collapse;
   margin: var(--space-2) 0;
   width: 100%;
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
 }
 
 .text-block th,
 .text-block td {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   padding: var(--space-1) var(--space-2);
   text-align: left;
 }
@@ -401,7 +401,7 @@
   align-items: center;
   gap: var(--space-1);
   color: var(--text-muted);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   cursor: pointer;
   list-style: none;
 }
@@ -411,7 +411,7 @@
 }
 
 .collapsible__icon {
-  font-size: var(--font-size-xs);
+  font-size: var(--text-xs);
   transition: transform 0.15s ease;
 }
 
@@ -425,7 +425,7 @@ details[open] .collapsible__icon {
 
 .collapsible__content .text-content {
   color: var(--text-muted);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   line-height: 1.5;
   white-space: pre-wrap;
 }
@@ -440,7 +440,7 @@ details[open] .collapsible__icon {
   border: 1px solid var(--border-color, #333);
   border-radius: var(--radius-sm, 4px);
   color: var(--text-muted, #888);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
@@ -455,7 +455,7 @@ details[open] .collapsible__icon {
 }
 
 .thinking-icon {
-  font-size: var(--font-size-xs);
+  font-size: var(--text-xs);
   color: var(--text-muted);
 }
 
@@ -468,7 +468,7 @@ details[open] .collapsible__icon {
   border: 1px solid var(--border-color, #333);
   border-radius: var(--radius-md, 6px);
   color: var(--text-muted, #888);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   text-align: left;
   cursor: pointer;
   transition: background 0.15s;
@@ -512,7 +512,7 @@ details[open] .collapsible__icon {
    ========================================================================== */
 
 .tool-block {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   margin: 0.5rem 0;
   overflow: hidden;
@@ -524,8 +524,8 @@ details[open] .collapsible__icon {
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-color);
-  font-size: var(--font-size-sm);
+  border-bottom: 1px solid var(--border-default);
+  font-size: var(--text-sm);
 }
 
 .tool-icon {
@@ -543,12 +543,12 @@ details[open] .collapsible__icon {
 }
 
 .tool-block.tool-error {
-  border-color: var(--error-color);
+  border-color: var(--color-error);
 }
 
 .tool-block.tool-error .tool-header {
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
-  color: var(--error-color);
+  color: var(--color-error);
 }
 
 .tool-fallback {
@@ -556,13 +556,13 @@ details[open] .collapsible__icon {
   padding: 0.5rem;
   background: var(--bg-code);
   border-radius: 4px;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   overflow-x: auto;
 }
 
 .tool-fallback-error {
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
-  border: 1px solid var(--error-color);
+  border: 1px solid var(--color-error);
 }
 
 /* ==========================================================================
@@ -589,7 +589,7 @@ details[open] .collapsible__icon {
 .bash-empty {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 /* Bash Collapsed Preview */
@@ -597,9 +597,9 @@ details[open] .collapsible__icon {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   background: var(--bg-code);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   overflow: hidden;
   width: 100%;
@@ -610,7 +610,7 @@ details[open] .collapsible__icon {
 }
 
 .bash-collapsed-preview:hover {
-  border-color: var(--border-input, var(--border-color));
+  border-color: var(--border-input, var(--border-default));
 }
 
 .bash-collapsed-preview:focus {
@@ -622,7 +622,7 @@ details[open] .collapsible__icon {
   display: flex;
   gap: 0.75rem;
   padding: 0.375rem 0.5rem;
-  border-bottom: 1px solid var(--border-subtle, var(--border-color));
+  border-bottom: 1px solid var(--border-subtle, var(--border-default));
 }
 
 .bash-preview-row:last-child {
@@ -633,7 +633,7 @@ details[open] .collapsible__icon {
   flex-shrink: 0;
   width: 2.5rem;
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   font-weight: 500;
   text-transform: uppercase;
 }
@@ -663,7 +663,7 @@ details[open] .collapsible__icon {
 .bash-preview-output pre {
   margin: 0;
   font-family: "SF Mono", Monaco, "Cascadia Code", "Consolas", monospace;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   line-height: 1.4;
   white-space: pre-wrap;
   word-break: break-word;
@@ -671,7 +671,7 @@ details[open] .collapsible__icon {
 }
 
 .bash-preview-output.bash-preview-error pre {
-  color: var(--error-color);
+  color: var(--color-error);
 }
 
 .bash-preview-truncated {
@@ -694,7 +694,7 @@ details[open] .collapsible__icon {
 }
 
 .bash-preview-interrupted {
-  color: var(--warning-color);
+  color: var(--color-warning);
   font-style: italic;
 }
 
@@ -712,35 +712,35 @@ details[open] .collapsible__icon {
 }
 
 .bash-modal-label {
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .bash-modal-label-error {
-  color: var(--error-color);
+  color: var(--color-error);
 }
 
 .bash-modal-code {
   margin: 0;
   background: var(--bg-code);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 4px;
   font-family: "SF Mono", Monaco, "Cascadia Code", "Consolas", monospace;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   line-height: 1.5;
   overflow-x: auto;
 }
 
 .bash-modal-code-error {
-  border-color: var(--error-color);
+  border-color: var(--color-error);
 }
 
 .bash-modal-empty {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 /* ==========================================================================
@@ -756,7 +756,7 @@ details[open] .collapsible__icon {
 
 .read-range {
   color: var(--text-muted);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 .read-text-result {
@@ -774,7 +774,7 @@ details[open] .collapsible__icon {
   border-radius: 4px;
   padding: 0.5rem 0.75rem;
   font-family: "SF Mono", Monaco, monospace;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   color: var(--vscode-textLink-foreground, #3794ff);
   cursor: pointer;
   text-align: left;
@@ -840,24 +840,24 @@ details[open] .collapsible__icon {
 
 .file-path {
   font-family: "SF Mono", Monaco, monospace;
-  font-size: var(--font-size-base);
-  color: var(--link-color);
+  font-size: var(--text-base);
+  color: var(--color-link);
   word-break: break-all;
 }
 
 .file-range {
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
 }
 
 .file-content-with-lines {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   font-family: "SF Mono", Monaco, monospace;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   background: var(--bg-code);
   tab-size: var(--tab-size);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
 }
 
@@ -866,7 +866,7 @@ details[open] .collapsible__icon {
   padding: 0.75rem 0.5rem;
   color: var(--text-muted);
   user-select: none;
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-default);
   background: var(--bg-secondary);
 }
 
@@ -893,7 +893,7 @@ details[open] .collapsible__icon {
 
 .image-info {
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
 }
 
 .read-image {
@@ -909,7 +909,7 @@ details[open] .collapsible__icon {
 }
 
 .read-error {
-  color: var(--error-color);
+  color: var(--color-error);
   padding: 0.5rem;
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
   border-radius: 4px;
@@ -940,7 +940,7 @@ details[open] .collapsible__icon {
 .edit-error-message {
   color: var(--text-secondary);
   margin-top: 0.5rem;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 .edit-header {
@@ -952,7 +952,7 @@ details[open] .collapsible__icon {
 
 .edit-change-summary {
   color: var(--text-muted, #888);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 .edit-simple {
@@ -963,7 +963,7 @@ details[open] .collapsible__icon {
 
 .edit-label {
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   margin-bottom: 0.25rem;
 }
 
@@ -1009,12 +1009,12 @@ details[open] .collapsible__icon {
 
 .diff-view {
   font-family: "SF Mono", Monaco, monospace;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 .diff-hunk {
   margin: 0.5rem 0;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -1038,12 +1038,12 @@ details[open] .collapsible__icon {
 
 .diff-removed {
   background: var(--bg-diff-removed, rgba(207, 34, 46, 0.15));
-  color: var(--text-diff-removed, var(--error-color));
+  color: var(--text-diff-removed, var(--color-error));
 }
 
 .diff-added {
   background: var(--bg-diff-added, rgba(26, 127, 55, 0.15));
-  color: var(--text-diff-added, var(--success-color));
+  color: var(--text-diff-added, var(--color-success));
 }
 
 .diff-context {
@@ -1053,7 +1053,7 @@ details[open] .collapsible__icon {
 /* Highlighted diff from shiki */
 .highlighted-diff {
   font-family: "SF Mono", Monaco, monospace;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   line-height: 1.5;
   tab-size: var(--tab-size);
 }
@@ -1081,7 +1081,7 @@ details[open] .collapsible__icon {
 .highlighted-diff .line {
   padding: 0 0.5rem;
   /* Restore font size collapsed above */
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 /* Override any token background colors from Shiki syntax tokens */
@@ -1133,7 +1133,7 @@ details[open] .collapsible__icon {
   color: var(--vscode-button-foreground, #fff);
   border: none;
   border-radius: 4px;
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.15s ease;
@@ -1175,7 +1175,7 @@ details[open] .collapsible__icon {
 
 .modal {
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 4px;
   width: 90vw;
   max-width: 1200px;
@@ -1190,7 +1190,7 @@ details[open] .collapsible__icon {
   align-items: center;
   justify-content: space-between;
   padding: 0.375rem 0.5rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-default);
   background: var(--bg-secondary);
   border-radius: 4px 4px 0 0;
 }
@@ -1298,7 +1298,7 @@ details[open] .collapsible__icon {
 }
 
 .process-info-section-title {
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -1317,13 +1317,13 @@ details[open] .collapsible__icon {
 }
 
 .process-info-label {
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   color: var(--text-secondary);
   flex-shrink: 0;
 }
 
 .process-info-value {
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   color: var(--text-primary);
   text-align: right;
   word-break: break-all;
@@ -1331,19 +1331,19 @@ details[open] .collapsible__icon {
 
 .process-info-value.mono {
   font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
+  font-size: var(--text-xs);
 }
 
 .process-info-loading,
 .process-info-error,
 .process-info-muted {
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   color: var(--text-muted);
   padding: 0.5rem 0;
 }
 
 .process-info-error {
-  color: var(--error-color);
+  color: var(--color-error);
 }
 
 @media (max-width: 600px) {
@@ -1374,14 +1374,14 @@ details[open] .collapsible__icon {
 
 .model-switch-loading,
 .model-switch-error {
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   color: var(--text-muted);
   padding: 1rem;
   text-align: center;
 }
 
 .model-switch-error {
-  color: var(--error-color);
+  color: var(--color-error);
 }
 
 .model-switch-list {
@@ -1402,7 +1402,7 @@ details[open] .collapsible__icon {
   text-align: left;
   width: 100%;
   color: var(--text-primary);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
 }
 
 .model-switch-item:hover {
@@ -1424,12 +1424,12 @@ details[open] .collapsible__icon {
 
 .model-switch-description {
   color: var(--text-secondary);
-  font-size: var(--font-size-xs);
+  font-size: var(--text-xs);
   flex: 1;
 }
 
 .model-switch-badge {
-  font-size: var(--font-size-xs);
+  font-size: var(--text-xs);
   color: var(--accent-color);
   font-weight: 600;
   flex-shrink: 0;
@@ -1443,24 +1443,24 @@ details[open] .collapsible__icon {
   display: inline-block;
   padding: 0.125rem 0.5rem;
   border-radius: 4px;
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   font-weight: 500;
   vertical-align: middle;
 }
 
 .badge-warning {
   background: var(--bg-warning, rgba(154, 103, 0, 0.15));
-  color: var(--warning-color);
+  color: var(--color-warning);
 }
 
 .badge-error {
   background: var(--bg-error, rgba(207, 34, 46, 0.15));
-  color: var(--error-color);
+  color: var(--color-error);
 }
 
 .badge-info {
   background: var(--bg-secondary);
-  color: var(--link-color);
+  color: var(--color-link);
 }
 
 .badge-muted {
@@ -1475,11 +1475,11 @@ details[open] .collapsible__icon {
 .expand-button {
   padding: 0.5rem 1rem;
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 4px;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   margin-top: 0.5rem;
   min-height: 44px; /* Touch target */
   transition: background-color 0.15s, color 0.15s;
@@ -1499,7 +1499,7 @@ details[open] .collapsible__icon {
    ========================================================================== */
 
 .fallback-block {
-  border: 1px dashed var(--border-color);
+  border: 1px dashed var(--border-default);
   border-radius: 6px;
   margin: 0.5rem 0;
   overflow: hidden;
@@ -1509,14 +1509,14 @@ details[open] .collapsible__icon {
   padding: 0.25rem 0.5rem;
   background: var(--bg-tertiary);
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
-  border-bottom: 1px dashed var(--border-color);
+  font-size: var(--text-sm);
+  border-bottom: 1px dashed var(--border-default);
 }
 
 .fallback-content {
   margin: 0;
   padding: 0.5rem;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   overflow-x: auto;
   background: var(--bg-code);
 }
@@ -1534,7 +1534,7 @@ details[open] .collapsible__icon {
 
 .write-info {
   color: var(--text-muted);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 .write-result {
@@ -1544,7 +1544,7 @@ details[open] .collapsible__icon {
 }
 
 .write-error {
-  color: var(--error-color);
+  color: var(--color-error);
   padding: 0.5rem;
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
   border-radius: 4px;
@@ -1555,9 +1555,9 @@ details[open] .collapsible__icon {
   display: flex;
   flex-direction: column;
   gap: 0;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   background: var(--bg-code);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   overflow: hidden;
   width: 100%;
@@ -1569,7 +1569,7 @@ details[open] .collapsible__icon {
 }
 
 .write-collapsed-preview:hover {
-  border-color: var(--border-input, var(--border-color));
+  border-color: var(--border-input, var(--border-default));
 }
 
 .write-collapsed-preview:focus {
@@ -1578,20 +1578,20 @@ details[open] .collapsible__icon {
 }
 
 .write-collapsed-error {
-  border-color: var(--error-color);
+  border-color: var(--color-error);
   cursor: default;
   padding: 0.5rem;
 }
 
 .write-preview-lines {
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   padding: 0.25rem 0.5rem;
 }
 
 .write-preview-error {
-  color: var(--error-color);
-  font-size: var(--font-size-base);
+  color: var(--color-error);
+  font-size: var(--text-base);
 }
 
 .write-preview-content {
@@ -1604,7 +1604,7 @@ details[open] .collapsible__icon {
 .write-preview-content pre {
   margin: 0;
   font-family: "SF Mono", Monaco, "Cascadia Code", "Consolas", monospace;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   line-height: 1.4;
   white-space: pre-wrap;
   word-break: break-word;
@@ -1638,13 +1638,13 @@ details[open] .collapsible__icon {
 
 .glob-pattern {
   font-family: "SF Mono", Monaco, monospace;
-  font-size: var(--font-size-lg);
-  color: var(--link-color);
+  font-size: var(--text-lg);
+  color: var(--color-link);
 }
 
 .glob-path {
   color: var(--text-muted);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 .glob-result {
@@ -1661,11 +1661,11 @@ details[open] .collapsible__icon {
 
 .glob-count {
   color: var(--text-muted);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 .glob-error {
-  color: var(--error-color);
+  color: var(--color-error);
   padding: 0.5rem;
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
   border-radius: 4px;
@@ -1674,7 +1674,7 @@ details[open] .collapsible__icon {
 .glob-empty {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 /* ==========================================================================
@@ -1686,7 +1686,7 @@ details[open] .collapsible__icon {
   flex-direction: column;
   gap: 0.25rem;
   background: var(--bg-code);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 0.5rem;
 }
@@ -1708,14 +1708,14 @@ details[open] .collapsible__icon {
 }
 
 .file-list-item .file-dir {
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   color: var(--text-muted);
   font-family: "SF Mono", Monaco, monospace;
 }
 
 .file-list-more {
   color: var(--text-muted);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   padding: 0.25rem 0.5rem;
   font-style: italic;
 }
@@ -1733,18 +1733,18 @@ details[open] .collapsible__icon {
 
 .grep-pattern {
   font-family: "SF Mono", Monaco, monospace;
-  font-size: var(--font-size-lg);
-  color: var(--link-color);
+  font-size: var(--text-lg);
+  color: var(--color-link);
 }
 
 .grep-glob {
   color: var(--text-muted);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 .grep-path {
   color: var(--text-muted);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 .grep-result {
@@ -1761,12 +1761,12 @@ details[open] .collapsible__icon {
 
 .grep-count {
   color: var(--text-muted);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 .grep-count-summary {
   color: var(--text-muted);
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 .grep-content {
@@ -1774,7 +1774,7 @@ details[open] .collapsible__icon {
 }
 
 .grep-error {
-  color: var(--error-color);
+  color: var(--color-error);
   padding: 0.5rem;
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
   border-radius: 4px;
@@ -1783,7 +1783,7 @@ details[open] .collapsible__icon {
 .grep-empty {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 /* ==========================================================================
@@ -1798,7 +1798,7 @@ details[open] .collapsible__icon {
 
 .todo-summary {
   color: var(--text-muted);
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 .todo-result {
@@ -1850,7 +1850,7 @@ details[open] .collapsible__icon {
 }
 
 .todo-error {
-  color: var(--error-color);
+  color: var(--color-error);
   padding: 0.5rem;
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
   border-radius: 4px;
@@ -1859,7 +1859,7 @@ details[open] .collapsible__icon {
 .todo-empty {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 /* ==========================================================================
@@ -1890,12 +1890,12 @@ details[open] .collapsible__icon {
 
 .task-prompt-toggle {
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 4px;
   color: var(--text-muted);
   cursor: pointer;
   padding: 0.25rem 0.5rem;
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
 }
 
 .task-prompt-toggle:hover {
@@ -1908,7 +1908,7 @@ details[open] .collapsible__icon {
   padding: 0.5rem;
   background: var(--bg-code);
   border-radius: 4px;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   max-height: 200px;
   overflow-y: auto;
 }
@@ -1928,17 +1928,17 @@ details[open] .collapsible__icon {
 
 .task-stats {
   color: var(--text-muted);
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 .task-content {
-  border-left: 2px solid var(--border-color);
+  border-left: 2px solid var(--border-default);
   padding-left: 1rem;
   margin-left: 0.25rem;
 }
 
 .task-error {
-  color: var(--error-color);
+  color: var(--color-error);
   padding: 0.5rem;
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
   border-radius: 4px;
@@ -1947,7 +1947,7 @@ details[open] .collapsible__icon {
 /* Error summary shown in collapsed task header */
 .task-error-summary {
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1965,18 +1965,18 @@ details[open] .collapsible__icon {
   color: var(--text-primary);
   padding: 0.75rem;
   border-radius: 4px;
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
   margin: 0;
-  border-left: 3px solid var(--error-color);
+  border-left: 3px solid var(--color-error);
 }
 
 .task-empty {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 /* Task Inline - Subtle Subagent Card */
@@ -2013,7 +2013,7 @@ details[open] .collapsible__icon {
   width: 100%;
   text-align: left;
   cursor: pointer;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   color: inherit;
   transition: background 0.15s;
 }
@@ -2083,7 +2083,7 @@ details[open] .collapsible__icon {
 /* Badge for running status */
 .badge-running {
   background: var(--bg-secondary);
-  color: var(--link-color);
+  color: var(--color-link);
 }
 
 .badge-pending {
@@ -2115,14 +2115,14 @@ details[open] .collapsible__icon {
   gap: 0.5rem;
   padding: 1rem;
   color: var(--text-muted);
-  font-size: var(--font-size-base);
-  border-top: 1px solid var(--border-subtle, var(--border-color));
+  font-size: var(--text-base);
+  border-top: 1px solid var(--border-subtle, var(--border-default));
 }
 
 /* Task Stats in Header */
 .task-stats {
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   flex-shrink: 0;
   white-space: nowrap;
 }
@@ -2130,7 +2130,7 @@ details[open] .collapsible__icon {
 /* Real-time context usage during streaming */
 .task-context-usage {
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   flex-shrink: 0;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -2148,8 +2148,8 @@ details[open] .collapsible__icon {
 
 .websearch-query {
   font-family: "SF Mono", Monaco, monospace;
-  font-size: var(--font-size-lg);
-  color: var(--link-color);
+  font-size: var(--text-lg);
+  color: var(--color-link);
 }
 
 .websearch-result {
@@ -2185,7 +2185,7 @@ details[open] .collapsible__icon {
   padding: 0.5rem;
   background: var(--bg-code);
   border-radius: 4px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
 }
 
 .websearch-link-item:hover {
@@ -2193,7 +2193,7 @@ details[open] .collapsible__icon {
 }
 
 .websearch-link {
-  color: var(--link-color);
+  color: var(--color-link);
   text-decoration: none;
   font-weight: 500;
 }
@@ -2203,13 +2203,13 @@ details[open] .collapsible__icon {
 }
 
 .websearch-url {
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   color: var(--text-muted);
   word-break: break-all;
 }
 
 .websearch-error {
-  color: var(--error-color);
+  color: var(--color-error);
   padding: 0.5rem;
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
   border-radius: 4px;
@@ -2218,7 +2218,7 @@ details[open] .collapsible__icon {
 .websearch-empty {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 /* ==========================================================================
@@ -2232,7 +2232,7 @@ details[open] .collapsible__icon {
 }
 
 .webfetch-url {
-  color: var(--link-color);
+  color: var(--color-link);
   text-decoration: none;
   word-break: break-all;
 }
@@ -2243,7 +2243,7 @@ details[open] .collapsible__icon {
 
 .webfetch-prompt {
   color: var(--text-muted);
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 .webfetch-result {
@@ -2261,7 +2261,7 @@ details[open] .collapsible__icon {
 
 .webfetch-meta {
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
 }
 
 .webfetch-content {
@@ -2271,7 +2271,7 @@ details[open] .collapsible__icon {
 }
 
 .webfetch-error {
-  color: var(--error-color);
+  color: var(--color-error);
   padding: 0.5rem;
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
   border-radius: 4px;
@@ -2280,7 +2280,7 @@ details[open] .collapsible__icon {
 .webfetch-empty {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 /* ==========================================================================
@@ -2326,7 +2326,7 @@ details[open] .collapsible__icon {
   gap: 0.5rem;
   padding: 0.5rem;
   border-radius: 4px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   background: var(--bg-code);
 }
 
@@ -2346,7 +2346,7 @@ details[open] .collapsible__icon {
 }
 
 .question-option-selected .question-option-indicator {
-  color: var(--success-color);
+  color: var(--color-success);
 }
 
 .question-option-content {
@@ -2361,12 +2361,12 @@ details[open] .collapsible__icon {
 }
 
 .question-option-desc {
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   color: var(--text-muted);
 }
 
 .question-error {
-  color: var(--error-color);
+  color: var(--color-error);
   padding: 0.5rem;
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
   border-radius: 4px;
@@ -2375,7 +2375,7 @@ details[open] .collapsible__icon {
 .question-empty {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 /* ==========================================================================
@@ -2385,7 +2385,7 @@ details[open] .collapsible__icon {
 .exitplan-pending {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 /* Collapsible wrapper for ExitPlanMode */
@@ -2399,7 +2399,7 @@ details[open] .collapsible__icon {
 
 /* Inline plan content - styled like regular chat text */
 .exitplan-inline {
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
   line-height: 1.5;
 }
 
@@ -2451,7 +2451,7 @@ details[open] .collapsible__icon {
   background: var(--bg-tertiary);
   padding: 0.125rem 0.25rem;
   border-radius: 3px;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
 }
 
 .exitplan-inline pre {
@@ -2474,7 +2474,7 @@ details[open] .collapsible__icon {
 
 .exitplan-inline th,
 .exitplan-inline td {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   padding: 0.375rem 0.5rem;
   text-align: left;
 }
@@ -2484,7 +2484,7 @@ details[open] .collapsible__icon {
 }
 
 .exitplan-error {
-  color: var(--error-color);
+  color: var(--color-error);
   padding: 0.5rem;
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
   border-radius: 4px;
@@ -2506,7 +2506,7 @@ details[open] .collapsible__icon {
 
 .bashoutput-id {
   font-family: "SF Mono", Monaco, monospace;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   color: var(--text-muted);
   background: var(--bg-code);
   padding: 0.125rem 0.375rem;
@@ -2528,22 +2528,22 @@ details[open] .collapsible__icon {
 
 .bashoutput-status {
   font-weight: 500;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 .bashoutput-command {
   font-family: "SF Mono", Monaco, monospace;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   color: var(--text-secondary, var(--text-muted));
 }
 
 .bashoutput-timestamp {
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   color: var(--text-muted);
 }
 
 .bashoutput-error {
-  color: var(--error-color);
+  color: var(--color-error);
   padding: 0.5rem;
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
   border-radius: 4px;
@@ -2552,24 +2552,24 @@ details[open] .collapsible__icon {
 .bashoutput-empty {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 /* Status indicators */
 .status-running {
-  color: var(--link-color);
+  color: var(--color-link);
 }
 
 .status-completed {
-  color: var(--success-color);
+  color: var(--color-success);
 }
 
 .status-failed {
-  color: var(--error-color);
+  color: var(--color-error);
 }
 
 .status-timeout {
-  color: var(--warning-color);
+  color: var(--color-warning);
 }
 
 /* ==========================================================================
@@ -2588,7 +2588,7 @@ details[open] .collapsible__icon {
 
 .taskoutput-id {
   font-family: "SF Mono", Monaco, monospace;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   color: var(--text-muted);
   background: var(--bg-code);
   padding: 0.125rem 0.375rem;
@@ -2610,16 +2610,16 @@ details[open] .collapsible__icon {
 
 .taskoutput-status {
   font-weight: 500;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 .taskoutput-desc {
   color: var(--text-muted);
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 .taskoutput-task {
-  border-left: 2px solid var(--border-color);
+  border-left: 2px solid var(--border-default);
   padding-left: 1rem;
   margin-left: 0.25rem;
 }
@@ -2636,7 +2636,7 @@ details[open] .collapsible__icon {
 }
 
 .taskoutput-error {
-  color: var(--error-color);
+  color: var(--color-error);
   padding: 0.5rem;
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
   border-radius: 4px;
@@ -2645,7 +2645,7 @@ details[open] .collapsible__icon {
 .taskoutput-empty {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 /* ==========================================================================
@@ -2664,7 +2664,7 @@ details[open] .collapsible__icon {
 
 .killshell-id {
   font-family: "SF Mono", Monaco, monospace;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   color: var(--text-muted);
   background: var(--bg-code);
   padding: 0.125rem 0.375rem;
@@ -2682,7 +2682,7 @@ details[open] .collapsible__icon {
 }
 
 .killshell-error {
-  color: var(--error-color);
+  color: var(--color-error);
   padding: 0.5rem;
   background: var(--bg-error, rgba(207, 34, 46, 0.1));
   border-radius: 4px;
@@ -2691,7 +2691,7 @@ details[open] .collapsible__icon {
 .killshell-empty {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-lg);
+  font-size: var(--text-lg);
 }
 
 /* ==========================================================================
@@ -2700,7 +2700,7 @@ details[open] .collapsible__icon {
 
 .badge-success {
   background: var(--bg-success, rgba(26, 127, 55, 0.15));
-  color: var(--success-color);
+  color: var(--color-success);
 }
 
 /* ==========================================================================
@@ -2709,16 +2709,16 @@ details[open] .collapsible__icon {
 
 @media (max-width: 600px) {
   .code-block {
-    font-size: var(--font-size-sm);
+    font-size: var(--text-sm);
     padding: 0.5rem;
   }
 
   .diff-view {
-    font-size: var(--font-size-sm);
+    font-size: var(--text-sm);
   }
 
   .file-content-with-lines {
-    font-size: var(--font-size-sm);
+    font-size: var(--text-sm);
   }
 
   .tool-header {
@@ -2775,7 +2775,7 @@ details[open] .collapsible__icon {
   gap: 0.5rem;
   padding: 0.375rem 0.5rem;
   background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-default);
   flex-shrink: 0;
 }
 
@@ -2789,13 +2789,13 @@ details[open] .collapsible__icon {
 
 .file-viewer-path {
   font-family: "SF Mono", Monaco, monospace;
-  font-size: var(--font-size-base);
-  color: var(--link-color);
+  font-size: var(--text-base);
+  color: var(--color-link);
   word-break: break-all;
 }
 
 .file-viewer-meta {
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   color: var(--text-muted);
 }
 
@@ -2827,7 +2827,7 @@ details[open] .collapsible__icon {
 }
 
 .file-viewer-action.copied {
-  color: var(--success-color);
+  color: var(--color-success);
 }
 
 .file-viewer-close {
@@ -2850,13 +2850,13 @@ details[open] .collapsible__icon {
 }
 
 .file-viewer-error {
-  color: var(--error-color);
+  color: var(--color-error);
 }
 
 /* Code display with syntax highlighting */
 .file-viewer-code {
   font-family: "SF Mono", Monaco, "Cascadia Code", "Consolas", monospace;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   line-height: 1.5;
   background: var(--bg-code);
   overflow-x: auto;
@@ -2900,7 +2900,7 @@ details[open] .collapsible__icon {
 
 .file-viewer-truncated {
   padding: 0.5rem 0.75rem;
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   color: var(--text-muted);
   border-top: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
@@ -2922,7 +2922,7 @@ details[open] .collapsible__icon {
   margin-bottom: 0.75rem;
   padding: 0.5rem;
   background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-default);
   position: sticky;
   top: 0;
   z-index: 1;
@@ -2931,7 +2931,7 @@ details[open] .collapsible__icon {
 .diff-context-path {
   flex: 1;
   font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2940,9 +2940,9 @@ details[open] .collapsible__icon {
 
 .diff-context-toggle {
   padding: 0.25rem 0.75rem;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   border-radius: 4px;
   cursor: pointer;
   color: var(--text-primary);
@@ -2959,7 +2959,7 @@ details[open] .collapsible__icon {
 
 .diff-context-error {
   color: var(--text-error);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
 }
 
 /* Plain code display (fallback and large files) */
@@ -3038,11 +3038,11 @@ pre.code-highlighter-plain code {
 
 .file-viewer-download-btn {
   padding: 0.5rem 1rem;
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: #fff;
   border: none;
   border-radius: 4px;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   cursor: pointer;
 }
 
@@ -3172,16 +3172,16 @@ pre.code-highlighter-plain code {
   align-items: center;
   padding: 0.5rem 1rem;
   background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-default);
 }
 
 .file-page-back-link {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--link-color);
+  color: var(--color-link);
   text-decoration: none;
-  font-size: var(--font-size-base);
+  font-size: var(--text-base);
   padding: 0.25rem 0.5rem;
   margin: -0.25rem -0.5rem;
   border-radius: 4px;
@@ -3219,7 +3219,7 @@ pre.code-highlighter-plain code {
   }
 
   .file-viewer-code {
-    font-size: var(--font-size-sm);
+    font-size: var(--text-sm);
   }
 }
 
@@ -3234,10 +3234,10 @@ pre.code-highlighter-plain code {
 
 .markdown-view-toggle .toggle-btn {
   padding: 0.375rem 0.75rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   background: var(--bg-surface);
   color: var(--text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--text-sm);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -3256,9 +3256,9 @@ pre.code-highlighter-plain code {
 }
 
 .markdown-view-toggle .toggle-btn.active {
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: #fff;
-  border-color: var(--primary-color);
+  border-color: var(--color-primary);
 }
 
 /* Markdown preview container */
@@ -3324,14 +3324,14 @@ pre.code-highlighter-plain code {
 }
 
 .markdown-preview .markdown-rendered blockquote {
-  border-left: 3px solid var(--border-color);
+  border-left: 3px solid var(--border-default);
   padding-left: 1rem;
   margin: 0.75rem 0;
   color: var(--text-muted);
 }
 
 .markdown-preview .markdown-rendered a {
-  color: var(--link-color);
+  color: var(--color-link);
   text-decoration: none;
 }
 
@@ -3347,7 +3347,7 @@ pre.code-highlighter-plain code {
 
 .markdown-preview .markdown-rendered th,
 .markdown-preview .markdown-rendered td {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-default);
   padding: 0.5rem;
   text-align: left;
 }
