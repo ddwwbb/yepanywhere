@@ -1,16 +1,16 @@
 import {
-  Palette,
+  Bell,
   Brain,
   ClipboardList,
-  Bell,
-  Webhook,
-  Smartphone,
-  Shield,
-  Globe,
-  Plug,
-  Monitor,
-  Info,
   Cpu,
+  Globe,
+  Info,
+  Monitor,
+  Palette,
+  Plug,
+  Shield,
+  Smartphone,
+  Webhook,
   Wrench,
 } from "lucide-react";
 import type { FontSize } from "./hooks/useFontSize";
@@ -66,14 +66,6 @@ export function getLocaleLabel(
       return t("localeNameEn");
     case "zh-CN":
       return t("localeNameZhCn");
-    case "es":
-      return t("localeNameEs");
-    case "fr":
-      return t("localeNameFr");
-    case "de":
-      return t("localeNameDe");
-    case "ja":
-      return t("localeNameJa");
   }
 }
 

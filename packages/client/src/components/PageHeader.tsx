@@ -7,6 +7,7 @@ interface PageHeaderProps {
   title: string;
   /** Optional custom element to render instead of the default title */
   titleElement?: ReactNode;
+  actions?: ReactNode;
   /** Mobile: opens the sidebar overlay */
   onOpenSidebar?: () => void;
   /** Desktop: toggles sidebar expanded/collapsed */
@@ -32,6 +33,7 @@ const BackIcon = () => (
 export function PageHeader({
   title,
   titleElement,
+  actions,
   onOpenSidebar,
   onToggleSidebar,
   isWideScreen = false,
@@ -78,6 +80,7 @@ export function PageHeader({
             </span>
           )}
         </div>
+        {actions && <div className="session-header-right">{actions}</div>}
       </div>
     </header>
   );

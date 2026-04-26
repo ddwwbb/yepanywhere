@@ -1,17 +1,17 @@
-import { type ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
 import {
-  Inbox,
-  FolderKanban,
   Activity,
-  Settings,
-  MessagesSquare,
-  PlusCircle,
+  FolderKanban,
   GitBranch,
   History,
+  Inbox,
+  MessagesSquare,
+  PlusCircle,
+  Settings,
   Smartphone,
-  Waypoints
+  Waypoints,
 } from "lucide-react";
+import type { ReactNode } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 
 /**
@@ -23,7 +23,7 @@ export const SidebarIcons = {
   agents: <Activity size={18} strokeWidth={2} />,
   settings: <Settings size={18} strokeWidth={2} />,
   allSessions: <MessagesSquare size={18} strokeWidth={2} />,
-  newSession: <PlusCircle size={20} strokeWidth={2.5} color="var(--color-brand)" />,
+  newSession: <PlusCircle size={20} strokeWidth={2.5} />,
   sourceControl: <GitBranch size={18} strokeWidth={2} />,
   recents: <History size={18} strokeWidth={2} />,
   emulator: <Smartphone size={18} strokeWidth={2} />,
@@ -78,25 +78,22 @@ export function SidebarNavItem({
       onClick={onClick}
       title={title ?? label}
     >
-      <div className="sidebar-nav-icon">
-        {icon}
-      </div>
-      
+      <div className="sidebar-nav-icon">{icon}</div>
+
       <span className="sidebar-nav-text">{label}</span>
-      
+
       {hasDraft && <span className="session-draft-badge">(draft)</span>}
       {hasActivityIndicator && <ThinkingIndicator />}
-      
+
       {badge !== undefined && badge > 0 && (
-        <span className="sidebar-nav-badge">
-          {badge}
-        </span>
+        <span className="sidebar-nav-badge">{badge}</span>
       )}
     </Link>
   );
 }
 
 export interface SidebarNavSectionProps {
+  title?: string;
   children: ReactNode;
 }
 
@@ -104,6 +101,11 @@ export interface SidebarNavSectionProps {
  * Container for sidebar navigation items.
  * Provides consistent spacing between items.
  */
-export function SidebarNavSection({ children }: SidebarNavSectionProps) {
-  return <nav className="sidebar-nav-section">{children}</nav>;
+export function SidebarNavSection({ title, children }: SidebarNavSectionProps) {
+  return (
+    <section className="sidebar-nav-section" aria-label={title}>
+      {title && <h3 className="sidebar-nav-section-title">{title}</h3>}
+      <nav className="sidebar-nav-section-items">{children}</nav>
+    </section>
+  );
 }

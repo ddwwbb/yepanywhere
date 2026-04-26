@@ -1,6 +1,11 @@
+import { ArrowRightLeft, PanelLeftClose, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api, type GlobalSessionItem, type ServerSettings } from "../api/client";
+import {
+  type GlobalSessionItem,
+  type ServerSettings,
+  api,
+} from "../api/client";
 import { useOptionalRemoteConnection } from "../contexts/RemoteConnectionContext";
 import { useDrafts } from "../hooks/useDrafts";
 import { useGlobalSessions } from "../hooks/useGlobalSessions";
@@ -14,9 +19,12 @@ import { useI18n } from "../i18n";
 import { getSessionDisplayTitle, toUrlProjectId } from "../utils";
 import { AgentsNavItem } from "./AgentsNavItem";
 import { SessionListItem } from "./SessionListItem";
-import { SidebarIcons, SidebarNavItem, SidebarNavSection } from "./SidebarNavItem";
+import {
+  SidebarIcons,
+  SidebarNavItem,
+  SidebarNavSection,
+} from "./SidebarNavItem";
 import { YepAnywhereLogo } from "./YepAnywhereLogo";
-import { PanelLeftClose, X, ArrowRightLeft } from "lucide-react";
 
 const SWIPE_THRESHOLD = 50; // Minimum distance to trigger close
 const SWIPE_ENGAGE_THRESHOLD = 15; // Minimum horizontal distance before swipe engages
@@ -78,7 +86,7 @@ export function Sidebar({
   onResize,
   onResizeEnd,
 }: SidebarProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   // Get base path for relay mode (e.g., "/remote/my-server")
   const basePath = useRemoteBasePath();
   const navigate = useNavigate();
@@ -243,6 +251,11 @@ export function Sidebar({
     [t],
   );
 
+  const sectionLabels =
+    locale === "zh-CN"
+      ? { create: "创建", work: "工作流", control: "控制" }
+      : { create: "Create", work: "Work", control: "Control" };
+
   // Starred sessions come from dedicated fetch (filtered by server)
   // Filter out archived just in case
   const filteredStarredSessions = useMemo(() => {
@@ -356,28 +369,35 @@ export function Sidebar({
         </div>
 
         <div className="sidebar-actions">
-          {/* New Session: link to most recent project's new session page */}
-          <SidebarNavItem
-            to={
-              newSessionProjectId
-                ? `/new-session?projectId=${encodeURIComponent(newSessionProjectId)}`
-                : "/new-session"
-            }
-            icon={SidebarIcons.newSession}
-            label={t("sidebarNewSession")}
-            onClick={onNavigate}
-            basePath={basePath}
-          />
+          <SidebarNavSection title={sectionLabels.create}>
+            <SidebarNavItem
+              to={
+                newSessionProjectId
+                  ? `/new-session?projectId=${encodeURIComponent(newSessionProjectId)}`
+                  : "/new-session"
+              }
+              icon={SidebarIcons.newSession}
+              label={t("sidebarNewSession")}
+              onClick={onNavigate}
+              basePath={basePath}
+            />
+          </SidebarNavSection>
         </div>
 
         <div className="sidebar-sessions">
-          {/* Navigation items that scroll with content */}
-          <SidebarNavSection>
+          <SidebarNavSection title={sectionLabels.work}>
             <SidebarNavItem
               to="/inbox"
               icon={SidebarIcons.inbox}
               label={t("sidebarInbox")}
               badge={inboxCount}
+              onClick={onNavigate}
+              basePath={basePath}
+            />
+            <SidebarNavItem
+              to="/sessions"
+              icon={SidebarIcons.allSessions}
+              label={t("sidebarAllSessions")}
               onClick={onNavigate}
               basePath={basePath}
             />
@@ -389,13 +409,9 @@ export function Sidebar({
               basePath={basePath}
             />
             <AgentsNavItem onClick={onNavigate} basePath={basePath} />
-            <SidebarNavItem
-              to="/sessions"
-              icon={SidebarIcons.allSessions}
-              label={t("sidebarAllSessions")}
-              onClick={onNavigate}
-              basePath={basePath}
-            />
+          </SidebarNavSection>
+
+          <SidebarNavSection title={sectionLabels.control}>
             {capabilities.includes("git-status") && (
               <SidebarNavItem
                 to="/git-status"
@@ -429,7 +445,6 @@ export function Sidebar({
               onClick={onNavigate}
               basePath={basePath}
             />
-            {/* Switch Host - show whenever we have a remote connection */}
             {remoteConnection && (
               <button
                 type="button"
@@ -437,9 +452,13 @@ export function Sidebar({
                 onClick={handleSwitchHost}
               >
                 <span className="sidebar-nav-icon">
-                  <ArrowRightLeft size={16} strokeWidth={2} aria-hidden="true" />
+                  <ArrowRightLeft
+                    size={16}
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  />
                 </span>
-                <span className="sidebar-nav-label">
+                <span className="sidebar-nav-text">
                   {t("sidebarSwitchHost")}
                 </span>
               </button>
@@ -593,7 +612,10 @@ export function Sidebar({
                     basePath={basePath}
                     messageCount={session.messageCount}
                     hasDraft={drafts.has(session.id)}
-                    onDelete={handleDeleteSession(session.id, session.projectId)}
+                    onDelete={handleDeleteSession(
+                      session.id,
+                      session.projectId,
+                    )}
                   />
                 ))}
               </ul>

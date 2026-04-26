@@ -3,6 +3,7 @@ import type {
   SlashCommand,
   UploadedFile,
 } from "@yep-anywhere/shared";
+import { GitBranch, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
@@ -38,6 +39,7 @@ import {
   type StreamingMarkdownCallbacks,
   useSession,
 } from "../hooks/useSession";
+import { useVersion } from "../hooks/useVersion";
 import { useI18n } from "../i18n";
 import { useNavigationLayout } from "../layouts";
 import { preprocessMessages } from "../lib/preprocessMessages";
@@ -85,6 +87,7 @@ function SessionPageContent({
     useNavigationLayout();
   const basePath = useRemoteBasePath();
   const { project } = useProject(projectId);
+  const { version: versionInfo } = useVersion();
   const navigate = useNavigate();
   const location = useLocation();
   // Get initial status and title from navigation state (passed by NewSessionPage)
@@ -216,6 +219,8 @@ function SessionPageContent({
     currentProviderInfo?.supportsPermissionMode ?? true;
   const supportsThinkingToggle =
     currentProviderInfo?.supportsThinkingToggle ?? true;
+  const canOpenGitStatus =
+    versionInfo?.capabilities?.includes("git-status") ?? false;
 
   // Inline title editing state
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -1022,6 +1027,32 @@ function SessionPageContent({
               </div>
             </div>
             <div className="session-header-right">
+              <div className="page-header-actions session-header-actions">
+                {canOpenGitStatus && (
+                  <button
+                    type="button"
+                    className="page-header-action page-header-action--secondary"
+                    onClick={() =>
+                      navigate(`${basePath}/git-status?projectId=${projectId}`)
+                    }
+                    title={t("sidebarSourceControl" as never)}
+                  >
+                    <GitBranch size={15} strokeWidth={2} aria-hidden="true" />
+                    <span>{t("sidebarSourceControl" as never)}</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="page-header-action page-header-action--primary"
+                  onClick={() =>
+                    navigate(`${basePath}/new-session?projectId=${projectId}`)
+                  }
+                  title={t("newSessionTitle" as never)}
+                >
+                  <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
+                  <span>{t("projectCardNewSession" as never)}</span>
+                </button>
+              </div>
               {!loading && effectiveProvider && (
                 <button
                   type="button"
@@ -1063,13 +1094,13 @@ function SessionPageContent({
 
         {/* Model Switch Modal */}
         {showModelSwitchModal && (
-            <ModelSwitchModal
-              processId={status.owner === "self" ? status.processId : undefined}
-              currentModel={session?.model}
-              onModelChanged={handleModelChanged}
-              onClose={() => setShowModelSwitchModal(false)}
-            />
-          )}
+          <ModelSwitchModal
+            processId={status.owner === "self" ? status.processId : undefined}
+            currentModel={session?.model}
+            onModelChanged={handleModelChanged}
+            onClose={() => setShowModelSwitchModal(false)}
+          />
+        )}
 
         {status.owner === "external" && (
           <div className="external-session-warning">
