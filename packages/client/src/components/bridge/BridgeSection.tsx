@@ -179,7 +179,7 @@ export function BridgeSection() {
             {status?.adapters.map((adapter) => (
               <div key={adapter.channelType} className="bridge-adapter-item">
                 <div className="bridge-adapter-header">
-                  <span className="bridge-adapter-name">{adapter.channelType}</span>
+                  <span className="bridge-adapter-name">{t(`bridge.${adapter.channelType}Channel` as Parameters<typeof t>[0])}</span>
                   <span className={`bridge-adapter-badge ${adapter.running ? "bridge-adapter-badge--running" : ""}`}>
                     {adapter.running ? t("bridge.adapterRunning") : t("bridge.adapterStopped")}
                   </span>

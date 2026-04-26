@@ -783,9 +783,9 @@
   "activityFileTypeCredentials": "凭据",
   "activityFileTypeTelemetry": "遥测",
   "activityFileTypeOther": "其他",
-  "agentsTitle": "代理",
-  "agentsLoading": "正在加载代理...",
-  "agentsError": "加载代理失败：{message}",
+  "agentsTitle": "进程",
+  "agentsLoading": "正在加载进程...",
+  "agentsError": "加载进程失败：{message}",
   "agentsSectionActive": "活跃",
   "agentsSectionIdle": "空闲",
   "agentsSectionStopped": "已停止",
@@ -1034,5 +1034,6 @@
   "feishu.setupGuide": "使用说明",
   "feishu.step1": "点击上方「创建并绑定飞书应用」按钮，浏览器会自动打开飞书授权页面。",
   "feishu.step2": "在飞书页面中选择工作区并确认创建，Bot 能力、权限和事件订阅会自动配置。",
-  "feishu.step3": "创建完成后回到本页面，前往「远程桥接」总览页启动桥接即可开始使用。"
+  "feishu.step3": "创建完成后回到本页面，前往「远程桥接」总览页启动桥接即可开始使用。",
+  "projectCardNewSession": "新建"
 }

@@ -783,9 +783,9 @@
   "activityFileTypeCredentials": "資格情報",
   "activityFileTypeTelemetry": "テレメトリ",
   "activityFileTypeOther": "その他",
-  "agentsTitle": "エージェント",
-  "agentsLoading": "エージェントを読み込み中...",
-  "agentsError": "エージェントの読み込みエラー: {message}",
+  "agentsTitle": "プロセス",
+  "agentsLoading": "プロセスを読み込み中...",
+  "agentsError": "プロセスの読み込みエラー: {message}",
   "agentsSectionActive": "アクティブ",
   "agentsSectionIdle": "待機中",
   "agentsSectionStopped": "停止",
@@ -1034,5 +1034,6 @@
   "feishu.setupGuide": "セットアップガイド",
   "feishu.step1": "上の「Feishuアプリを作成・バインド」ボタンをクリックし、Feishu認証ページを開きます。",
   "feishu.step2": "ワークスペースを選択して作成を確認します。Bot機能、権限、イベント購読が自動設定されます。",
-  "feishu.step3": "作成完了後、このページに戻りリモートブリッジの概要ページからブリッジを開始してください。"
+  "feishu.step3": "作成完了後、このページに戻りリモートブリッジの概要ページからブリッジを開始してください。",
+  "projectCardNewSession": "新規"
 }

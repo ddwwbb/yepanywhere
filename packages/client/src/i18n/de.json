@@ -783,9 +783,9 @@
   "activityFileTypeCredentials": "Zugangsdaten",
   "activityFileTypeTelemetry": "Telemetrie",
   "activityFileTypeOther": "Sonstiges",
-  "agentsTitle": "Agenten",
-  "agentsLoading": "Agenten werden geladen...",
-  "agentsError": "Fehler beim Laden der Agenten: {message}",
+  "agentsTitle": "Prozesse",
+  "agentsLoading": "Prozesse werden geladen...",
+  "agentsError": "Fehler beim Laden der Prozesse: {message}",
   "agentsSectionActive": "Aktiv",
   "agentsSectionIdle": "Inaktiv",
   "agentsSectionStopped": "Gestoppt",
@@ -1034,5 +1034,6 @@
   "feishu.setupGuide": "Einrichtungsleitfaden",
   "feishu.step1": "Klicken Sie oben auf \"Feishu-App erstellen & binden\". Die Autorisierungsseite wird geöffnet.",
   "feishu.step2": "Wählen Sie einen Arbeitsbereich und bestätigen Sie. Bot-Fähigkeiten und Berechtigungen werden automatisch konfiguriert.",
-  "feishu.step3": "Kehren Sie zu dieser Seite zurück und starten Sie die Bridge über die Übersichtsseite."
+  "feishu.step3": "Kehren Sie zu dieser Seite zurück und starten Sie die Bridge über die Übersichtsseite.",
+  "projectCardNewSession": "Neu"
 }

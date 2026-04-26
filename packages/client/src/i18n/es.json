@@ -783,9 +783,9 @@
   "activityFileTypeCredentials": "Credenciales",
   "activityFileTypeTelemetry": "Telemetría",
   "activityFileTypeOther": "Otro",
-  "agentsTitle": "Agentes",
-  "agentsLoading": "Cargando agentes...",
-  "agentsError": "Error al cargar agentes: {message}",
+  "agentsTitle": "Procesos",
+  "agentsLoading": "Cargando procesos...",
+  "agentsError": "Error al cargar procesos: {message}",
   "agentsSectionActive": "Activos",
   "agentsSectionIdle": "Inactivos",
   "agentsSectionStopped": "Detenidos",
@@ -1034,5 +1034,6 @@
   "feishu.setupGuide": "Guía de configuración",
   "feishu.step1": "Haga clic en \"Crear y vincular aplicación Feishu\" arriba. Se abrirá la página de autorización.",
   "feishu.step2": "Seleccione un espacio de trabajo y confirme. Las capacidades del bot se configuran automáticamente.",
-  "feishu.step3": "Vuelva a esta página e inicie el puente desde el resumen de Puente Remoto."
+  "feishu.step3": "Vuelva a esta página e inicie el puente desde el resumen de Puente Remoto.",
+  "projectCardNewSession": "Nuevo"
 }

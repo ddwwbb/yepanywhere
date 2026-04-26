@@ -1,6 +1,7 @@
 import { ALL_PROVIDERS, type ProviderName } from "@yep-anywhere/shared";
+import { GitBranch, Plus } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { type GlobalSessionItem, type ServerSettings, api } from "../api/client";
 import { BulkActionBar } from "../components/BulkActionBar";
 import {
@@ -61,6 +62,7 @@ function getBotBoundSessionIds(remoteChannels: RemoteChannels): Set<string> {
  */
 export function GlobalSessionsPage() {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const { openSidebar, isWideScreen, toggleSidebar, isSidebarCollapsed } =
     useNavigationLayout();
   const basePath = useRemoteBasePath();
@@ -656,6 +658,30 @@ export function GlobalSessionsPage() {
 
         <main className="page-scroll-container">
           <div className="page-content-inner">
+            {/* Project action buttons */}
+            {projectFilter && (
+              <div className="project-card__actions" style={{ marginBottom: "var(--space-3)" }}>
+                <button
+                  type="button"
+                  className="project-card__action-btn project-card__action-btn--git"
+                  onClick={() => navigate(`${basePath}/git-status?projectId=${projectFilter}`)}
+                  title={t("sidebarSourceControl" as never)}
+                >
+                  <GitBranch size={15} strokeWidth={2} aria-hidden="true" />
+                  <span className="project-card__new-session-label">Git</span>
+                </button>
+                <button
+                  type="button"
+                  className="project-card__action-btn project-card__action-btn--new"
+                  onClick={() => navigate(`${basePath}/new-session?projectId=${projectFilter}`)}
+                  title={t("newSessionTitle" as never)}
+                >
+                  <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
+                  <span className="project-card__new-session-label">{t("projectCardNewSession" as never)}</span>
+                </button>
+              </div>
+            )}
+
             {/* Filter bar */}
             <div className="filter-bar">
               <form onSubmit={handleSearch} className="filter-search-form">

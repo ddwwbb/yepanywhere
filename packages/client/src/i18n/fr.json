@@ -783,9 +783,9 @@
   "activityFileTypeCredentials": "Identifiants",
   "activityFileTypeTelemetry": "Télémétrie",
   "activityFileTypeOther": "Autre",
-  "agentsTitle": "Agents",
-  "agentsLoading": "Chargement des agents...",
-  "agentsError": "Erreur lors du chargement des agents : {message}",
+  "agentsTitle": "Processus",
+  "agentsLoading": "Chargement des processus...",
+  "agentsError": "Erreur lors du chargement des processus : {message}",
   "agentsSectionActive": "Actifs",
   "agentsSectionIdle": "Inactifs",
   "agentsSectionStopped": "Arrêtés",
@@ -1034,5 +1034,6 @@
   "feishu.setupGuide": "Guide de configuration",
   "feishu.step1": "Cliquez sur \"Créer et lier l'application Feishu\" ci-dessus. La page d'autorisation s'ouvrira.",
   "feishu.step2": "Sélectionnez un espace de travail et confirmez. Les capacités du bot sont configurées automatiquement.",
-  "feishu.step3": "Revenez sur cette page et démarrez le pont depuis l'aperçu du Pont Distant."
+  "feishu.step3": "Revenez sur cette page et démarrez le pont depuis l'aperçu du Pont Distant.",
+  "projectCardNewSession": "Nouveau"
 }

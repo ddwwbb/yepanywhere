@@ -783,9 +783,9 @@
   "activityFileTypeCredentials": "Credentials",
   "activityFileTypeTelemetry": "Telemetry",
   "activityFileTypeOther": "Other",
-  "agentsTitle": "Agents",
-  "agentsLoading": "Loading agents...",
-  "agentsError": "Error loading agents: {message}",
+  "agentsTitle": "Processes",
+  "agentsLoading": "Loading processes...",
+  "agentsError": "Error loading processes: {message}",
   "agentsSectionActive": "Active",
   "agentsSectionIdle": "Idle",
   "agentsSectionStopped": "Stopped",
@@ -1034,5 +1034,6 @@
   "feishu.setupGuide": "Setup Guide",
   "feishu.step1": "Click the \"Create & Bind Feishu App\" button above. Your browser will open the Feishu authorization page.",
   "feishu.step2": "Select a workspace and confirm creation. Bot capabilities, permissions, and event subscriptions are auto-configured.",
-  "feishu.step3": "Return to this page and start the bridge from the Remote Bridge overview to begin using it."
+  "feishu.step3": "Return to this page and start the bridge from the Remote Bridge overview to begin using it.",
+  "projectCardNewSession": "New"
 }

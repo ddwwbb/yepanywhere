@@ -1,4 +1,5 @@
 import { useGlobalActiveAgents } from "../hooks/useGlobalActiveAgents";
+import { useI18n } from "../i18n";
 import { SidebarIcons, SidebarNavItem } from "./SidebarNavItem";
 
 interface AgentsNavItemProps {
@@ -8,19 +9,15 @@ interface AgentsNavItemProps {
   basePath?: string;
 }
 
-/**
- * Agents navigation item with built-in activity indicator.
- * Use this component instead of manually wiring up SidebarNavItem for agents
- * to ensure consistent behavior across all sidebars.
- */
 export function AgentsNavItem({ onClick, basePath }: AgentsNavItemProps) {
   const activeAgentsCount = useGlobalActiveAgents();
+  const { t } = useI18n();
 
   return (
     <SidebarNavItem
       to="/agents"
       icon={SidebarIcons.agents}
-      label="Agents"
+      label={t("agentsTitle" as never)}
       onClick={onClick}
       hasActivityIndicator={activeAgentsCount > 0}
       basePath={basePath}

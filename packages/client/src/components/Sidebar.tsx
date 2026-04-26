@@ -14,12 +14,9 @@ import { useI18n } from "../i18n";
 import { getSessionDisplayTitle, toUrlProjectId } from "../utils";
 import { AgentsNavItem } from "./AgentsNavItem";
 import { SessionListItem } from "./SessionListItem";
-import {
-  SidebarIcons,
-  SidebarNavItem,
-  SidebarNavSection,
-} from "./SidebarNavItem";
+import { SidebarIcons, SidebarNavItem, SidebarNavSection } from "./SidebarNavItem";
 import { YepAnywhereLogo } from "./YepAnywhereLogo";
+import { PanelLeftClose, X, ArrowRightLeft } from "lucide-react";
 
 const SWIPE_THRESHOLD = 50; // Minimum distance to trigger close
 const SWIPE_ENGAGE_THRESHOLD = 15; // Minimum horizontal distance before swipe engages
@@ -284,20 +281,7 @@ export function Sidebar({
 
   // Sidebar toggle icon for desktop mode
   const SidebarToggleIcon = () => (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <line x1="9" y1="3" x2="9" y2="21" />
-    </svg>
+    <PanelLeftClose size={20} strokeWidth={2} aria-hidden="true" />
   );
 
   return (
@@ -354,18 +338,7 @@ export function Sidebar({
                 onClick={onClose}
                 aria-label={t("actionCloseSidebar")}
               >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  aria-hidden="true"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <X size={20} strokeWidth={2} aria-hidden="true" />
               </button>
             </>
           )}
@@ -398,16 +371,17 @@ export function Sidebar({
               basePath={basePath}
             />
             <SidebarNavItem
-              to="/sessions"
-              icon={SidebarIcons.allSessions}
-              label={t("sidebarAllSessions")}
-              onClick={onNavigate}
-              basePath={basePath}
-            />
-            <SidebarNavItem
               to="/projects"
               icon={SidebarIcons.projects}
               label={t("sidebarProjects")}
+              onClick={onNavigate}
+              basePath={basePath}
+            />
+            <AgentsNavItem onClick={onNavigate} basePath={basePath} />
+            <SidebarNavItem
+              to="/sessions"
+              icon={SidebarIcons.allSessions}
+              label={t("sidebarAllSessions")}
               onClick={onNavigate}
               basePath={basePath}
             />
@@ -430,18 +404,17 @@ export function Sidebar({
                 basePath={basePath}
               />
             )}
-            <AgentsNavItem onClick={onNavigate} basePath={basePath} />
-            <SidebarNavItem
-              to="/settings"
-              icon={SidebarIcons.settings}
-              label={t("sidebarSettings")}
-              onClick={onNavigate}
-              basePath={basePath}
-            />
             <SidebarNavItem
               to="/bridge"
               icon={SidebarIcons.bridge}
               label={t("sidebarBridge")}
+              onClick={onNavigate}
+              basePath={basePath}
+            />
+            <SidebarNavItem
+              to="/settings"
+              icon={SidebarIcons.settings}
+              label={t("sidebarSettings")}
               onClick={onNavigate}
               basePath={basePath}
             />
@@ -453,22 +426,7 @@ export function Sidebar({
                 onClick={handleSwitchHost}
               >
                 <span className="sidebar-nav-icon">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <polyline points="17 1 21 5 17 9" />
-                    <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-                    <polyline points="7 23 3 19 7 15" />
-                    <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-                  </svg>
+                  <ArrowRightLeft size={16} strokeWidth={2} aria-hidden="true" />
                 </span>
                 <span className="sidebar-nav-label">
                   {t("sidebarSwitchHost")}
