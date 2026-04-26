@@ -184,7 +184,7 @@ export function McpServerButton({
                         {server.tools.length} tools
                       </div>
                     )}
-                    <label className="mcp-server-toggle">
+                    <label className="toggle-switch">
                       <input
                         type="checkbox"
                         checked={enabled}
@@ -193,7 +193,7 @@ export function McpServerButton({
                           void handleToggle(server.name, event.target.checked)
                         }
                       />
-                      <span className="mcp-server-toggle-slider" />
+                      <span className="toggle-slider" />
                     </label>
                   </div>
                 );

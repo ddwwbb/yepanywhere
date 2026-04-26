@@ -133,6 +133,8 @@ export interface InboxContentProps {
   projects?: Project[];
   /** Callback when project filter changes */
   onProjectChange?: (projectId: string | undefined) => void;
+  /** Render only inner content when parent already owns the scroll container */
+  embedded?: boolean;
 }
 
 /**
@@ -155,6 +157,7 @@ export function InboxContent({
   projectId,
   projects,
   onProjectChange,
+  embedded = false,
 }: InboxContentProps) {
   const { t } = useI18n();
   const basePath = useRemoteBasePath();
@@ -218,94 +221,100 @@ export function InboxContent({
     onProjectChange?.(value === "" ? undefined : value);
   };
 
+  const content = (
+    <>
+      {/* Toolbar with project filter and refresh button */}
+      <div className="inbox-toolbar page-toolbar">
+        {projects && projects.length > 0 && (
+          <FilterDropdown
+            label={t("inboxFilterProject")}
+            options={projectOptions}
+            selected={[projectId ?? ""]}
+            onChange={handleProjectSelect}
+            multiSelect={false}
+            placeholder={t("inboxAllProjects")}
+          />
+        )}
+        <button
+          type="button"
+          className="inbox-refresh-button"
+          onClick={handleRefresh}
+          disabled={refreshing || loading}
+          title={t("inboxRefreshTitle")}
+        >
+          <svg
+            className={refreshing ? "spinning" : ""}
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="23 4 23 10 17 10" />
+            <polyline points="1 20 1 14 7 14" />
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+          </svg>
+          {refreshing ? t("inboxRefreshing") : t("inboxRefresh")}
+        </button>
+      </div>
+
+      {loading && <p className="loading">{t("inboxLoading")}</p>}
+
+      {error && (
+        <p className="error">{t("inboxError", { message: error.message })}</p>
+      )}
+
+      {!loading && !error && isEmpty && (
+        <div className="inbox-empty">
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+          <h3>{t("inboxEmptyTitle")}</h3>
+          <p>
+            {projectId
+              ? t("inboxEmptyDescriptionProject")
+              : t("inboxEmptyDescription")}
+          </p>
+        </div>
+      )}
+
+      {!loading && !error && !isEmpty && (
+        <div className="inbox-tiers">
+          {TIER_CONFIGS.map((config) => (
+            <InboxSection
+              key={config.key}
+              config={config}
+              items={tierData[config.key] ?? []}
+              hideProjectName={!!projectId}
+              basePath={basePath}
+              drafts={drafts}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+
+  if (embedded) return content;
+
   return (
     <main className="page-scroll-container">
-      <div className="page-content-inner inbox-content">
-        {/* Toolbar with project filter and refresh button */}
-        <div className="inbox-toolbar">
-          {projects && projects.length > 0 && (
-            <FilterDropdown
-              label={t("inboxFilterProject")}
-              options={projectOptions}
-              selected={[projectId ?? ""]}
-              onChange={handleProjectSelect}
-              multiSelect={false}
-              placeholder={t("inboxAllProjects")}
-            />
-          )}
-          <button
-            type="button"
-            className="inbox-refresh-button"
-            onClick={handleRefresh}
-            disabled={refreshing || loading}
-            title={t("inboxRefreshTitle")}
-          >
-            <svg
-              className={refreshing ? "spinning" : ""}
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="23 4 23 10 17 10" />
-              <polyline points="1 20 1 14 7 14" />
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-            </svg>
-            {refreshing ? t("inboxRefreshing") : t("inboxRefresh")}
-          </button>
-        </div>
-
-        {loading && <p className="loading">{t("inboxLoading")}</p>}
-
-        {error && (
-          <p className="error">{t("inboxError", { message: error.message })}</p>
-        )}
-
-        {!loading && !error && isEmpty && (
-          <div className="inbox-empty">
-            <svg
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
-            </svg>
-            <h3>{t("inboxEmptyTitle")}</h3>
-            <p>
-              {projectId
-                ? t("inboxEmptyDescriptionProject")
-                : t("inboxEmptyDescription")}
-            </p>
-          </div>
-        )}
-
-        {!loading && !error && !isEmpty && (
-          <div className="inbox-tiers">
-            {TIER_CONFIGS.map((config) => (
-              <InboxSection
-                key={config.key}
-                config={config}
-                items={tierData[config.key] ?? []}
-                hideProjectName={!!projectId}
-                basePath={basePath}
-                drafts={drafts}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      <div className="page-content-inner inbox-content">{content}</div>
     </main>
   );
 }

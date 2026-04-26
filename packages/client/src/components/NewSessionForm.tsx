@@ -775,159 +775,162 @@ export function NewSessionForm({
       className={`new-session-form new-session-container ${interimTranscript ? "voice-recording" : ""}`}
     >
       <div className="new-session-header">
+        <span className="new-session-eyebrow">
+          {t("pageHeroWorkspace" as never)}
+        </span>
         <h1>{t("newSessionHeaderTitle")}</h1>
         <p className="new-session-subtitle">{t("newSessionHeaderSubtitle")}</p>
       </div>
 
       <div className="new-session-input-area">{inputArea}</div>
 
-      {/* Provider Selection */}
-      {!providersLoading && installedProviders.length > 1 && (
-        <div className="new-session-provider-section">
-          <h3>{t("newSessionProviderTitle")}</h3>
-          <div className="provider-options">
-            {installedProviders.map((p) => {
-              const isAvailable = p.authenticated || p.enabled;
-              const isSelected = selectedProvider === p.name;
-              return (
-                <button
-                  key={p.name}
-                  type="button"
-                  className={`provider-option ${isSelected ? "selected" : ""} ${!isAvailable ? "disabled" : ""}`}
-                  onClick={() => isAvailable && handleProviderSelect(p.name)}
-                  disabled={isStarting || !isAvailable}
-                  title={
-                    !isAvailable
-                      ? t("newSessionProviderUnavailable", {
-                          provider: p.displayName,
-                          reason: t("newSessionProviderNotAuthenticated"),
-                        })
-                      : p.displayName
-                  }
-                >
-                  <span className={`provider-option-dot provider-${p.name}`} />
-                  <div className="provider-option-content">
-                    <span className="provider-option-label">
-                      {p.displayName}
-                    </span>
-                    {!isAvailable && (
-                      <span className="provider-option-status">
-                        {t("newSessionProviderStatusNotAuthenticated")}
+      <div className="new-session-config-panel">
+        {!providersLoading && installedProviders.length > 1 && (
+          <div className="new-session-provider-section">
+            <h3>{t("newSessionProviderTitle")}</h3>
+            <div className="provider-options">
+              {installedProviders.map((p) => {
+                const isAvailable = p.authenticated || p.enabled;
+                const isSelected = selectedProvider === p.name;
+                return (
+                  <button
+                    key={p.name}
+                    type="button"
+                    className={`provider-option ${isSelected ? "selected" : ""} ${!isAvailable ? "disabled" : ""}`}
+                    onClick={() => isAvailable && handleProviderSelect(p.name)}
+                    disabled={isStarting || !isAvailable}
+                    title={
+                      !isAvailable
+                        ? t("newSessionProviderUnavailable", {
+                            provider: p.displayName,
+                            reason: t("newSessionProviderNotAuthenticated"),
+                          })
+                        : p.displayName
+                    }
+                  >
+                    <span
+                      className={`provider-option-dot provider-${p.name}`}
+                    />
+                    <div className="provider-option-content">
+                      <span className="provider-option-label">
+                        {p.displayName}
                       </span>
-                    )}
+                      {!isAvailable && (
+                        <span className="provider-option-status">
+                          {t("newSessionProviderStatusNotAuthenticated")}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {selectedProvider && modelOptions.length > 0 && (
+          <div className="new-session-model-section">
+            <h3>{t("newSessionModelTitle")}</h3>
+            <FilterDropdown
+              label={t("newSessionModelTitle")}
+              options={modelOptions}
+              selected={selectedModel ? [selectedModel] : []}
+              onChange={handleModelSelect}
+              multiSelect={false}
+              placeholder={t("newSessionModelPlaceholder")}
+            />
+          </div>
+        )}
+
+        {!executorsLoading && remoteExecutors.length > 0 && (
+          <div className="new-session-executor-section">
+            <h3>{t("newSessionRunOnTitle")}</h3>
+            <div className="executor-options">
+              <button
+                key="local"
+                type="button"
+                className={`executor-option ${selectedExecutor === null ? "selected" : ""}`}
+                onClick={() => setSelectedExecutor(null)}
+                disabled={isStarting}
+              >
+                <span className="executor-option-dot executor-local" />
+                <div className="executor-option-content">
+                  <span className="executor-option-label">
+                    {t("newSessionRunOnLocal")}
+                  </span>
+                  <span className="executor-option-desc">
+                    {t("newSessionRunOnLocalDesc")}
+                  </span>
+                </div>
+              </button>
+              {remoteExecutors.map((host) => (
+                <button
+                  key={host}
+                  type="button"
+                  className={`executor-option ${selectedExecutor === host ? "selected" : ""}`}
+                  onClick={() => setSelectedExecutor(host)}
+                  disabled={isStarting}
+                >
+                  <span className="executor-option-dot executor-remote" />
+                  <div className="executor-option-content">
+                    <span className="executor-option-label">{host}</span>
+                    <span className="executor-option-desc">
+                      {t("newSessionRunOnRemoteDesc")}
+                    </span>
                   </div>
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Model Selection */}
-      {selectedProvider && modelOptions.length > 0 && (
-        <div className="new-session-model-section">
-          <h3>{t("newSessionModelTitle")}</h3>
-          <FilterDropdown
-            label={t("newSessionModelTitle")}
-            options={modelOptions}
-            selected={selectedModel ? [selectedModel] : []}
-            onChange={handleModelSelect}
-            multiSelect={false}
-            placeholder={t("newSessionModelPlaceholder")}
-          />
-        </div>
-      )}
+        {supportsPermissionMode && (
+          <div className="new-session-mode-section">
+            <h3>{t("newSessionModeTitle")}</h3>
+            <div className="mode-options">
+              {MODE_ORDER.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  className={`mode-option ${mode === m ? "selected" : ""}`}
+                  onClick={() => handleModeSelect(m)}
+                  disabled={isStarting}
+                >
+                  <span className={`mode-option-dot mode-${m}`} />
+                  <div className="mode-option-content">
+                    <span className="mode-option-label">{modeLabels[m]}</span>
+                    <span className="mode-option-desc">
+                      {modeDescriptions[m]}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
 
-      {/* Executor Selection - only show if remote executors are configured */}
-      {!executorsLoading && remoteExecutors.length > 0 && (
-        <div className="new-session-executor-section">
-          <h3>{t("newSessionRunOnTitle")}</h3>
-          <div className="executor-options">
-            <button
-              key="local"
-              type="button"
-              className={`executor-option ${selectedExecutor === null ? "selected" : ""}`}
-              onClick={() => setSelectedExecutor(null)}
-              disabled={isStarting}
-            >
-              <span className="executor-option-dot executor-local" />
-              <div className="executor-option-content">
-                <span className="executor-option-label">
-                  {t("newSessionRunOnLocal")}
-                </span>
-                <span className="executor-option-desc">
-                  {t("newSessionRunOnLocalDesc")}
-                </span>
-              </div>
-            </button>
-            {remoteExecutors.map((host) => (
+            <div className="new-session-defaults-bar">
+              <p className="new-session-defaults-copy">
+                {t("newSessionDefaultsDescription")}
+              </p>
               <button
-                key={host}
                 type="button"
-                className={`executor-option ${selectedExecutor === host ? "selected" : ""}`}
-                onClick={() => setSelectedExecutor(host)}
-                disabled={isStarting}
+                className="new-session-defaults-button"
+                onClick={handleSaveDefaults}
+                disabled={
+                  isStarting ||
+                  isSavingDefaults ||
+                  settingsLoading ||
+                  !selectedProvider ||
+                  defaultsMatchCurrent
+                }
               >
-                <span className="executor-option-dot executor-remote" />
-                <div className="executor-option-content">
-                  <span className="executor-option-label">{host}</span>
-                  <span className="executor-option-desc">
-                    {t("newSessionRunOnRemoteDesc")}
-                  </span>
-                </div>
+                {isSavingDefaults
+                  ? t("newSessionDefaultsSaving")
+                  : t("newSessionDefaultsAction")}
               </button>
-            ))}
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* Permission Mode Selection - only for providers that support it */}
-      {supportsPermissionMode && (
-        <div className="new-session-mode-section">
-          <h3>{t("newSessionModeTitle")}</h3>
-          <div className="mode-options">
-            {MODE_ORDER.map((m) => (
-              <button
-                key={m}
-                type="button"
-                className={`mode-option ${mode === m ? "selected" : ""}`}
-                onClick={() => handleModeSelect(m)}
-                disabled={isStarting}
-              >
-                <span className={`mode-option-dot mode-${m}`} />
-                <div className="mode-option-content">
-                  <span className="mode-option-label">{modeLabels[m]}</span>
-                  <span className="mode-option-desc">
-                    {modeDescriptions[m]}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          <div className="new-session-defaults-bar">
-            <p className="new-session-defaults-copy">
-              {t("newSessionDefaultsDescription")}
-            </p>
-            <button
-              type="button"
-              className="new-session-defaults-button"
-              onClick={handleSaveDefaults}
-              disabled={
-                isStarting ||
-                isSavingDefaults ||
-                settingsLoading ||
-                !selectedProvider ||
-                defaultsMatchCurrent
-              }
-            >
-              {isSavingDefaults
-                ? t("newSessionDefaultsSaving")
-                : t("newSessionDefaultsAction")}
-            </button>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

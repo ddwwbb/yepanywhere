@@ -1031,7 +1031,7 @@ function SessionPageContent({
                 {canOpenGitStatus && (
                   <button
                     type="button"
-                    className="page-header-action page-header-action--secondary"
+                    className="page-header-action page-header-action--git"
                     onClick={() =>
                       navigate(`${basePath}/git-status?projectId=${projectId}`)
                     }

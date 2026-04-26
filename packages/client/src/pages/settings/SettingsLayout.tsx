@@ -1,5 +1,7 @@
+import { Settings, SlidersHorizontal } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../components/PageHeader";
+import { PageHero } from "../../components/PageHero";
 import { useReloadNotifications } from "../../hooks/useReloadNotifications";
 import { useRemoteBasePath } from "../../hooks/useRemoteBasePath";
 import { useVersion } from "../../hooks/useVersion";
@@ -119,6 +121,10 @@ export function SettingsLayout() {
   const CategoryComponent = effectiveCategory
     ? CATEGORY_COMPONENTS[effectiveCategory]
     : null;
+  const currentCategory = categories.find((c) => c.id === effectiveCategory);
+  const detailHeroIcon = currentCategory?.icon ?? (
+    <SlidersHorizontal size={22} strokeWidth={2} aria-hidden="true" />
+  );
 
   // Mobile: category list OR category detail (not both)
   if (!isWideScreen) {
@@ -136,6 +142,22 @@ export function SettingsLayout() {
             />
             <main className="page-scroll-container">
               <div className="page-content-inner">
+                <PageHero
+                  eyebrow={t("pageHeroControl" as never)}
+                  title={t("pageTitleSettings")}
+                  description={t("pageHeroSettingsDescription" as never)}
+                  icon={
+                    <Settings size={22} strokeWidth={2} aria-hidden="true" />
+                  }
+                  metrics={[
+                    {
+                      label: t("pageHeroSettingsSections" as never),
+                      value: categories.length,
+                      tone: "brand",
+                    },
+                  ]}
+                  compact
+                />
                 <div className="settings-category-list">
                   {categories.map((cat) => (
                     <SettingsCategoryItem
@@ -154,7 +176,6 @@ export function SettingsLayout() {
     }
 
     // Show category detail with back button
-    const currentCategory = categories.find((c) => c.id === category);
     return (
       <div className="main-content-mobile">
         <div className="main-content-mobile-inner">
@@ -165,7 +186,16 @@ export function SettingsLayout() {
             onBack={handleBack}
           />
           <main className="page-scroll-container">
-            <div className="page-content-inner">
+            <div className="page-content-inner settings-detail-page">
+              {currentCategory && (
+                <PageHero
+                  eyebrow={t("pageHeroControl" as never)}
+                  title={currentCategory.label}
+                  description={currentCategory.description}
+                  icon={detailHeroIcon}
+                  compact
+                />
+              )}
               {CategoryComponent && <CategoryComponent />}
             </div>
           </main>
@@ -186,21 +216,46 @@ export function SettingsLayout() {
           isSidebarCollapsed={isSidebarCollapsed}
         />
         <main className="page-scroll-container">
-          <div className="settings-two-column">
-            <nav className="settings-category-nav">
-              <div className="settings-category-list">
-                {categories.map((cat) => (
-                  <SettingsCategoryItem
-                    key={cat.id}
-                    category={cat}
-                    isActive={effectiveCategory === cat.id}
-                    onClick={() => handleCategoryClick(cat.id)}
+          <div className="page-content-inner settings-page-content">
+            <PageHero
+              eyebrow={t("pageHeroControl" as never)}
+              title={t("pageTitleSettings")}
+              description={t("pageHeroSettingsDescription" as never)}
+              icon={<Settings size={22} strokeWidth={2} aria-hidden="true" />}
+              metrics={[
+                {
+                  label: t("pageHeroSettingsSections" as never),
+                  value: categories.length,
+                  tone: "brand",
+                },
+              ]}
+              compact
+            />
+            <div className="settings-two-column">
+              <nav className="settings-category-nav">
+                <div className="settings-category-list">
+                  {categories.map((cat) => (
+                    <SettingsCategoryItem
+                      key={cat.id}
+                      category={cat}
+                      isActive={effectiveCategory === cat.id}
+                      onClick={() => handleCategoryClick(cat.id)}
+                    />
+                  ))}
+                </div>
+              </nav>
+              <div className="settings-content-panel settings-detail-page">
+                {currentCategory && (
+                  <PageHero
+                    eyebrow={t("pageHeroControl" as never)}
+                    title={currentCategory.label}
+                    description={currentCategory.description}
+                    icon={detailHeroIcon}
+                    compact
                   />
-                ))}
+                )}
+                {CategoryComponent && <CategoryComponent />}
               </div>
-            </nav>
-            <div className="settings-content-panel">
-              {CategoryComponent && <CategoryComponent />}
             </div>
           </div>
         </main>

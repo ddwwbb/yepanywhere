@@ -1,8 +1,9 @@
+import { FolderOpen, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, FolderOpen } from "lucide-react";
 import { api } from "../api/client";
 import { PageHeader } from "../components/PageHeader";
+import { PageHero } from "../components/PageHero";
 import { ProjectCard } from "../components/ProjectCard";
 import { useInboxContext } from "../contexts/InboxContext";
 import { useProjects } from "../hooks/useProjects";
@@ -92,6 +93,12 @@ export function ProjectsPage() {
   }
 
   const isEmpty = projects.length === 0;
+  const activeProjectCount = Array.from(thinkingByProject.values()).filter(
+    (count) => count > 0,
+  ).length;
+  const attentionProjectCount = Array.from(attentionByProject.values()).filter(
+    (count) => count > 0,
+  ).length;
 
   return (
     <div
@@ -114,18 +121,44 @@ export function ProjectsPage() {
 
         <main className="page-scroll-container">
           <div className="page-content-inner">
-            {/* Toolbar with Add Project button */}
-            <div className="inbox-toolbar">
-              {!showAddForm ? (
-                <button
-                  type="button"
-                  className="inbox-refresh-button"
-                  onClick={() => setShowAddForm(true)}
-                >
-                  <Plus size={16} strokeWidth={2} aria-hidden="true" />
-                  {t("projectsAdd")}
-                </button>
-              ) : (
+            <PageHero
+              eyebrow={t("pageHeroWorkspace")}
+              title={t("pageTitleProjects")}
+              description={t("pageHeroProjectsDescription")}
+              icon={<FolderOpen size={22} strokeWidth={2} aria-hidden="true" />}
+              metrics={[
+                {
+                  label: t("pageHeroProjectsTotal"),
+                  value: projects.length,
+                  tone: "brand",
+                },
+                {
+                  label: t("pageHeroProjectsAttention"),
+                  value: attentionProjectCount,
+                  tone: attentionProjectCount > 0 ? "warning" : "default",
+                },
+                {
+                  label: t("pageHeroProjectsActive"),
+                  value: activeProjectCount,
+                  tone: activeProjectCount > 0 ? "success" : "default",
+                },
+              ]}
+              actions={
+                !showAddForm ? (
+                  <button
+                    type="button"
+                    className="page-hero-action page-hero-action--primary"
+                    onClick={() => setShowAddForm(true)}
+                  >
+                    <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
+                    <span>{t("projectsAdd")}</span>
+                  </button>
+                ) : undefined
+              }
+            />
+
+            <div className="inbox-toolbar page-toolbar">
+              {showAddForm && (
                 <form onSubmit={handleAddProject} className="add-project-form">
                   <input
                     type="text"

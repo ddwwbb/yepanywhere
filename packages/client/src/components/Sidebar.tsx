@@ -1,6 +1,6 @@
 import { ArrowRightLeft, PanelLeftClose, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   type GlobalSessionItem,
   type ServerSettings,
@@ -30,6 +30,120 @@ const SWIPE_THRESHOLD = 50; // Minimum distance to trigger close
 const SWIPE_ENGAGE_THRESHOLD = 15; // Minimum horizontal distance before swipe engages
 const RECENT_SESSIONS_INITIAL = 12; // Initial number of recent sessions to show
 const RECENT_SESSIONS_INCREMENT = 10; // How many more to show on each expand
+
+type SidebarHistoryBucket = "today" | "yesterday" | "last7Days" | "older";
+
+interface SidebarHistoryTimeGroup {
+  bucket: SidebarHistoryBucket;
+  label: string;
+  sessions: GlobalSessionItem[];
+}
+
+interface SidebarHistoryProjectGroup {
+  projectId: string;
+  projectName: string;
+  count: number;
+  timeGroups: SidebarHistoryTimeGroup[];
+}
+
+const SIDEBAR_HISTORY_BUCKETS: SidebarHistoryBucket[] = [
+  "today",
+  "yesterday",
+  "last7Days",
+  "older",
+];
+
+function getStartOfDay(date: Date) {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  ).getTime();
+}
+
+function getSidebarHistoryBucket(
+  updatedAt: string,
+  now: Date,
+): SidebarHistoryBucket {
+  const timestamp = new Date(updatedAt).getTime();
+  if (!Number.isFinite(timestamp)) return "older";
+
+  const todayStart = getStartOfDay(now);
+  const yesterdayStart = todayStart - 24 * 60 * 60 * 1000;
+  const lastSevenDaysStart = todayStart - 6 * 24 * 60 * 60 * 1000;
+
+  if (timestamp >= todayStart) return "today";
+  if (timestamp >= yesterdayStart) return "yesterday";
+  if (timestamp >= lastSevenDaysStart) return "last7Days";
+  return "older";
+}
+
+function getSidebarHistoryBucketLabel(
+  bucket: SidebarHistoryBucket,
+  locale: "en" | "zh-CN",
+) {
+  if (locale === "zh-CN") {
+    return {
+      today: "今天",
+      yesterday: "昨天",
+      last7Days: "近 7 天",
+      older: "更早",
+    }[bucket];
+  }
+  return {
+    today: "Today",
+    yesterday: "Yesterday",
+    last7Days: "Last 7 days",
+    older: "Older",
+  }[bucket];
+}
+
+function groupSidebarHistorySessions(
+  sessions: GlobalSessionItem[],
+  locale: "en" | "zh-CN",
+): SidebarHistoryProjectGroup[] {
+  const now = new Date();
+  const projects = new Map<
+    string,
+    {
+      projectName: string;
+      count: number;
+      buckets: Map<SidebarHistoryBucket, GlobalSessionItem[]>;
+    }
+  >();
+
+  for (const session of sessions) {
+    const project = projects.get(session.projectId) ?? {
+      projectName: session.projectName || session.projectId,
+      count: 0,
+      buckets: new Map<SidebarHistoryBucket, GlobalSessionItem[]>(),
+    };
+    const bucket = getSidebarHistoryBucket(session.updatedAt, now);
+    project.count += 1;
+    project.buckets.set(bucket, [
+      ...(project.buckets.get(bucket) ?? []),
+      session,
+    ]);
+    projects.set(session.projectId, project);
+  }
+
+  return Array.from(projects, ([projectId, project]) => ({
+    projectId,
+    projectName: project.projectName,
+    count: project.count,
+    timeGroups: SIDEBAR_HISTORY_BUCKETS.flatMap((bucket) => {
+      const bucketSessions = project.buckets.get(bucket) ?? [];
+      if (bucketSessions.length === 0) return [];
+      return [
+        {
+          bucket,
+          label: getSidebarHistoryBucketLabel(bucket, locale),
+          sessions: bucketSessions,
+        },
+      ];
+    }),
+  }));
+}
 
 type RemoteChannels = ServerSettings["remoteChannels"];
 
@@ -132,15 +246,15 @@ export function Sidebar({
   const [isResizing, setIsResizing] = useState(false);
   const resizeStartX = useRef<number | null>(null);
   const resizeStartWidth = useRef<number | null>(null);
-  const [recentSessionsLimit, setRecentSessionsLimit] = useState(
-    RECENT_SESSIONS_INITIAL,
-  );
-  const [olderSessionsLimit, setOlderSessionsLimit] = useState(
+  const [historySessionsLimit, setHistorySessionsLimit] = useState(
     RECENT_SESSIONS_INITIAL,
   );
   const [starredSessionsLimit, setStarredSessionsLimit] = useState(
     RECENT_SESSIONS_INITIAL,
   );
+  const [collapsedHistoryProjectIds, setCollapsedHistoryProjectIds] = useState<
+    Set<string>
+  >(() => new Set());
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0]?.clientX ?? null;
@@ -262,29 +376,32 @@ export function Sidebar({
     return starredSessions.filter((s) => !s.isArchived);
   }, [starredSessions]);
 
-  // Sessions updated in the last 24 hours (non-starred, non-archived)
-  const recentDaySessions = useMemo(() => {
-    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
-    const isWithinLastDay = (date: Date) => date.getTime() >= oneDayAgo;
+  const historySessions = useMemo(
+    () => globalSessions.filter((s) => !s.isStarred && !s.isArchived),
+    [globalSessions],
+  );
 
-    return globalSessions.filter(
-      (s) =>
-        !s.isStarred && !s.isArchived && isWithinLastDay(new Date(s.updatedAt)),
-    );
-  }, [globalSessions]);
+  const visibleHistorySessions = useMemo(
+    () => historySessions.slice(0, historySessionsLimit),
+    [historySessions, historySessionsLimit],
+  );
 
-  // Older sessions (non-starred, non-archived, NOT in last 24 hours)
-  const olderSessions = useMemo(() => {
-    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
-    const isOlderThanOneDay = (date: Date) => date.getTime() < oneDayAgo;
+  const historyProjectGroups = useMemo(
+    () => groupSidebarHistorySessions(visibleHistorySessions, locale),
+    [locale, visibleHistorySessions],
+  );
 
-    return globalSessions.filter(
-      (s) =>
-        !s.isStarred &&
-        !s.isArchived &&
-        isOlderThanOneDay(new Date(s.updatedAt)),
-    );
-  }, [globalSessions]);
+  const toggleHistoryProject = useCallback((projectId: string) => {
+    setCollapsedHistoryProjectIds((current) => {
+      const next = new Set(current);
+      if (next.has(projectId)) {
+        next.delete(projectId);
+      } else {
+        next.add(projectId);
+      }
+      return next;
+    });
+  }, []);
 
   // Track which sessions have unsent drafts in localStorage
   const drafts = useDrafts();
@@ -525,50 +642,100 @@ export function Sidebar({
             </div>
           )}
 
-          {recentDaySessions.length > 0 && (
-            <div className="sidebar-section">
+          {historyProjectGroups.length > 0 && (
+            <div className="sidebar-section sidebar-history-section">
               <h3 className="sidebar-section-title">
-                {t("sidebarSectionLast24Hours")}
+                {locale === "zh-CN" ? "对话历史" : "Conversation history"}
               </h3>
-              <ul className="sidebar-session-list">
-                {recentDaySessions
-                  .slice(0, recentSessionsLimit)
-                  .map((session) => (
-                    <SessionListItem
-                      key={session.id}
-                      sessionId={session.id}
-                      projectId={session.projectId}
-                      title={getSessionDisplayTitle(session)}
-                      fullTitle={getSessionDisplayTitle(session)}
-                      provider={session.provider}
-                      status={session.ownership}
-                      pendingInputType={session.pendingInputType}
-                      hasUnread={session.hasUnread}
-                      isStarred={session.isStarred}
-                      isArchived={session.isArchived}
-                      mode="compact"
-                      isCurrent={session.id === currentSessionId}
-                      activity={session.activity}
-                      onNavigate={onNavigate}
-                      showProjectName
-                      projectName={session.projectName}
-                      basePath={basePath}
-                      messageCount={session.messageCount}
-                      hasDraft={drafts.has(session.id)}
-                      hasBotBinding={botBoundSessionIds.has(session.id)}
-                      onDelete={handleDeleteSession(
-                        session.id,
-                        session.projectId,
+              <div className="sidebar-history-projects">
+                {historyProjectGroups.map((projectGroup) => {
+                  const isCollapsed = collapsedHistoryProjectIds.has(
+                    projectGroup.projectId,
+                  );
+                  const panelId = `sidebar-history-project-${projectGroup.projectId}`;
+                  return (
+                    <section
+                      key={projectGroup.projectId}
+                      className={`sidebar-history-project ${isCollapsed ? "sidebar-history-project--collapsed" : ""}`}
+                      aria-label={projectGroup.projectName}
+                    >
+                      <button
+                        type="button"
+                        className="sidebar-history-project-header"
+                        aria-expanded={!isCollapsed}
+                        aria-controls={panelId}
+                        onClick={() =>
+                          toggleHistoryProject(projectGroup.projectId)
+                        }
+                      >
+                        <span className="sidebar-history-project-chevron">
+                          ›
+                        </span>
+                        <span className="sidebar-history-project-name">
+                          {projectGroup.projectName}
+                        </span>
+                        <span className="sidebar-history-project-count">
+                          {projectGroup.count}
+                        </span>
+                      </button>
+                      {!isCollapsed && (
+                        <div
+                          id={panelId}
+                          className="sidebar-history-project-body"
+                        >
+                          {projectGroup.timeGroups.map((timeGroup) => (
+                            <div
+                              key={`${projectGroup.projectId}-${timeGroup.bucket}`}
+                              className="sidebar-history-time-group"
+                            >
+                              <div className="sidebar-history-time-label">
+                                {timeGroup.label}
+                              </div>
+                              <ul className="sidebar-session-list sidebar-history-list">
+                                {timeGroup.sessions.map((session) => (
+                                  <SessionListItem
+                                    key={session.id}
+                                    sessionId={session.id}
+                                    projectId={session.projectId}
+                                    title={getSessionDisplayTitle(session)}
+                                    fullTitle={getSessionDisplayTitle(session)}
+                                    provider={session.provider}
+                                    status={session.ownership}
+                                    pendingInputType={session.pendingInputType}
+                                    hasUnread={session.hasUnread}
+                                    isStarred={session.isStarred}
+                                    isArchived={session.isArchived}
+                                    mode="compact"
+                                    isCurrent={session.id === currentSessionId}
+                                    activity={session.activity}
+                                    onNavigate={onNavigate}
+                                    basePath={basePath}
+                                    messageCount={session.messageCount}
+                                    hasDraft={drafts.has(session.id)}
+                                    hasBotBinding={botBoundSessionIds.has(
+                                      session.id,
+                                    )}
+                                    onDelete={handleDeleteSession(
+                                      session.id,
+                                      session.projectId,
+                                    )}
+                                  />
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
                       )}
-                    />
-                  ))}
-              </ul>
-              {recentDaySessions.length > recentSessionsLimit && (
+                    </section>
+                  );
+                })}
+              </div>
+              {historySessions.length > historySessionsLimit && (
                 <button
                   type="button"
                   className="sidebar-show-more"
                   onClick={() =>
-                    setRecentSessionsLimit(
+                    setHistorySessionsLimit(
                       (prev) => prev + RECENT_SESSIONS_INCREMENT,
                     )
                   }
@@ -576,63 +743,7 @@ export function Sidebar({
                   {t("actionShowMore", {
                     count: Math.min(
                       RECENT_SESSIONS_INCREMENT,
-                      recentDaySessions.length - recentSessionsLimit,
-                    ),
-                  })}
-                </button>
-              )}
-            </div>
-          )}
-
-          {olderSessions.length > 0 && (
-            <div className="sidebar-section">
-              <h3 className="sidebar-section-title">
-                {t("sidebarSectionOlder")}
-              </h3>
-              <ul className="sidebar-session-list">
-                {olderSessions.slice(0, olderSessionsLimit).map((session) => (
-                  <SessionListItem
-                    key={session.id}
-                    sessionId={session.id}
-                    projectId={session.projectId}
-                    title={getSessionDisplayTitle(session)}
-                    fullTitle={getSessionDisplayTitle(session)}
-                    provider={session.provider}
-                    status={session.ownership}
-                    pendingInputType={session.pendingInputType}
-                    hasUnread={session.hasUnread}
-                    isStarred={session.isStarred}
-                    isArchived={session.isArchived}
-                    mode="compact"
-                    isCurrent={session.id === currentSessionId}
-                    activity={session.activity}
-                    onNavigate={onNavigate}
-                    showProjectName
-                    projectName={session.projectName}
-                    basePath={basePath}
-                    messageCount={session.messageCount}
-                    hasDraft={drafts.has(session.id)}
-                    onDelete={handleDeleteSession(
-                      session.id,
-                      session.projectId,
-                    )}
-                  />
-                ))}
-              </ul>
-              {olderSessions.length > olderSessionsLimit && (
-                <button
-                  type="button"
-                  className="sidebar-show-more"
-                  onClick={() =>
-                    setOlderSessionsLimit(
-                      (prev) => prev + RECENT_SESSIONS_INCREMENT,
-                    )
-                  }
-                >
-                  {t("actionShowMore", {
-                    count: Math.min(
-                      RECENT_SESSIONS_INCREMENT,
-                      olderSessions.length - olderSessionsLimit,
+                      historySessions.length - historySessionsLimit,
                     ),
                   })}
                 </button>
@@ -641,8 +752,7 @@ export function Sidebar({
           )}
 
           {filteredStarredSessions.length === 0 &&
-            recentDaySessions.length === 0 &&
-            olderSessions.length === 0 && (
+            historyProjectGroups.length === 0 && (
               <p className="sidebar-empty">
                 {sessionsLoading
                   ? t("sidebarLoadingSessions")

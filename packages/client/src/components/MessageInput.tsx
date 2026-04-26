@@ -336,18 +336,21 @@ export function MessageInput({
   }, []);
 
   return (
-    <div className="message-input-wrapper">
+    <div
+      className={`message-input-wrapper ${collapsed ? "message-input-wrapper--collapsed" : ""}`}
+    >
       {/* Floating toggle button - only show when user can control collapse (not externally collapsed) */}
       {!externalCollapsed && (
         <button
           type="button"
           className="message-input-toggle"
-          onClick={() => setUserCollapsed(!userCollapsed)}
-          aria-label={
-            userCollapsed ? t("messageInputExpand") : t("messageInputCollapse")
-          }
+          onClick={() => setUserCollapsed((current) => !current)}
+          aria-label={userCollapsed ? "展开" : "收起"}
           aria-expanded={!userCollapsed}
         >
+          <span className="message-input-toggle__label">
+            {userCollapsed ? "展开" : "收起"}
+          </span>
           <svg
             width="16"
             height="16"

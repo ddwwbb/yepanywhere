@@ -128,9 +128,9 @@ export function QqBridgeSection() {
             <strong>{t("remoteChannelsQqEnableTitle")}</strong>
             <p>{t("remoteChannelsQqEnableDescription")}</p>
           </div>
-          <label className="bridge-switch">
+          <label className="toggle-switch">
             <input type="checkbox" checked={enabled} onChange={handleToggleEnabled} />
-            <span className="bridge-switch-slider" />
+            <span className="toggle-slider" />
           </label>
         </div>
       </div>

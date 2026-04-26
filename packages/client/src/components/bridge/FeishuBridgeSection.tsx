@@ -334,9 +334,9 @@ export function FeishuBridgeSection() {
             <strong>{t("remoteChannelsFeishuEnableTitle")}</strong>
             <p>{t("remoteChannelsFeishuEnableDescription")}</p>
           </div>
-          <label className="bridge-switch">
+          <label className="toggle-switch">
             <input type="checkbox" checked={feishuEnabled} onChange={() => void handleToggleEnabled()} />
-            <span className="bridge-switch-slider" />
+            <span className="toggle-slider" />
           </label>
         </div>
       </div>
@@ -551,13 +551,13 @@ export function FeishuBridgeSection() {
               <strong>{t("feishu.requireMention")}</strong>
               <p>{t("feishu.requireMentionDesc")}</p>
             </div>
-            <label className="bridge-switch">
+            <label className="toggle-switch">
               <input
                 type="checkbox"
                 checked={requireMention}
                 onChange={(e) => setRequireMention(e.target.checked)}
               />
-              <span className="bridge-switch-slider" />
+              <span className="toggle-slider" />
             </label>
           </div>
 
@@ -569,13 +569,13 @@ export function FeishuBridgeSection() {
               <strong>{t("feishu.threadSession")}</strong>
               <p>{t("feishu.threadSessionDesc")}</p>
             </div>
-            <label className="bridge-switch">
+            <label className="toggle-switch">
               <input
                 type="checkbox"
                 checked={threadSession}
                 onChange={(e) => setThreadSession(e.target.checked)}
               />
-              <span className="bridge-switch-slider" />
+              <span className="toggle-slider" />
             </label>
           </div>
         </div>

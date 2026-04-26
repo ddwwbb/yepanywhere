@@ -1,6 +1,8 @@
+import { Activity } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ContextUsageIndicator } from "../components/ContextUsageIndicator";
 import { PageHeader } from "../components/PageHeader";
+import { PageHero } from "../components/PageHero";
 import { ThinkingIndicator } from "../components/ThinkingIndicator";
 import { type ProcessInfo, useProcesses } from "../hooks/useProcesses";
 import { useI18n } from "../i18n";
@@ -194,7 +196,8 @@ export function AgentsPage() {
   const { t } = useI18n();
   const { processes, terminatedProcesses, loading, error } = useProcesses();
 
-  const { openSidebar, isWideScreen, toggleSidebar, isSidebarCollapsed } = useNavigationLayout();
+  const { openSidebar, isWideScreen, toggleSidebar, isSidebarCollapsed } =
+    useNavigationLayout();
 
   // Split processes into active (in-turn/waiting-input) and idle
   const activeProcesses = processes.filter(
@@ -223,6 +226,28 @@ export function AgentsPage() {
 
         <main className="page-scroll-container">
           <div className="page-content-inner">
+            <PageHero
+              eyebrow={t("pageHeroRuntime" as never)}
+              title={t("agentsTitle" as never)}
+              description={t("pageHeroAgentsDescription" as never)}
+              icon={<Activity size={22} strokeWidth={2} aria-hidden="true" />}
+              metrics={[
+                {
+                  label: t("pageHeroAgentsActive" as never),
+                  value: activeProcesses.length,
+                  tone: activeProcesses.length > 0 ? "success" : "default",
+                },
+                {
+                  label: t("pageHeroAgentsIdle" as never),
+                  value: idleProcesses.length,
+                },
+                {
+                  label: t("pageHeroAgentsStopped" as never),
+                  value: terminatedProcesses.length,
+                },
+              ]}
+            />
+
             {loading && (
               <p className="loading">{t("agentsLoading" as never)}</p>
             )}

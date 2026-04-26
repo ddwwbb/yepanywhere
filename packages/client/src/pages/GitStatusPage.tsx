@@ -1,8 +1,10 @@
 import type { GitFileChange } from "@yep-anywhere/shared";
+import { GitBranch } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import { PageHeader } from "../components/PageHeader";
+import { PageHero } from "../components/PageHero";
 import { ProjectSelector } from "../components/ProjectSelector";
 import { Modal } from "../components/ui/Modal";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
@@ -85,11 +87,36 @@ export function GitStatusPage() {
             ) : gitStatus && !gitStatus.isGitRepo ? (
               <div className="git-status-empty">{t("gitStatusNotRepo")}</div>
             ) : gitStatus && effectiveProjectId ? (
-              <GitStatusContent
-                status={gitStatus}
-                projectId={effectiveProjectId}
-                t={t as never}
-              />
+              <>
+                <PageHero
+                  eyebrow={project?.name ?? t("gitStatusTitle")}
+                  title={t("gitStatusTitle")}
+                  description={t("pageHeroGitDescription" as never)}
+                  icon={
+                    <GitBranch size={22} strokeWidth={2} aria-hidden="true" />
+                  }
+                  metrics={[
+                    {
+                      label: t("pageHeroGitChanged" as never),
+                      value: gitStatus.files.length,
+                      tone: gitStatus.files.length > 0 ? "warning" : "success",
+                    },
+                    {
+                      label: t("pageHeroGitAhead" as never),
+                      value: gitStatus.ahead,
+                    },
+                    {
+                      label: t("pageHeroGitBehind" as never),
+                      value: gitStatus.behind,
+                    },
+                  ]}
+                />
+                <GitStatusContent
+                  status={gitStatus}
+                  projectId={effectiveProjectId}
+                  t={t as never}
+                />
+              </>
             ) : null}
           </div>
         </main>

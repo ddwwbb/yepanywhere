@@ -148,9 +148,9 @@ export function WeixinBridgeSection() {
             <strong>{t("remoteChannelsWeixinEnableTitle")}</strong>
             <p>{t("remoteChannelsWeixinEnableDescription")}</p>
           </div>
-          <label className="bridge-switch">
+          <label className="toggle-switch">
             <input type="checkbox" checked={enabled} onChange={handleToggleEnabled} />
-            <span className="bridge-switch-slider" />
+            <span className="toggle-slider" />
           </label>
         </div>
       </div>
