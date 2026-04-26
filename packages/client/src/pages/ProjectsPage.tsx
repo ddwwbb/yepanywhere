@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Plus, FolderOpen } from "lucide-react";
 import { api } from "../api/client";
 import { PageHeader } from "../components/PageHeader";
 import { ProjectCard } from "../components/ProjectCard";
@@ -121,20 +122,7 @@ export function ProjectsPage() {
                   className="inbox-refresh-button"
                   onClick={() => setShowAddForm(true)}
                 >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
+                  <Plus size={16} strokeWidth={2} aria-hidden="true" />
                   {t("projectsAdd")}
                 </button>
               ) : (
@@ -174,19 +162,7 @@ export function ProjectsPage() {
 
             {isEmpty ? (
               <div className="inbox-empty">
-                <svg
-                  width="48"
-                  height="48"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                </svg>
+                <FolderOpen size={48} strokeWidth={1.5} aria-hidden="true" />
                 <h3>{t("projectsEmptyTitle")}</h3>
                 <p>{t("projectsEmptyDescription")}</p>
               </div>

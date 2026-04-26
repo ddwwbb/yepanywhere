@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PanelLeftClose, ChevronLeft } from "lucide-react";
 import { useI18n } from "../i18n";
 import { truncateText } from "../lib/text";
 
@@ -21,36 +22,11 @@ interface PageHeaderProps {
 }
 
 const SidebarToggleIcon = () => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <line x1="9" y1="3" x2="9" y2="21" />
-  </svg>
+  <PanelLeftClose size={20} strokeWidth={2} aria-hidden="true" />
 );
 
 const BackIcon = () => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <polyline points="15 18 9 12 15 6" />
-  </svg>
+  <ChevronLeft size={20} strokeWidth={2} aria-hidden="true" />
 );
 
 export function PageHeader({

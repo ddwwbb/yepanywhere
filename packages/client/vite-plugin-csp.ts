@@ -75,8 +75,8 @@ export function cspPlugin(options: CspPluginOptions = {}): Plugin {
           directives.push(`script-src ${scriptSrc}`);
         }
 
-        // style-src: Allow self + inline styles (Vite injects styles, plus critical CSS)
-        directives.push("style-src 'self' 'unsafe-inline'");
+        // style-src: Allow self + inline styles (Vite injects styles, plus critical CSS) + Google Fonts
+        directives.push("style-src 'self' 'unsafe-inline' https://fonts.googleapis.com");
 
         // connect-src: API calls and WebSocket connections
         if (isDev) {
@@ -94,8 +94,8 @@ export function cspPlugin(options: CspPluginOptions = {}): Plugin {
         // img-src: Allow self, data URIs (icons), and blob (uploads/previews)
         directives.push("img-src 'self' data: blob:");
 
-        // font-src: Only self
-        directives.push("font-src 'self'");
+        // font-src: Allow self and Google Fonts
+        directives.push("font-src 'self' https://fonts.gstatic.com");
 
         // media-src: Allow self and blob for audio/video
         directives.push("media-src 'self' blob:");
