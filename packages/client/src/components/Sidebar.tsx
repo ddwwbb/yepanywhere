@@ -322,10 +322,21 @@ export function Sidebar({
               <SidebarToggleIcon />
             </button>
           ) : isDesktop ? (
-            /* Desktop expanded mode: show brand (toggle is in toolbar) */
-            <span className="sidebar-brand">
-              <YepAnywhereLogo />
-            </span>
+            /* Desktop expanded mode: brand + collapse toggle */
+            <>
+              <span className="sidebar-brand">
+                <YepAnywhereLogo />
+              </span>
+              <button
+                type="button"
+                className="sidebar-toggle"
+                onClick={onToggleExpanded}
+                title={t("actionToggleSidebar")}
+                aria-label={t("actionToggleSidebar")}
+              >
+                <SidebarToggleIcon />
+              </button>
+            </>
           ) : (
             /* Mobile mode: brand text + close button */
             <>

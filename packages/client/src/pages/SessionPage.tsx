@@ -898,23 +898,14 @@ function SessionPageContent({
         <header className="session-header">
           <div className="session-header-inner">
             <div className="session-header-left">
-              {/* Sidebar toggle - on mobile: opens sidebar, on desktop: collapses/expands */}
-              {/* Hide on desktop when collapsed (sidebar has its own toggle) */}
-              {!(isWideScreen && isSidebarCollapsed) && (
+              {/* 移动端侧边栏切换按钮，桌面端由 NavigationLayout 提供 */}
+              {!isWideScreen && (
                 <button
                   type="button"
                   className="sidebar-toggle"
-                  onClick={isWideScreen ? toggleSidebar : openSidebar}
-                  title={
-                    isWideScreen
-                      ? t("sessionToggleSidebar")
-                      : t("sessionOpenSidebar")
-                  }
-                  aria-label={
-                    isWideScreen
-                      ? t("sessionToggleSidebar")
-                      : t("sessionOpenSidebar")
-                  }
+                  onClick={openSidebar}
+                  title={t("sessionOpenSidebar")}
+                  aria-label={t("sessionOpenSidebar")}
                 >
                   <SidebarIcon />
                 </button>
@@ -1071,11 +1062,9 @@ function SessionPageContent({
         )}
 
         {/* Model Switch Modal */}
-        {showModelSwitchModal &&
-          status.owner === "self" &&
-          status.processId && (
+        {showModelSwitchModal && (
             <ModelSwitchModal
-              processId={status.processId}
+              processId={status.owner === "self" ? status.processId : undefined}
               currentModel={session?.model}
               onModelChanged={handleModelChanged}
               onClose={() => setShowModelSwitchModal(false)}
@@ -1229,9 +1218,7 @@ function SessionPageContent({
                     isRunning={status.owner === "self"}
                     isThinking={processState === "in-turn"}
                     onStop={handleAbort}
-                    onOpenModelSwitch={
-                      activeProcessId ? handleOpenModelSwitch : undefined
-                    }
+                    onOpenModelSwitch={handleOpenModelSwitch}
                     processId={activeProcessId}
                     mcpServers={mcpServers}
                     pendingApproval={

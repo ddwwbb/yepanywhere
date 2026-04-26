@@ -4,7 +4,7 @@ import { api } from "../api/client";
 
 interface McpServerButtonProps {
   processId?: string;
-  initialServers?: string[];
+  initialServers?: Array<{ name: string; status: string }>;
   disabled?: boolean;
 }
 
@@ -34,7 +34,11 @@ export function McpServerButton({
   const menuRef = useRef<HTMLDivElement>(null);
 
   const fallbackServers = useMemo<McpServerStatus[]>(
-    () => initialServers.map((name) => ({ name, status: "pending" })),
+    () =>
+      initialServers.map((s) => ({
+        name: s.name,
+        status: (s.status as McpServerStatus["status"]) || "pending",
+      })),
     [initialServers],
   );
   const displayedServers = servers.length > 0 ? servers : fallbackServers;
@@ -120,7 +124,7 @@ export function McpServerButton({
         className={`mcp-server-button ${isOpen ? "active" : ""}`}
         onClick={() => setIsOpen((open) => !open)}
         disabled={disabled || !processId}
-        title="MCP servers"
+        title={processId ? "MCP servers" : "Resume session to manage MCP servers"}
         aria-label="Show MCP servers"
         aria-expanded={isOpen}
         aria-haspopup="menu"

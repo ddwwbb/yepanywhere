@@ -178,7 +178,7 @@ export function useSession(
   // Tools available for this session (from init message)
   const [sessionTools, setSessionTools] = useState<string[]>([]);
   // MCP servers available for this session (from init message)
-  const [mcpServers, setMcpServers] = useState<string[]>([]);
+  const [mcpServers, setMcpServers] = useState<Array<{ name: string; status: string }>>([]);
   const lastKnownModeVersionRef = useRef<number>(0);
 
   // Apply server mode update only if version is >= our last known version
@@ -758,7 +758,9 @@ export function useSession(
             setSessionTools(sdkMessage.tools as string[]);
           }
           if (Array.isArray(sdkMessage.mcp_servers)) {
-            setMcpServers(sdkMessage.mcp_servers as string[]);
+            setMcpServers(
+              sdkMessage.mcp_servers as Array<{ name: string; status: string }>,
+            );
           }
         }
 

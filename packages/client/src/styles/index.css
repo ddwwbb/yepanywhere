@@ -34,16 +34,33 @@
   /* Semantic Colors */
   --thinking-color: var(--app-claude-orange);
 
+  /* Layout & Responsive Constraints */
+  --bp-sm: 640px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+  --touch-target-min: 44px;
+  --safe-padding-bottom: env(safe-area-inset-bottom, 16px);
+  --header-height: 56px;
+  --tabbar-height: 64px;
+  --sidebar-width: 280px;
+
   /* Typography */
   --font-sans: "Inter", "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
   --font-mono: "SF Mono", "JetBrains Mono", Monaco, "Cascadia Code", Consolas, monospace;
-  --font-size-xs: 11px;
-  --font-size-sm: 13px;
-  --font-size-base: 14px;
-  --font-size-lg: 15px;
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
   --tab-size: 2;
 
   /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -104,6 +121,7 @@
   --border-color: #27272a;
   --border-subtle: #18181b;
   --border-input: #3f3f46;
+  --border-base: #3f3f46;
 
   /* Semantic Colors */
   --link-color: #3b82f6;
@@ -114,6 +132,8 @@
   --attention-color: #3b82f6;
   --focus-border: var(--app-yep-green);
   --primary-color: var(--app-yep-green);
+  --color-primary: var(--app-yep-green);
+  --color-primary-active: var(--app-yep-green-dark);
 
   /* Timeline */
   --timeline-dot-default: #71717a;
@@ -183,6 +203,7 @@
   --border-color: #3f3f46;
   --border-subtle: #27272a;
   --border-input: #52525b;
+  --border-base: #3f3f46;
 
   /* Semantic Colors */
   --link-color: #60a5fa;
@@ -193,6 +214,8 @@
   --attention-color: #60a5fa;
   --focus-border: var(--app-yep-green);
   --primary-color: var(--app-yep-green);
+  --color-primary: var(--app-yep-green);
+  --color-primary-active: var(--app-yep-green-dark);
 
   /* Timeline */
   --timeline-dot-default: #a1a1aa;
@@ -262,6 +285,7 @@
   --border-color: #e4e4e7;
   --border-subtle: #f4f4f5;
   --border-input: #d4d4d8;
+  --border-base: #e4e4e7;
 
   /* Semantic Colors */
   --link-color: #2563eb;
@@ -272,6 +296,8 @@
   --attention-color: #2563eb;
   --focus-border: var(--app-yep-green);
   --primary-color: var(--app-yep-green);
+  --color-primary: var(--app-yep-green);
+  --color-primary-active: var(--app-yep-green-dark);
 
   /* Timeline */
   --timeline-dot-default: #a1a1aa;
@@ -1114,18 +1140,20 @@ h2 {
 
 .session-header {
   flex-shrink: 0; /* Never shrink the header */
-  background: var(--bg-surface);
+  background: var(--bg-glass, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   position: relative;
   z-index: 10;
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .session-header-inner {
-  padding: 0.5rem 1rem 0.5rem 0.25rem;
+  padding: 0.625rem 1.25rem 0.625rem 0.75rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 48px; /* Slightly taller for breathing room */
+  min-height: 56px; /* Slightly taller for breathing room and a premium feel */
 }
 
 .session-header::after {
@@ -1165,7 +1193,7 @@ h2 {
   width: 36px;
   height: 36px;
   padding: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -1184,17 +1212,23 @@ h2 {
 
 /* Project breadcrumb in session header */
 .project-breadcrumb {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-hover);
   text-decoration: none;
   flex-shrink: 0;
   white-space: nowrap;
-  padding: var(--space-1) 0;
-  transition: color 0.15s;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px; /* pill shape */
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-smooth);
 }
 
 .project-breadcrumb:hover {
   color: var(--text-primary);
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
 }
 
 /* ==========================================================================
@@ -2084,31 +2118,37 @@ a.sidebar-nav-item {
 
 .message-input-toggle {
   position: absolute;
-  top: -12px;
+  top: -14px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1;
-  width: 32px;
-  height: 24px;
+  z-index: 10;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-code);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: 50%;
   color: var(--text-muted);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: background var(--transition-smooth), color var(--transition-smooth), border-color var(--transition-smooth), box-shadow var(--transition-smooth);
 }
 
 .message-input-toggle:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
   border-color: var(--text-muted);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .message-input-toggle svg {
   transition: transform 0.2s ease;
+  width: 14px;
+  height: 14px;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .message-input-toggle svg.chevron-up {
@@ -2120,6 +2160,7 @@ a.sidebar-nav-item {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  transition: opacity 0.15s ease;
 }
 
 .message-input textarea {
@@ -2145,7 +2186,6 @@ a.sidebar-nav-item {
 .message-input-collapsed {
   margin-top: var(--space-2);
   opacity: 0.7;
-  transition: opacity 0.15s;
 }
 
 .message-input-collapsed:focus-within {
@@ -3564,6 +3604,8 @@ a.sidebar-nav-item {
 
 .tool-approval-toggle svg {
   transition: transform 0.2s ease;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .tool-approval-toggle svg.chevron-up {
@@ -3816,6 +3858,8 @@ a.sidebar-nav-item {
 
 .question-panel-toggle svg {
   transition: transform 0.2s ease;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .question-panel-toggle svg.chevron-up {
@@ -5515,7 +5559,7 @@ a.sidebar-nav-item {
   font-size: var(--font-size-xs);
   font-weight: 500;
   border: 1px solid;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: transparent;
 }
 
@@ -5527,7 +5571,7 @@ a.sidebar-nav-item {
   background: none;
   border: none;
   cursor: pointer;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   transition: opacity 0.15s;
 }
 
@@ -9575,4 +9619,162 @@ a.sidebar-nav-item {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* ==========================================================================
+   Responsive Global Utility Classes
+   ========================================================================== */
+
+/* Hidden Mobile: Hide below md breakpoint (768px) */
+@media (max-width: 767px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+  .flex-col-mobile {
+    flex-direction: column !important;
+  }
+}
+
+/* Hidden Desktop: Hide above md breakpoint (768px) */
+@media (min-width: 768px) {
+  .hidden-desktop {
+    display: none !important;
+  }
+}
+
+/* Block Mobile */
+@media (max-width: 767px) {
+  .block-mobile {
+    display: block !important;
+  }
+}
+
+/* Touch Target: Ensures minimum size for mobile touch interactions */
+.touch-target {
+  min-width: var(--touch-target-min, 44px);
+  min-height: var(--touch-target-min, 44px);
+}
+
+/* Sticky Bottom Actions: Core save/submit button container for mobile */
+.sticky-bottom-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  padding: var(--space-md);
+  padding-bottom: var(--safe-padding-bottom);
+  background: var(--bg-surface);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+@supports (backdrop-filter: blur(8px)) {
+  .sticky-bottom-actions {
+    background: var(--bg-glass);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+/* Card List Mobile: Downgrade tables to card lists */
+@media (max-width: 767px) {
+  .card-list-mobile {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+    border: none !important;
+    background: transparent !important;
+  }
+  
+  .card-list-mobile > * {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+  }
+}
+
+/* ==========================================================================
+   Mobile Bottom Tab Bar & Layout Refactoring
+   ========================================================================== */
+
+.app-layout-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  position: relative;
+}
+
+@media (max-width: 767px) {
+  .app-layout-main {
+    /* Leave space for bottom tab bar on mobile */
+    padding-bottom: calc(var(--tabbar-height, 64px) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.mobile-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--tabbar-height, 64px) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  z-index: 100;
+}
+
+.tab-bar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-muted);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tab-bar-item:hover {
+  color: var(--text-primary);
+}
+
+.tab-bar-item.active {
+  color: var(--color-primary);
+}
+
+.tab-icon-wrapper {
+  position: relative;
+  margin-bottom: 2px;
+}
+
+.tab-badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  background: var(--error-color);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  min-width: 14px;
+  text-align: center;
+}
+
+.tab-label {
+  font-size: 10px;
+  font-weight: 500;
 }

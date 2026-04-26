@@ -510,9 +510,9 @@ export function createSessionsRoutes(deps: SessionsDeps): Hono {
         updatedAt: sessionSummary?.updatedAt ?? new Date().toISOString(),
         messageCount: sessionSummary?.messageCount ?? 0,
         provider:
-          sessionSummary?.provider ??
           metadataProvider ??
           process?.provider ??
+          sessionSummary?.provider ??
           project.provider,
         model: sessionSummary?.model,
         originator: sessionSummary?.originator,
@@ -1117,9 +1117,9 @@ export function createSessionsRoutes(deps: SessionsDeps): Hono {
       );
       const sessionSummary = sessionSummaryResult?.summary ?? null;
       providerName =
-        sessionSummary?.provider ??
         metadataProvider ??
         body.provider ??
+        sessionSummary?.provider ??
         project.provider;
     }
 

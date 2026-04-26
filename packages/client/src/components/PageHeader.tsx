@@ -1,5 +1,5 @@
+import { ChevronLeft, PanelLeftClose } from "lucide-react";
 import type { ReactNode } from "react";
-import { PanelLeftClose, ChevronLeft } from "lucide-react";
 import { useI18n } from "../i18n";
 import { truncateText } from "../lib/text";
 
@@ -40,16 +40,9 @@ export function PageHeader({
   onBack,
 }: PageHeaderProps) {
   const { t } = useI18n();
-  // On desktop: toggle sidebar collapse. On mobile: open sidebar overlay
-  // Hide the toggle on desktop when sidebar is collapsed (sidebar has its own toggle)
-  const handleToggle = isWideScreen
-    ? isSidebarCollapsed
-      ? undefined
-      : onToggleSidebar
-    : onOpenSidebar;
-  const toggleTitle = isWideScreen
-    ? t("actionToggleSidebar")
-    : t("actionOpenSidebar");
+  // 移动端显示 sidebar toggle，桌面端由 NavigationLayout 统一提供
+  const showMobileToggle = !isWideScreen && !showBack;
+  const handleMobileToggle = onOpenSidebar;
 
   return (
     <header className="session-header">
@@ -65,19 +58,17 @@ export function PageHeader({
             >
               <BackIcon />
             </button>
-          ) : (
-            handleToggle && (
-              <button
-                type="button"
-                className="sidebar-toggle"
-                onClick={handleToggle}
-                title={toggleTitle}
-                aria-label={toggleTitle}
-              >
-                <SidebarToggleIcon />
-              </button>
-            )
-          )}
+          ) : showMobileToggle && handleMobileToggle ? (
+            <button
+              type="button"
+              className="sidebar-toggle"
+              onClick={handleMobileToggle}
+              title={t("actionOpenSidebar")}
+              aria-label={t("actionOpenSidebar")}
+            >
+              <SidebarToggleIcon />
+            </button>
+          ) : null}
           {titleElement ?? (
             <span
               className="session-title"

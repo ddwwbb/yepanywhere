@@ -280,8 +280,21 @@ export class ClaudeSessionReader implements ISessionReader {
 
       // claude-ollama sessions use the same JSONL format but have non-Claude
       // model IDs (e.g. "qwen3-coder-128k:latest" vs "claude-opus-4-5-20251101")
-      const provider =
-        model && !model.startsWith("claude-") ? "claude-ollama" : "claude";
+      // Claude 短 ID（sonnet, opus, haiku 等）不应被误判为 ollama
+      const claudeShortIds = [
+        "default",
+        "best",
+        "sonnet",
+        "opus",
+        "haiku",
+        "opusplan",
+      ];
+      const isClaudeModel =
+        !model ||
+        model.startsWith("claude-") ||
+        claudeShortIds.includes(model) ||
+        model.includes("[1m]");
+      const provider = isClaudeModel ? "claude" : "claude-ollama";
 
       const contextUsage = this.extractContextUsage(
         activeBranch.map((node) => node.raw),

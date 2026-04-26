@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import { useI18n } from "../i18n";
+import { MODEL_OPTIONS } from "../hooks/useModelSettings";
 import { Modal } from "./ui/Modal";
 
 interface ModelSwitchModalProps {
-  processId: string;
+  processId?: string;
   currentModel?: string;
   onModelChanged: (model: string) => void;
   onClose: () => void;
@@ -15,6 +16,10 @@ interface ModelOption {
   name: string;
   description?: string;
 }
+
+const FALLBACK_MODELS: ModelOption[] = MODEL_OPTIONS.filter(
+  (o) => o.value !== "default",
+).map((o) => ({ id: o.value, name: o.label }));
 
 export function ModelSwitchModal({
   processId,
@@ -29,11 +34,16 @@ export function ModelSwitchModal({
   const [switching, setSwitching] = useState(false);
 
   useEffect(() => {
-    api
-      .getProcessModels(processId)
-      .then((res) => setModels(res.models))
-      .catch((err) => setError(err.message || t("modelSwitchLoadFailed")))
-      .finally(() => setLoading(false));
+    if (processId) {
+      api
+        .getProcessModels(processId)
+        .then((res) => setModels(res.models))
+        .catch((err) => setError(err.message || t("modelSwitchLoadFailed")))
+        .finally(() => setLoading(false));
+    } else {
+      setModels(FALLBACK_MODELS);
+      setLoading(false);
+    }
   }, [processId, t]);
 
   const handleSelect = async (modelId: string) => {
@@ -41,7 +51,9 @@ export function ModelSwitchModal({
     setSwitching(true);
     setError(null);
     try {
-      await api.setProcessModel(processId, modelId);
+      if (processId) {
+        await api.setProcessModel(processId, modelId);
+      }
       onModelChanged(modelId);
       onClose();
     } catch (err: unknown) {

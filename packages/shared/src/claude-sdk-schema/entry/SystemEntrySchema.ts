@@ -32,7 +32,7 @@ const InitSystemEntrySchema = BaseEntrySchema.extend({
   session_id: z.string(),
   cwd: z.string().optional(),
   tools: z.array(z.string()).optional(),
-  mcp_servers: z.array(z.string()).optional(),
+  mcp_servers: z.array(z.object({ name: z.string(), status: z.string() })).optional(),
   model: z.string().optional(),
   permissionMode: z.string().optional(),
   slash_commands: z.array(z.string()).optional(),

@@ -77,7 +77,7 @@ interface Props {
   slashCommands?: SlashCommand[];
   onOpenModelSwitch?: () => void;
   processId?: string;
-  mcpServers?: string[];
+  mcpServers?: Array<{ name: string; status: string }>;
 }
 
 export function MessageInput({

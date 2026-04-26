@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, useOutletContext, useParams } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
+import { BottomTabBar } from "../components/BottomTabBar";
 import { useSidebarPreference } from "../hooks/useSidebarPreference";
 import { useSidebarWidth } from "../hooks/useSidebarWidth";
 import { useViewportWidth } from "../hooks/useViewportWidth";
@@ -76,10 +77,10 @@ export function NavigationLayout() {
       className={`session-page ${isWideScreen ? "desktop-layout" : ""} ${isResizing ? "resizing" : ""}`}
       style={containerStyle}
     >
-      {/* Desktop sidebar - always visible on wide screens */}
+      {/* Desktop sidebar - always visible on wide screens, hidden on mobile */}
       {isWideScreen && (
         <aside
-          className={`sidebar-desktop ${effectivelyCollapsed ? "sidebar-collapsed" : ""} ${isResizing ? "resizing" : ""}`}
+          className={`sidebar-desktop hidden-mobile ${effectivelyCollapsed ? "sidebar-collapsed" : ""} ${isResizing ? "resizing" : ""}`}
           style={{ width: effectivelyCollapsed ? undefined : sidebarWidth }}
         >
           <Sidebar
@@ -98,8 +99,16 @@ export function NavigationLayout() {
         </aside>
       )}
 
-      {/* Mobile sidebar - modal overlay (also used for constrained desktop overlay) */}
-      {(!isWideScreen || sidebarOpen) && (
+      {/* Main Content Area */}
+      <main className="app-layout-main">
+        <Outlet context={context} />
+      </main>
+
+      {/* Mobile Bottom Tab Bar */}
+      {!isWideScreen && <BottomTabBar onOpenDrawer={() => setSidebarOpen(true)} />}
+
+      {/* Mobile sidebar - modal overlay drawer (opened via More tab) */}
+      {(!isWideScreen && sidebarOpen) && (
         <Sidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
@@ -107,9 +116,6 @@ export function NavigationLayout() {
           currentSessionId={sessionId}
         />
       )}
-
-      {/* Child route content */}
-      <Outlet context={context} />
     </div>
   );
 }

@@ -27,7 +27,10 @@ import {
 } from "../remote-spawn.js";
 import { getProjectDirFromCwd, syncSessionFile } from "../session-sync.js";
 import type { ContentBlock, SDKMessage } from "../types.js";
-import { filterEnvForChildProcess } from "./env-filter.js";
+import {
+  filterEnvForChildProcess,
+  readClaudeSettingsEnv,
+} from "./env-filter.js";
 import type {
   AgentProvider,
   AgentSession,
@@ -104,6 +107,31 @@ function enrichClaudeModel(model: ModelInfo): ModelInfo {
   };
 }
 
+/** 自定义模型环境变量与后备列表 id 的映射 */
+const CUSTOM_MODEL_ENV_KEYS: Array<{
+  id: string;
+  envKey: string;
+  label: string;
+  hideIds?: string[];
+}> = [
+  {
+    id: "sonnet",
+    envKey: "ANTHROPIC_DEFAULT_SONNET_MODEL",
+    label: "Sonnet",
+    hideIds: ["sonnet[1m]"],
+  },
+  {
+    id: "opus",
+    envKey: "ANTHROPIC_DEFAULT_OPUS_MODEL",
+    label: "Opus",
+    hideIds: ["opus[1m]"],
+  },
+  { id: "haiku", envKey: "ANTHROPIC_DEFAULT_HAIKU_MODEL", label: "Haiku" },
+];
+
+/** 自定义模型激活时，CLI 不显示的后备列表条目 */
+const HIDE_ON_CUSTOM = ["best", "opusplan"];
+
 function mergeClaudeModels(models: ModelInfo[]): ModelInfo[] {
   const byId = new Map<string, ModelInfo>();
 
@@ -113,6 +141,40 @@ function mergeClaudeModels(models: ModelInfo[]): ModelInfo[] {
 
   for (const model of models) {
     byId.set(model.id, enrichClaudeModel(model));
+  }
+
+  // 检测是否有自定义模型环境变量
+  const settingsEnv = readClaudeSettingsEnv();
+  const hasCustom = CUSTOM_MODEL_ENV_KEYS.some(
+    ({ envKey }) => settingsEnv[envKey] ?? process.env[envKey],
+  );
+
+  if (hasCustom) {
+    // 覆盖 name/description，使 Web 与 CLI 显示一致
+    for (const { id, envKey, label } of CUSTOM_MODEL_ENV_KEYS) {
+      const customModel = settingsEnv[envKey] ?? process.env[envKey];
+      if (customModel) {
+        const existing = byId.get(id);
+        if (existing) {
+          byId.set(id, {
+            ...existing,
+            name: customModel,
+            description: `Custom ${label} model`,
+          });
+        }
+      }
+    }
+    // 移除 CLI 不显示的条目
+    for (const hideId of HIDE_ON_CUSTOM) {
+      byId.delete(hideId);
+    }
+    for (const { envKey, hideIds } of CUSTOM_MODEL_ENV_KEYS) {
+      if ((settingsEnv[envKey] ?? process.env[envKey]) && hideIds) {
+        for (const hideId of hideIds) {
+          byId.delete(hideId);
+        }
+      }
+    }
   }
 
   const orderedIds = [

@@ -42,7 +42,7 @@ export interface MessageInputToolbarProps {
   // Runtime controls
   onOpenModelSwitch?: () => void;
   processId?: string;
-  mcpServers?: string[];
+  mcpServers?: Array<{ name: string; status: string }>;
 
   // Context usage
   contextUsage?: ContextUsage;
@@ -208,13 +208,11 @@ export function MessageInputToolbar({
             <span className="model-selector-label">Model</span>
           </button>
         )}
-        {processId && (
-          <McpServerButton
-            processId={processId}
-            initialServers={mcpServers}
-            disabled={voiceDisabled}
-          />
-        )}
+        <McpServerButton
+          processId={processId}
+          initialServers={mcpServers}
+          disabled={voiceDisabled}
+        />
         {onSelectSlashCommand && (
           <SlashCommandButton
             commands={slashCommands}
