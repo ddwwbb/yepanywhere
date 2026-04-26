@@ -23,8 +23,14 @@ export interface ProviderMetadata {
   /** Short description of the provider */
   description: string;
 
+  /** i18n key for localized description */
+  descriptionKey: string;
+
   /** Limitations or caveats for mobile supervision */
   limitations: string[];
+
+  /** i18n keys for localized limitations (parallel to limitations array) */
+  limitationKeys: string[];
 
   /** Official website URL */
   website: string;

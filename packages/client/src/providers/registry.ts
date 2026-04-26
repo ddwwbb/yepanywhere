@@ -41,7 +41,9 @@ class GenericProvider implements Provider {
   constructor(readonly id: string) {
     this.metadata = {
       description: "Unknown provider",
+      descriptionKey: "providerUnknownDescription",
       limitations: [],
+      limitationKeys: [],
       website: "",
       cliName: id,
     };

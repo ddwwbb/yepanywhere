@@ -2,15 +2,15 @@ import { type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Inbox,
-  FolderOpen,
-  Bot,
+  FolderKanban,
+  Activity,
   Settings,
-  LayoutGrid,
+  MessagesSquare,
   PlusCircle,
   GitBranch,
   History,
   Smartphone,
-  Cable
+  Waypoints
 } from "lucide-react";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 
@@ -19,15 +19,15 @@ import { ThinkingIndicator } from "./ThinkingIndicator";
  */
 export const SidebarIcons = {
   inbox: <Inbox size={18} strokeWidth={2} />,
-  projects: <FolderOpen size={18} strokeWidth={2} />,
-  agents: <Bot size={18} strokeWidth={2} />,
+  projects: <FolderKanban size={18} strokeWidth={2} />,
+  agents: <Activity size={18} strokeWidth={2} />,
   settings: <Settings size={18} strokeWidth={2} />,
-  allSessions: <LayoutGrid size={18} strokeWidth={2} />,
+  allSessions: <MessagesSquare size={18} strokeWidth={2} />,
   newSession: <PlusCircle size={20} strokeWidth={2.5} color="var(--app-yep-green)" />,
   sourceControl: <GitBranch size={18} strokeWidth={2} />,
   recents: <History size={18} strokeWidth={2} />,
   emulator: <Smartphone size={18} strokeWidth={2} />,
-  bridge: <Cable size={18} strokeWidth={2} />,
+  bridge: <Waypoints size={18} strokeWidth={2} />,
 };
 
 export interface SidebarNavItemProps {

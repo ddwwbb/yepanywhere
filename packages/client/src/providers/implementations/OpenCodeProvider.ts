@@ -16,9 +16,14 @@ export class OpenCodeProvider implements Provider {
   readonly metadata: ProviderMetadata = {
     description:
       "Multi-provider agent with tool streaming via SSE. Supports various LLM backends.",
+    descriptionKey: "providerOpenCodeDescription",
     limitations: [
       "Tool approval flow still under investigation",
       "Experimental integration",
+    ],
+    limitationKeys: [
+      "providerOpenCodeLimit1",
+      "providerOpenCodeLimit2",
     ],
     website: "https://opencode.ai",
     cliName: "opencode",

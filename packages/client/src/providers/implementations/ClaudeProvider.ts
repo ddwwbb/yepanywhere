@@ -16,7 +16,9 @@ export class ClaudeProvider implements Provider {
   readonly metadata: ProviderMetadata = {
     description:
       "Anthropic's Claude Code SDK. Full tool transparency, real-time streaming, and permission modes.",
+    descriptionKey: "providerClaudeDescription",
     limitations: [],
+    limitationKeys: [],
     website: "https://claude.ai/download",
     cliName: "claude",
   };

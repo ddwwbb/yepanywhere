@@ -16,10 +16,16 @@ export class ClaudeOllamaProvider implements Provider {
   readonly metadata: ProviderMetadata = {
     description:
       "Claude SDK agent loop with local Ollama models. Full tool calling, permissions, and session persistence.",
+    descriptionKey: "providerClaudeOllamaDescription",
     limitations: [
       "Model quality varies by model",
       "No token counting",
       "Requires Ollama 0.14+",
+    ],
+    limitationKeys: [
+      "providerClaudeOllamaLimit1",
+      "providerClaudeOllamaLimit2",
+      "providerClaudeOllamaLimit3",
     ],
     website: "https://ollama.com",
     cliName: "ollama",

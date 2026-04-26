@@ -16,9 +16,14 @@ export class GeminiProvider implements Provider {
   readonly metadata: ProviderMetadata = {
     description:
       "Google's Gemini CLI. Read-only tools for code exploration and analysis.",
+    descriptionKey: "providerGeminiDescription",
     limitations: [
       "Read-only (no file edits or bash commands)",
       "Best for research and planning tasks",
+    ],
+    limitationKeys: [
+      "providerGeminiLimit1",
+      "providerGeminiLimit2",
     ],
     website: "https://github.com/google-gemini/gemini-cli",
     cliName: "gemini",

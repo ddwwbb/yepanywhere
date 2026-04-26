@@ -4,8 +4,7 @@ import { useServerSettings } from "../../hooks/useServerSettings";
 import { useI18n } from "../../i18n";
 import { getAllProviders } from "../../providers/registry";
 
-const DEFAULT_OLLAMA_SYSTEM_PROMPT =
-  "You are a helpful coding assistant. You help users with software engineering tasks. You have access to tools for reading files, editing files, running shell commands, and searching code. Use tools when needed to answer questions or make changes. Be concise and direct.";
+const DEFAULT_OLLAMA_SYSTEM_PROMPT_KEY = "providersOllamaDefaultPrompt";
 
 function OllamaUrlInput() {
   const { t } = useI18n();
@@ -130,7 +129,7 @@ function OllamaSystemPromptInput() {
           setPrompt(e.target.value);
           setHasChanges(e.target.value !== serverValue);
         }}
-        placeholder={DEFAULT_OLLAMA_SYSTEM_PROMPT}
+        placeholder={t(DEFAULT_OLLAMA_SYSTEM_PROMPT_KEY as Parameters<typeof t>[0])}
         rows={4}
       />
       <div
@@ -208,11 +207,11 @@ export function ProvidersSettings() {
                   </span>
                 )}
               </div>
-              <p>{provider.metadata.description}</p>
-              {provider.metadata.limitations.length > 0 && (
+              <p>{t(provider.metadata.descriptionKey as Parameters<typeof t>[0])}</p>
+              {provider.metadata.limitationKeys.length > 0 && (
                 <ul className="settings-limitations">
-                  {provider.metadata.limitations.map((limitation) => (
-                    <li key={limitation}>{limitation}</li>
+                  {provider.metadata.limitationKeys.map((key) => (
+                    <li key={key}>{t(key as Parameters<typeof t>[0])}</li>
                   ))}
                 </ul>
               )}

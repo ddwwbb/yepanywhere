@@ -22,9 +22,14 @@ export class GeminiACPProvider implements Provider {
   readonly metadata: ProviderMetadata = {
     description:
       "Google's Gemini CLI via Agent Client Protocol. Full agentic capabilities with server-side tool execution.",
+    descriptionKey: "providerGeminiAcpDescription",
     limitations: [
       "Requires gemini CLI with --experimental-acp support",
       "Tool execution happens on server",
+    ],
+    limitationKeys: [
+      "providerGeminiAcpLimit1",
+      "providerGeminiAcpLimit2",
     ],
     website: "https://github.com/google-gemini/gemini-cli",
     cliName: "gemini",

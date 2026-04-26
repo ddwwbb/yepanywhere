@@ -1,8 +1,25 @@
+import {
+  Palette,
+  Brain,
+  ClipboardList,
+  Bell,
+  Webhook,
+  Smartphone,
+  Shield,
+  Globe,
+  Plug,
+  Monitor,
+  Info,
+  Cpu,
+  Wrench,
+} from "lucide-react";
 import type { FontSize } from "./hooks/useFontSize";
 import type { TabSize } from "./hooks/useTabSize";
 import type { Theme } from "./hooks/useTheme";
 import type { Locale } from "./i18n";
 import type { SettingsCategory } from "./pages/settings/types";
+
+const iconProps = { size: 16, strokeWidth: 2 };
 
 export function getThemeLabel(
   theme: Theme,
@@ -67,67 +84,67 @@ export function getSettingsCategories(
     {
       id: "appearance",
       label: t("settingsAppearanceTitle"),
-      icon: "🎨",
+      icon: <Palette {...iconProps} />,
       description: t("settingsAppearanceDescription"),
     },
     {
       id: "model",
       label: t("settingsModelTitle"),
-      icon: "🧠",
+      icon: <Brain {...iconProps} />,
       description: t("settingsModelDescription"),
     },
     {
       id: "agent-context",
       label: t("settingsAgentContextTitle"),
-      icon: "📋",
+      icon: <ClipboardList {...iconProps} />,
       description: t("settingsAgentContextDescription"),
     },
     {
       id: "notifications",
       label: t("settingsNotificationsTitle"),
-      icon: "🔔",
+      icon: <Bell {...iconProps} />,
       description: t("settingsNotificationsDescription"),
     },
     {
       id: "webhooks",
       label: t("settingsWebhooksTitle"),
-      icon: "🪝",
+      icon: <Webhook {...iconProps} />,
       description: t("settingsWebhooksDescription"),
     },
     {
       id: "devices",
       label: t("settingsDevicesTitle"),
-      icon: "📱",
+      icon: <Smartphone {...iconProps} />,
       description: t("settingsDevicesDescription"),
     },
     {
       id: "local-access",
       label: t("settingsLocalAccessTitle"),
-      icon: "🔒",
+      icon: <Shield {...iconProps} />,
       description: t("settingsLocalAccessDescription"),
     },
     {
       id: "remote",
       label: t("settingsRemoteTitle"),
-      icon: "🌐",
+      icon: <Globe {...iconProps} />,
       description: t("settingsRemoteDescription"),
     },
     {
       id: "providers",
       label: t("settingsProvidersTitle"),
-      icon: "🔌",
+      icon: <Plug {...iconProps} />,
       description: t("settingsProvidersDescription"),
     },
     {
       id: "remote-executors",
       label: t("settingsRemoteExecutorsTitle"),
-      icon: "🖥️",
+      icon: <Monitor {...iconProps} />,
       description: t("settingsRemoteExecutorsDescription"),
     },
     {
       id: "about",
       label: t("settingsAboutTitle"),
-      icon: "ℹ️",
+      icon: <Info {...iconProps} />,
       description: t("settingsAboutDescription"),
     },
   ];
@@ -139,7 +156,7 @@ export function getEmulatorCategory(
   return {
     id: "emulator",
     label: t("settingsEmulatorTitle"),
-    icon: "🤖",
+    icon: <Cpu {...iconProps} />,
     description: t("settingsEmulatorDescription"),
   };
 }
@@ -150,7 +167,7 @@ export function getDevelopmentCategory(
   return {
     id: "development",
     label: t("settingsDevelopmentTitle"),
-    icon: "🛠️",
+    icon: <Wrench {...iconProps} />,
     description: t("settingsDevelopmentDescription"),
   };
 }
