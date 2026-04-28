@@ -389,7 +389,7 @@ export class RemoteChannelService {
     this.weixinBridges = [];
   }
 
-  getStatus(): { running: boolean; startedAt: string | null; adapters: Array<{ channelType: string; running: boolean; lastMessageAt: string | null; error: string | null }> } {
+  getStatus(): { running: boolean; startedAt: string | null; adapters: Array<{ channelType: string; name?: string; running: boolean; lastMessageAt: string | null; error: string | null }> } {
     const adapters = this.createAdapters();
     const allAdapters = [
       ...adapters.map((a) => ({
@@ -397,27 +397,31 @@ export class RemoteChannelService {
         running: this.running,
         lastMessageAt: null,
         error: null,
-      })),
+      } as const)),
       ...this.feishuBridges.map((b) => ({
-        channelType: "feishu",
+        channelType: "feishu" as const,
+        name: b.botId,
         running: b.isRunning(),
         lastMessageAt: null,
         error: null,
       })),
       ...this.telegramBridges.map((b) => ({
-        channelType: "telegram",
+        channelType: "telegram" as const,
+        name: b.botId,
         running: b.isRunning(),
         lastMessageAt: b.getLastMessageAt(),
         error: b.getLastError(),
       })),
       ...this.qqBridges.map((b) => ({
-        channelType: "qq",
+        channelType: "qq" as const,
+        name: b.botId,
         running: b.isRunning(),
         lastMessageAt: b.getLastMessageAt(),
         error: b.getLastError(),
       })),
       ...this.weixinBridges.map((b) => ({
-        channelType: "weixin",
+        channelType: "weixin" as const,
+        name: b.botId,
         running: b.isRunning(),
         lastMessageAt: b.getLastMessageAt(),
         error: b.getLastError(),

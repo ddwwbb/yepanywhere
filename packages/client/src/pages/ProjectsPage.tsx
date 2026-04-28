@@ -1,4 +1,4 @@
-import { FolderOpen, Plus } from "lucide-react";
+import { FolderOpen, Plus, Box, AlertCircle, Activity } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
@@ -122,25 +122,26 @@ export function ProjectsPage() {
         <main className="page-scroll-container">
           <div className="page-content-inner">
             <PageHero
-              eyebrow={t("pageHeroWorkspace")}
               title={t("pageTitleProjects")}
-              description={t("pageHeroProjectsDescription")}
-              icon={<FolderOpen size={22} strokeWidth={2} aria-hidden="true" />}
+              icon={<FolderOpen size={28} strokeWidth={2} aria-hidden="true" />}
               metrics={[
                 {
                   label: t("pageHeroProjectsTotal"),
                   value: projects.length,
                   tone: "brand",
+                  icon: <Box size={18} />,
                 },
                 {
                   label: t("pageHeroProjectsAttention"),
                   value: attentionProjectCount,
                   tone: attentionProjectCount > 0 ? "warning" : "default",
+                  icon: <AlertCircle size={18} />,
                 },
                 {
                   label: t("pageHeroProjectsActive"),
                   value: activeProjectCount,
                   tone: activeProjectCount > 0 ? "success" : "default",
+                  icon: <Activity size={18} />,
                 },
               ]}
               actions={

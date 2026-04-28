@@ -1,0 +1,396 @@
+/* ==========================================================================
+   Sidebar
+   ========================================================================== */
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 100;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 280px;
+  max-width: 85vw;
+  background: radial-gradient(
+      circle at 12% 0%,
+      color-mix(in srgb, var(--color-brand) 12%, transparent),
+      transparent 18rem
+    ), color-mix(in srgb, var(--bg-glass) 92%, var(--bg-surface));
+  backdrop-filter: blur(22px) saturate(1.16);
+  -webkit-backdrop-filter: blur(22px) saturate(1.16);
+  border-right: 1px solid
+    color-mix(in srgb, var(--border-default) 82%, transparent);
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn var(--duration-bounce) var(--ease-fluid);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 22px 0 60px color-mix(in srgb, black 18%, transparent);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-2);
+}
+
+.sidebar-brand {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+/* YepAnywhere Logo */
+.yep-anywhere-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.yep-anywhere-logo-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.yep-anywhere-logo-text {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.yep-anywhere-logo-yep {
+  color: var(--color-brand);
+}
+
+[data-theme="light"] .yep-anywhere-logo-yep {
+  color: var(--color-brand-hover);
+}
+
+.yep-anywhere-logo-anywhere {
+  color: var(--text-primary);
+}
+
+/* Login page logo - larger version */
+.login-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.login-logo .yep-anywhere-logo-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.login-logo .yep-anywhere-logo-text {
+  font-size: 22px;
+}
+
+.sidebar-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color var(--duration-fast), background var(--duration-fast);
+}
+
+.sidebar-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.sidebar-close:active {
+  background: var(--bg-tertiary);
+}
+
+.sidebar-actions {
+  padding: var(--space-2) var(--space-2) 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-new-session {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-new-session textarea {
+  flex: 1;
+  resize: none;
+  padding: 0.5rem;
+  font-size: var(--text-sm);
+  background: var(--bg-code);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+}
+
+.sidebar-new-session textarea:focus {
+  outline: none;
+  border-color: var(--color-focus);
+}
+
+.sidebar-sessions {
+  flex: 1;
+  overflow-y: hidden;
+  padding: var(--space-1) var(--space-2) var(--space-4);
+}
+
+/* Unified sidebar navigation section and items */
+.sidebar-nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+.sidebar-nav-section-title {
+  margin: 0 var(--space-2);
+  color: var(--text-dimmed);
+  font-size: 0.68rem;
+  font-weight: var(--font-bold);
+  letter-spacing: 0.12em;
+  line-height: var(--leading-tight);
+  text-transform: uppercase;
+}
+
+.sidebar-nav-section-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+a.sidebar-nav-item {
+  text-decoration: none;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  min-height: 42px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  border-radius: var(--radius-xl);
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  transition:
+    color var(--duration-smooth) var(--ease-fluid),
+    background var(--duration-smooth) var(--ease-fluid),
+    border-color var(--duration-smooth) var(--ease-fluid),
+    transform var(--duration-bounce) var(--ease-spring),
+    box-shadow var(--duration-smooth) var(--ease-fluid);
+}
+
+.sidebar-actions .sidebar-nav-item {
+  min-height: 48px;
+  color: white;
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-light),
+    var(--color-brand-hover)
+  );
+  border-color: transparent;
+  box-shadow: 0 14px 32px
+    color-mix(in srgb, var(--color-brand) 22%, transparent);
+}
+
+.sidebar-nav-item:hover {
+  background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
+  border-color: color-mix(in srgb, var(--border-default) 88%, transparent);
+  color: var(--text-primary);
+  transform: translateX(3px) translateY(-1px);
+}
+
+.sidebar-actions .sidebar-nav-item:hover {
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-light),
+    var(--color-brand-hover)
+  );
+  transform: translateY(-2px) scale(1.01);
+}
+
+.sidebar-nav-item:active {
+  transform: translateX(1px) translateY(1px) scale(0.98);
+}
+
+.sidebar-nav-item.active {
+  background: color-mix(in srgb, var(--color-brand) 15%, var(--bg-secondary));
+  border-color: color-mix(
+    in srgb,
+    var(--color-brand) 34%,
+    var(--border-default)
+  );
+  color: var(--text-primary);
+  font-weight: var(--font-bold);
+  box-shadow: 0 10px 28px
+    color-mix(in srgb, var(--color-brand) 10%, transparent);
+}
+
+.sidebar-nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  color: var(--text-muted);
+  transition: transform var(--duration-bounce) var(--ease-spring), color
+    var(--duration-smooth) var(--ease-fluid);
+}
+
+.sidebar-actions .sidebar-nav-icon {
+  color: white;
+}
+
+.sidebar-nav-item:hover .sidebar-nav-icon {
+  color: var(--text-primary);
+  transform: scale(1.16) rotate(-3deg);
+}
+
+.sidebar-actions .sidebar-nav-item:hover .sidebar-nav-icon {
+  color: white;
+}
+
+.sidebar-nav-item.active .sidebar-nav-icon {
+  color: var(--color-brand);
+  transform: scale(1.08);
+}
+
+.sidebar-nav-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-nav-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary);
+  color: #fff;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.sidebar-section {
+  margin-bottom: 1rem;
+}
+
+.sidebar-section-title {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dimmed);
+  padding: var(--space-3) 0.875rem var(--space-1);
+  margin-bottom: 0.25rem;
+}
+
+.sidebar-session-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-session-list li {
+  margin: 0;
+}
+
+.sidebar-session-list li.current {
+  background: var(--bg-hover);
+}
+
+.sidebar-session-list li a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0.875rem;
+  min-height: 44px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  transition: background var(--duration-fast);
+}
+
+.sidebar-session-list li a:hover {
+  background: var(--bg-hover);
+}
+
+.sidebar-session-list li a:active {
+  background: var(--bg-tertiary);
+}
+
+.sidebar-session-list li {
+  position: relative;
+}
+
+.sidebar-show-more {
+  display: block;
+  width: 100%;
+  padding: 0.375rem 0.875rem;
+  background: none;
+  border: none;
+  color: var(--text-dimmed);
+  font-size: var(--text-xs);
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.sidebar-show-more:hover {
+  color: var(--text-secondary);
+}
+
+/* Sidebar Activity Badges */
+

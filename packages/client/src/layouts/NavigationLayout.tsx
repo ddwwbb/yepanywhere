@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, useOutletContext, useParams } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
-import { BottomTabBar } from "../components/BottomTabBar";
 import { useSidebarPreference } from "../hooks/useSidebarPreference";
 import { useSidebarWidth } from "../hooks/useSidebarWidth";
 import { useViewportWidth } from "../hooks/useViewportWidth";
@@ -104,10 +103,7 @@ export function NavigationLayout() {
         <Outlet context={context} />
       </main>
 
-      {/* Mobile Bottom Tab Bar */}
-      {!isWideScreen && <BottomTabBar onOpenDrawer={() => setSidebarOpen(true)} />}
-
-      {/* Mobile sidebar - modal overlay drawer (opened via More tab) */}
+      {/* Mobile sidebar - modal overlay drawer */}
       {(!isWideScreen && sidebarOpen) && (
         <Sidebar
           isOpen={sidebarOpen}

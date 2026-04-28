@@ -1,4 +1,4 @@
-import { ArrowRightLeft, PanelLeftClose, X } from "lucide-react";
+import { ArrowRightLeft, PanelLeft, PanelLeftClose, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -410,9 +410,12 @@ export function Sidebar({
   if (!isDesktop && !isOpen) return null;
 
   // Sidebar toggle icon for desktop mode
-  const SidebarToggleIcon = () => (
-    <PanelLeftClose size={20} strokeWidth={2} aria-hidden="true" />
-  );
+  const SidebarToggleIcon = () =>
+    isCollapsed ? (
+      <PanelLeft size={20} strokeWidth={2} aria-hidden="true" />
+    ) : (
+      <PanelLeftClose size={20} strokeWidth={2} aria-hidden="true" />
+    );
 
   return (
     <>

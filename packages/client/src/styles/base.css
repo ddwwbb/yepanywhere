@@ -1,0 +1,100 @@
+/* ==========================================================================
+   Design Tokens — 拆分至 tokens/ 目录
+   ========================================================================== */
+@import "./tokens/spacing.css";
+@import "./tokens/motion.css";
+@import "./tokens/layout.css";
+@import "./tokens/typography.css";
+@import "./tokens/colors.css";
+
+@import "./renderers.css";
+@import "./tool-rows.css";
+@import "./emulator.css";
+
+/*
+ * Breakpoint conventions（与 Layout 层一致）:
+ *   Mobile  : < 768px     — 底部导航栏、单列布局
+ *   Tablet  : 768–1099px  — 侧边栏可收缩
+ *   Desktop : ≥ 1100px    — 侧边栏常驻
+ */
+
+/* ── 旧变量兼容别名（渐进迁移后删除） ── */
+:root {
+  --app-yep-green: var(--color-brand);
+  --app-yep-green-dark: var(--color-brand-hover);
+  --app-yep-green-light: var(--color-brand-light);
+  --app-yep-green-alpha: var(--color-brand-alpha);
+  --app-claude-ivory: var(--color-claude-ivory);
+  --app-claude-slate: var(--color-claude-slate);
+  --app-claude-orange: var(--color-claude-orange);
+  --thinking-color: var(--color-thinking);
+  --touch-target-min: var(--touch-target);
+  --border-color: var(--border-default);
+  --border-base: var(--border-default);
+  --focus-border: var(--color-focus);
+  --primary-color: var(--color-primary);
+  --color-primary: var(--color-brand);
+  --color-primary-active: var(--color-brand-hover);
+  --link-color: var(--color-link);
+  --error-color: var(--color-error);
+  --success-color: var(--color-success);
+  --warning-color: var(--color-warning);
+  --attention-color: var(--color-info);
+  --git-button-bg: #ea580c;
+  --git-button-bg-hover: #c2410c;
+  --git-button-shadow: rgba(234, 88, 12, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text-muted) 32%, transparent)
+    transparent;
+}
+
+/* ── Global Scrollbar Styles ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-muted) 32%, transparent);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--text-muted) 52%, transparent);
+}
+
+body {
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Safe area insets for Tauri mobile (edge-to-edge mode) and PWA standalone.
+     On regular browsers these resolve to 0. */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism utilities */
+.glass-panel {
+  background: var(--bg-glass);
+  backdrop-filter: var(--glass-blur) saturate(180%);
+  -webkit-backdrop-filter: var(--glass-blur) saturate(180%);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-floating);
+  border-radius: var(--radius-xl);
+}
+

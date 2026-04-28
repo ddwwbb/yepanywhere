@@ -12,6 +12,9 @@
   --sidebar-collapsed: 56px;
   --sidebar-max:       560px;
 
+  /* Glassmorphism settings */
+  --glass-blur: blur(24px);
+
   /* 底部导航栏 */
   --tabbar-height: 64px;
 

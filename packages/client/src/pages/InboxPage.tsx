@@ -77,9 +77,7 @@ export function InboxPage() {
         <main className="page-scroll-container">
           <div className="page-content-inner inbox-content">
             <PageHero
-              eyebrow={projectName ?? t("inboxAllProjects")}
               title={t("inboxTitle")}
-              description={t("pageHeroInboxDescription")}
               icon={<Inbox size={22} strokeWidth={2} aria-hidden="true" />}
               metrics={[
                 {

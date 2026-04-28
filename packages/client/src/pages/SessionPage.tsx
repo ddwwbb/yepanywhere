@@ -900,7 +900,9 @@ function SessionPageContent({
             : "main-content-mobile-inner"
         }
       >
-        <header className="session-header">
+        <header
+          className={`session-header ${isSidebarCollapsed ? "sidebar-is-collapsed" : ""}`}
+        >
           <div className="session-header-inner">
             <div className="session-header-left">
               {/* 移动端侧边栏切换按钮，桌面端由 NavigationLayout 提供 */}
@@ -922,9 +924,7 @@ function SessionPageContent({
                   className="project-breadcrumb"
                   title={project.name}
                 >
-                  {project.name.length > 12
-                    ? `${project.name.slice(0, 12)}...`
-                    : project.name}
+                  {project.name}
                 </Link>
               )}
               <div className="session-title-row">

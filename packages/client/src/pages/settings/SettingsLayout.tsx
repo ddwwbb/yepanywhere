@@ -143,9 +143,7 @@ export function SettingsLayout() {
             <main className="page-scroll-container">
               <div className="page-content-inner">
                 <PageHero
-                  eyebrow={t("pageHeroControl" as never)}
                   title={t("pageTitleSettings")}
-                  description={t("pageHeroSettingsDescription" as never)}
                   icon={
                     <Settings size={22} strokeWidth={2} aria-hidden="true" />
                   }
@@ -189,9 +187,7 @@ export function SettingsLayout() {
             <div className="page-content-inner settings-detail-page">
               {currentCategory && (
                 <PageHero
-                  eyebrow={t("pageHeroControl" as never)}
                   title={currentCategory.label}
-                  description={currentCategory.description}
                   icon={detailHeroIcon}
                   compact
                 />
@@ -218,9 +214,7 @@ export function SettingsLayout() {
         <main className="page-scroll-container">
           <div className="page-content-inner settings-page-content">
             <PageHero
-              eyebrow={t("pageHeroControl" as never)}
               title={t("pageTitleSettings")}
-              description={t("pageHeroSettingsDescription" as never)}
               icon={<Settings size={22} strokeWidth={2} aria-hidden="true" />}
               metrics={[
                 {
@@ -247,9 +241,7 @@ export function SettingsLayout() {
               <div className="settings-content-panel settings-detail-page">
                 {currentCategory && (
                   <PageHero
-                    eyebrow={t("pageHeroControl" as never)}
                     title={currentCategory.label}
-                    description={currentCategory.description}
                     icon={detailHeroIcon}
                     compact
                   />

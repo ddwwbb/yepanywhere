@@ -1025,6 +1025,7 @@
   "feishu.quickCreateDesc": "点击按钮，浏览器会自动打开飞书授权页面，一键创建应用并配置权限。",
   "feishu.quickCreateBtn": "创建并绑定飞书应用",
   "feishu.rebind": "重新绑定",
+  "feishu.unbind": "解绑",
   "feishu.waitingAuth": "等待飞书授权中...",
   "feishu.createSuccess": "飞书应用创建并绑定成功。",
   "feishu.createFailed": "飞书应用创建失败",

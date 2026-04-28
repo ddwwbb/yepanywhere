@@ -40,6 +40,7 @@ export function FeishuBridgeSection() {
   const abortRef = useRef<AbortController | null>(null);
 
   const [feishuEnabled, setFeishuEnabled] = useState(false);
+  const [bots, setBots] = useState<FeishuSettings["bots"]>([]);
 
   // ── App Binding state ──
   const [appId, setAppId] = useState("");
@@ -122,6 +123,7 @@ export function FeishuBridgeSection() {
       };
 
       setFeishuEnabled(feishu?.enabled ?? false);
+      setBots(loaded.bots);
 
       setAppId(primaryBot?.appId ?? "");
       setAppSecret(primaryBot?.appSecret ?? "");
@@ -318,6 +320,22 @@ export function FeishuBridgeSection() {
     }
   };
 
+  // ── Delete Bot ──
+  const handleDeleteBot = async (botId: string) => {
+    try {
+      const response = await api.getServerSettings();
+      const rc = response.settings.remoteChannels ?? {};
+      const feishu = rc.feishu ?? {};
+      const updatedBots = (feishu.bots ?? []).filter((b: { id: string }) => b.id !== botId);
+      await api.updateServerSettings({
+        remoteChannels: { ...rc, feishu: { ...feishu, bots: updatedBots } },
+      });
+      await fetchSettings();
+    } catch {
+      // ignore
+    }
+  };
+
   // ── Status Banner ──
   const StatusBanner = ({ variant, message }: { variant: string; message: string }) => (
     <div className={`bridge-status-banner bridge-status-banner--${variant}`}>
@@ -345,30 +363,43 @@ export function FeishuBridgeSection() {
       <div className="bridge-card">
         <div className="bridge-card-header">
           <h3>{t("feishu.quickCreate")}</h3>
-          {!appId && <p className="bridge-card-desc">{t("feishu.quickCreateDesc")}</p>}
+          {bots.length === 0 && <p className="bridge-card-desc">{t("feishu.quickCreateDesc")}</p>}
         </div>
-        {appId ? (
+        {bots.length > 0 && (
           <div className="bridge-section-body">
-            <div className="bridge-bound-row">
-              <div className="bridge-bound-info">
-                <span className="bridge-bound-label">{t("feishu.appId")}:</span>
-                <span className="bridge-bound-value">{appId}</span>
+            {bots.map((bot, idx) => (
+              <div key={bot.id} className="bridge-bound-row">
+                <div className="bridge-bound-info">
+                  <span className="bridge-bound-label">{t("feishu.appId")}:</span>
+                  <span className="bridge-bound-value">{bot.appId ?? `Bot ${idx + 1}`}</span>
+                </div>
+                <div className="bridge-bound-info">
+                  <span className="bridge-bound-label">{t("feishu.domain")}:</span>
+                  <span className="bridge-bound-value">
+                    {domain === "lark" ? "Lark" : t("feishu.domainFeishu")}
+                  </span>
+                </div>
+                <div className="bridge-bound-actions">
+                  {idx === 0 && (
+                    <button
+                      type="button"
+                      className="bridge-button bridge-button--outline bridge-button--sm"
+                      onClick={() => void handleQuickCreate()}
+                      disabled={isRegistering}
+                    >
+                      {t("feishu.rebind")}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="bridge-button bridge-button--outline bridge-button--sm bridge-button--danger"
+                    onClick={() => void handleDeleteBot(bot.id)}
+                  >
+                    {t("feishu.unbind")}
+                  </button>
+                </div>
               </div>
-              <div className="bridge-bound-info">
-                <span className="bridge-bound-label">{t("feishu.domain")}:</span>
-                <span className="bridge-bound-value">
-                  {domain === "lark" ? "Lark" : t("feishu.domainFeishu")}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="bridge-button bridge-button--outline bridge-button--sm"
-                onClick={() => void handleQuickCreate()}
-                disabled={isRegistering}
-              >
-                {t("feishu.rebind")}
-              </button>
-            </div>
+            ))}
             {isRegistering && (
               <div className="bridge-registering-row">
                 <span className="bridge-spinner" />
@@ -377,7 +408,8 @@ export function FeishuBridgeSection() {
             )}
             {regStatus && <StatusBanner variant={regStatus.variant} message={regStatus.message} />}
           </div>
-        ) : (
+        )}
+        {bots.length === 0 && (
           <div className="bridge-section-body">
             <div className="bridge-register-actions">
               {!isRegistering ? (
@@ -389,10 +421,8 @@ export function FeishuBridgeSection() {
                   <button type="button" className="bridge-button bridge-button--outline bridge-button--sm" onClick={handleCancelCreate}>
                     {t("projectsCancel")}
                   </button>
-                  <span className="bridge-registering-row">
-                    <span className="bridge-spinner" />
-                    {t("feishu.waitingAuth")}
-                  </span>
+                  <span className="bridge-spinner" />
+                  {t("feishu.waitingAuth")}
                 </div>
               )}
             </div>

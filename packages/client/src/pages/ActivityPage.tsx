@@ -1,5 +1,9 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { Activity, Clock, Search, Filter } from "lucide-react";
+import { PageHeader } from "../components/PageHeader";
+import { PageHero } from "../components/PageHero";
+import { useNavigationLayout } from "../layouts";
 import {
   type FileChangeEvent,
   type FileType,
@@ -86,6 +90,15 @@ export function ActivityPage() {
   const [typeFilters, setTypeFilters] = useState<Set<FileType>>(new Set());
   const { events, connected, paused, clearEvents, togglePause } =
     useFileActivity();
+  const nav = useNavigationLayout();
+  // Fallback if context is missing (e.g. during transitions or if route is misconfigured)
+  const { openSidebar, isWideScreen, toggleSidebar, isSidebarCollapsed } = nav || {
+    openSidebar: () => {},
+    isWideScreen: true,
+    toggleSidebar: () => {},
+    isSidebarCollapsed: false,
+  };
+
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isAtBottomRef = useRef(true);
@@ -136,6 +149,8 @@ export function ActivityPage() {
     }
   }, [displayedEvents.length]);
 
+
+
   // Group events by date
   const eventsByDate = displayedEvents.reduce(
     (acc, event) => {
@@ -149,77 +164,74 @@ export function ActivityPage() {
     {} as Record<string, FileChangeEvent[]>,
   );
 
+
   return (
     <div
-      className="page"
-      style={{
-        maxWidth: "1000px",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-      }}
+      className={isWideScreen ? "main-content-wrapper" : "main-content-mobile"}
     >
-      <nav className="breadcrumb">
-        <Link to="/projects">{t("pageTitleProjects")}</Link> /{" "}
-        {t("activityBreadcrumb" as never)}
-      </nav>
-
       <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
+        className={
+          isWideScreen
+            ? "main-content-constrained"
+            : "main-content-mobile-inner"
+        }
       >
-        <h1>{t("activityTitle" as never)}</h1>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <span
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: "50%",
-              background: connected ? "#4f4" : "#f44",
-            }}
+        <PageHeader
+          title={t("activityTitle" as never)}
+          onOpenSidebar={openSidebar}
+          onToggleSidebar={toggleSidebar}
+          isWideScreen={isWideScreen}
+          isSidebarCollapsed={isSidebarCollapsed}
+        />
+
+        <main className="page-scroll-container">
+          <div className="page-content-inner">
+
+
+      <PageHero
+        title={t("activityTitle" as never)}
+        icon={<Activity size={28} />}
+        metrics={[
+          {
+            label: "Total Events",
+            value: events.length,
+            icon: <Clock size={18} />,
+          },
+          {
+            label: "Filtered",
+            value: displayedEvents.length,
+            icon: <Filter size={18} />,
+          },
+        ]}
+      >
+        <div className="page-hero__search">
+          <Search size={16} />
+          <input
+            type="text"
+            value={pathFilter}
+            onChange={(e) => setPathFilter(e.target.value)}
+            placeholder={t("activityPathPlaceholder" as never)}
           />
-          <span style={{ fontSize: "0.875rem", color: "#888" }}>
-            {connected
-              ? t("activityConnected" as never)
-              : t("activityDisconnected" as never)}
-          </span>
         </div>
-      </div>
+      </PageHero>
+
 
       {/* Controls */}
       <div
         style={{
           display: "flex",
-          gap: "1rem",
+          gap: "0.5rem",
           marginBottom: "1rem",
           flexWrap: "wrap",
         }}
       >
-        <input
-          type="text"
-          value={pathFilter}
-          onChange={(e) => setPathFilter(e.target.value)}
-          placeholder={t("activityPathPlaceholder" as never)}
-          style={{
-            flex: 1,
-            minWidth: "200px",
-            padding: "0.75rem",
-            background: "#2a2a2a",
-            border: "1px solid #444",
-            borderRadius: "8px",
-            color: "inherit",
-            fontSize: "1rem",
-          }}
-        />
         <button
           type="button"
           onClick={togglePause}
+          className="page-hero-action"
           style={{
-            background: paused ? "#a44" : "#444",
+            background: paused ? "var(--color-error)" : "var(--bg-secondary)",
+            color: paused ? "white" : "var(--text-primary)",
           }}
         >
           {paused ? t("activityResume" as never) : t("activityPause" as never)}
@@ -227,7 +239,7 @@ export function ActivityPage() {
         <button
           type="button"
           onClick={clearEvents}
-          style={{ background: "#444" }}
+          className="page-hero-action"
         >
           {t("activityClear" as never)}
         </button>
@@ -274,35 +286,15 @@ export function ActivityPage() {
         )}
       </div>
 
-      {/* Stats */}
-      <div
-        style={{
-          display: "flex",
-          gap: "2rem",
-          marginBottom: "1rem",
-          fontSize: "0.875rem",
-          color: "#888",
-        }}
-      >
-        <span>{t("activityTotal" as never, { count: events.length })}</span>
-        <span>
-          {t("activityShowing" as never, { count: displayedEvents.length })}
-        </span>
-      </div>
+
 
       {/* Events - scrollable container */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        style={{
-          flex: 1,
-          overflow: "auto",
-          minHeight: 0,
-          background: "#1a1a1a",
-          borderRadius: "8px",
-          padding: "1rem",
-        }}
+        className="activity-scroll-container"
       >
+
         {Object.entries(eventsByDate).length === 0 ? (
           <div style={{ textAlign: "center", padding: "3rem", color: "#888" }}>
             {events.length === 0
@@ -321,69 +313,41 @@ export function ActivityPage() {
               >
                 {date}
               </h3>
-              <div
-                style={{
-                  background: "#2a2a2a",
-                  borderRadius: "8px",
-                  overflow: "hidden",
-                }}
-              >
+              <div className="activity-date-group">
+
                 {dateEvents.map((event, i) => (
                   <div
                     key={`${event.timestamp}-${event.path}-${i}`}
-                    style={{
-                      padding: "0.75rem 1rem",
-                      borderBottom:
-                        i < dateEvents.length - 1 ? "1px solid #333" : "none",
-                      display: "grid",
-                      gridTemplateColumns: "80px 24px 100px 1fr",
-                      gap: "0.75rem",
-                      alignItems: "center",
-                      fontFamily: "monospace",
-                      fontSize: "0.875rem",
-                    }}
+                    className="activity-item"
                   >
-                    <span style={{ color: "#666" }}>
+                    <span className="activity-item__time">
                       {formatTime(event.timestamp)}
                     </span>
                     <span
-                      style={{
-                        color: getTypeColor(event.changeType),
-                        fontWeight: "bold",
-                        textAlign: "center",
-                      }}
+                      className={`activity-item__type activity-item__type--${event.changeType}`}
                       title={getTypeLabel(event.changeType, t)}
                     >
                       {getTypeIcon(event.changeType)}
                     </span>
-                    <span
-                      style={{
-                        color: "#888",
-                        fontSize: "0.75rem",
-                        background: "#333",
-                        padding: "0.25rem 0.5rem",
-                        borderRadius: "4px",
-                        textAlign: "center",
-                      }}
-                    >
+                    <span className="activity-item__file-type">
                       {getFileTypeLabel(event.fileType, t)}
                     </span>
                     <span
-                      style={{
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
+                      className="activity-item__path"
                       title={event.path}
                     >
                       {event.relativePath}
                     </span>
                   </div>
+
                 ))}
               </div>
             </div>
           ))
         )}
+      </div>
+          </div>
+        </main>
       </div>
     </div>
   );

@@ -114,8 +114,6 @@ export function MessageInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const voiceButtonRef = useRef<VoiceInputButtonRef>(null);
-  // User-controlled collapse state (independent of external collapse from approval panel)
-  const [userCollapsed, setUserCollapsed] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState("");
   const [selectedSlashCommand, setSelectedSlashCommand] =
     useState<SlashCommandItem | null>(null);
@@ -136,8 +134,10 @@ export function MessageInput({
     }
   }, [interimTranscript]);
 
-  // Panel is collapsed if user collapsed it OR if externally collapsed (approval panel showing)
-  const collapsed = userCollapsed || externalCollapsed;
+  // Panel is collapsed if externally collapsed (approval panel showing)
+  const collapsed = !!externalCollapsed;
+
+  const canSend = !!(text.trim() || selectedSlashCommand || attachments.length > 0);
 
   const canAttach = !!(projectId && sessionId && onAttach);
 
@@ -339,34 +339,6 @@ export function MessageInput({
     <div
       className={`message-input-wrapper ${collapsed ? "message-input-wrapper--collapsed" : ""}`}
     >
-      {/* Floating toggle button - only show when user can control collapse (not externally collapsed) */}
-      {!externalCollapsed && (
-        <button
-          type="button"
-          className="message-input-toggle"
-          onClick={() => setUserCollapsed((current) => !current)}
-          aria-label={userCollapsed ? "展开" : "收起"}
-          aria-expanded={!userCollapsed}
-        >
-          <span className="message-input-toggle__label">
-            {userCollapsed ? "展开" : "收起"}
-          </span>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={userCollapsed ? "chevron-up" : "chevron-down"}
-            aria-hidden="true"
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-      )}
       <div
         className={`message-input ${collapsed ? "message-input-collapsed" : ""} ${interimTranscript ? "voice-recording" : ""}`}
       >
@@ -410,6 +382,31 @@ export function MessageInput({
           disabled={disabled}
           rows={collapsed ? 1 : 3}
         />
+
+        {collapsed && (
+          <div className="message-input-collapsed-actions">
+            {isRunning && onStop && isThinking && !canSend ? (
+              <button
+                type="button"
+                onClick={onStop}
+                className="stop-button stop-button--compact"
+                aria-label={t("toolbarStop")}
+              >
+                <span className="stop-icon" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={disabled || !canSend}
+                className="send-button send-button--compact"
+                aria-label={t("toolbarSend")}
+              >
+                <span className="send-icon">↑</span>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Attachment chips - show below textarea when not collapsed */}
         {!collapsed &&
@@ -485,9 +482,7 @@ export function MessageInput({
             onStop={onStop}
             onSend={handleSubmit}
             onQueue={onQueue ? handleQueue : undefined}
-            canSend={
-              !!(text.trim() || selectedSlashCommand || attachments.length > 0)
-            }
+            canSend={canSend}
             disabled={disabled}
           />
         )}

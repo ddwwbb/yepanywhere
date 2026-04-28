@@ -1,24 +1,16 @@
-import { ALL_PROVIDERS, type ProviderName } from "@yep-anywhere/shared";
 import {
   ChevronRight,
   FolderKanban,
-  GitBranch,
   MessagesSquare,
-  Plus,
   Trash2,
 } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   type GlobalSessionItem,
   type ServerSettings,
   api,
 } from "../api/client";
 import { BulkActionBar } from "../components/BulkActionBar";
-import {
-  FilterDropdown,
-  type FilterOption,
-} from "../components/FilterDropdown";
 import { PageHeader } from "../components/PageHeader";
 import { PageHero } from "../components/PageHero";
 import { SessionListItem } from "../components/SessionListItem";
@@ -32,23 +24,6 @@ import { getSessionDisplayTitle, toUrlProjectId } from "../utils";
 
 // Long-press threshold for entering selection mode on mobile
 const LONG_PRESS_MS = 500;
-
-// Status filter options
-type StatusFilter = "all" | "unread" | "starred" | "archived";
-
-// Age filter options (days)
-type AgeFilter = "3" | "7" | "14" | "30";
-
-// Provider colors for filter dropdown (matching ProviderBadge)
-const PROVIDER_COLORS: Record<ProviderName, string> = {
-  claude: "var(--color-brand)",
-  "claude-ollama": "var(--color-brand)",
-  codex: "var(--provider-codex)",
-  "codex-oss": "var(--provider-codex-oss)",
-  gemini: "var(--provider-gemini)",
-  "gemini-acp": "var(--provider-gemini)",
-  opencode: "var(--provider-opencode)",
-};
 
 type RemoteChannels = ServerSettings["remoteChannels"];
 
@@ -74,7 +49,6 @@ function getBotBoundSessionIds(remoteChannels: RemoteChannels): Set<string> {
  */
 export function GlobalSessionsPage() {
   const { t } = useI18n();
-  const navigate = useNavigate();
   const { openSidebar, isWideScreen, toggleSidebar, isSidebarCollapsed } =
     useNavigationLayout();
   const basePath = useRemoteBasePath();
@@ -83,176 +57,16 @@ export function GlobalSessionsPage() {
     () => getBotBoundSessionIds(settings?.remoteChannels),
     [settings?.remoteChannels],
   );
-  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Get filter params from URL
-  const searchQuery = searchParams.get("q") || "";
-  const projectFilter = searchParams.get("project") || undefined;
-
-  // Local state for search input (instant feedback)
-  const [searchInput, setSearchInput] = useState(searchQuery);
-
-  // Status and provider filters from URL
-  const statusFilters = useMemo(() => {
-    const param = searchParams.get("status");
-    if (!param) return [];
-    return param
-      .split(",")
-      .filter((s): s is StatusFilter =>
-        ["all", "unread", "starred", "archived"].includes(s),
-      );
-  }, [searchParams]);
-
-  const providerFilters = useMemo(() => {
-    const param = searchParams.get("provider");
-    if (!param) return [];
-    const knownProviders = Object.keys(PROVIDER_COLORS);
-    return param
-      .split(",")
-      .filter((p): p is ProviderName => knownProviders.includes(p));
-  }, [searchParams]);
-
-  const executorFilters = useMemo(() => {
-    const param = searchParams.get("executor");
-    if (!param) return [];
-    return param.split(",").filter(Boolean);
-  }, [searchParams]);
-
-  const ageFilter = useMemo(() => {
-    const param = searchParams.get("age");
-    if (param && ["3", "7", "14", "30"].includes(param))
-      return param as AgeFilter;
-    return undefined;
-  }, [searchParams]);
-
-  const setStatusFilters = useCallback(
-    (filters: StatusFilter[]) => {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        if (filters.length > 0) {
-          next.set("status", filters.join(","));
-        } else {
-          next.delete("status");
-        }
-        return next;
-      });
-    },
-    [setSearchParams],
-  );
-
-  const setProviderFilters = useCallback(
-    (filters: ProviderName[]) => {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        if (filters.length > 0) {
-          next.set("provider", filters.join(","));
-        } else {
-          next.delete("provider");
-        }
-        return next;
-      });
-    },
-    [setSearchParams],
-  );
-
-  const setExecutorFilters = useCallback(
-    (filters: string[]) => {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        if (filters.length > 0) {
-          next.set("executor", filters.join(","));
-        } else {
-          next.delete("executor");
-        }
-        return next;
-      });
-    },
-    [setSearchParams],
-  );
-
-  const setAgeFilter = useCallback(
-    (selected: AgeFilter[]) => {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        if (selected.length > 0 && selected[0]) {
-          next.set("age", selected[0]);
-        } else {
-          next.delete("age");
-        }
-        return next;
-      });
-    },
-    [setSearchParams],
-  );
-
-  // Include archived sessions when archived filter is selected
-  const includeArchived = statusFilters.includes("archived");
-
-  const { sessions, stats, projects, loading, error, hasMore, loadMore } =
+  const { sessions, stats, loading, error, hasMore, loadMore } =
     useGlobalSessions({
-      projectId: projectFilter,
-      searchQuery,
-      includeArchived,
-      includeStats: !projectFilter,
+      includeStats: true,
     });
 
-  // Filter sessions based on status and provider filters (client-side)
+  // 默认显示非归档会话
   const filteredSessions = useMemo(() => {
-    return sessions.filter((session) => {
-      // Status filtering (empty = show all non-archived)
-      if (statusFilters.length === 0) {
-        // Default: show non-archived
-        if (session.isArchived) return false;
-      } else {
-        // Check if session matches any selected status filter
-        let matchesStatus = false;
-        for (const status of statusFilters) {
-          switch (status) {
-            case "all":
-              if (!session.isArchived) matchesStatus = true;
-              break;
-            case "unread":
-              if (session.hasUnread && !session.isArchived)
-                matchesStatus = true;
-              break;
-            case "starred":
-              if (session.isStarred) matchesStatus = true;
-              break;
-            case "archived":
-              if (session.isArchived) matchesStatus = true;
-              break;
-          }
-        }
-        if (!matchesStatus) return false;
-      }
-
-      // Provider filtering (empty = show all providers)
-      if (providerFilters.length > 0) {
-        if (!session.provider || !providerFilters.includes(session.provider)) {
-          return false;
-        }
-      }
-
-      // Executor filtering (empty = show all executors)
-      if (executorFilters.length > 0) {
-        const sessionExecutor = session.executor ?? "local";
-        if (!executorFilters.includes(sessionExecutor)) {
-          return false;
-        }
-      }
-
-      // Age filtering (only show sessions older than N days)
-      if (ageFilter) {
-        const days = Number(ageFilter);
-        const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-        if (new Date(session.updatedAt).getTime() > cutoff) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [sessions, statusFilters, providerFilters, executorFilters, ageFilter]);
+    return sessions.filter((session) => !session.isArchived);
+  }, [sessions]);
 
   // 按 projectId 分组
   interface ProjectGroup {
@@ -292,92 +106,6 @@ export function GlobalSessionsPage() {
 
   // Track which sessions have unsent drafts
   const drafts = useDrafts();
-
-  // Build status filter options with global counts from server
-  // When filtering by project, we don't have global stats, so omit counts
-  const statusOptions = useMemo((): FilterOption<StatusFilter>[] => {
-    // Only show counts when not filtering by project (global view)
-    const showCounts = !projectFilter;
-
-    return [
-      {
-        value: "all",
-        label: t("globalSessionsStatusAll"),
-        count: showCounts ? stats.totalCount : undefined,
-      },
-      {
-        value: "unread",
-        label: t("globalSessionsStatusUnread"),
-        count: showCounts ? stats.unreadCount : undefined,
-      },
-      {
-        value: "starred",
-        label: t("globalSessionsStatusStarred"),
-        count: showCounts ? stats.starredCount : undefined,
-      },
-      {
-        value: "archived",
-        label: t("globalSessionsStatusArchived"),
-        count: showCounts ? stats.archivedCount : undefined,
-      },
-    ];
-  }, [stats, projectFilter, t]);
-
-  // Build provider filter options with global counts from server
-  // When filtering by project, we don't have global stats, so omit counts
-  const providerOptions = useMemo((): FilterOption<ProviderName>[] => {
-    const showCounts = !projectFilter;
-    const providerCounts = stats.providerCounts;
-
-    // Only show providers that have sessions
-    const options: FilterOption<ProviderName>[] = [];
-    for (const provider of ALL_PROVIDERS) {
-      const count = providerCounts[provider];
-      if (count && count > 0) {
-        options.push({
-          value: provider,
-          label: provider.charAt(0).toUpperCase() + provider.slice(1),
-          count: showCounts ? count : undefined,
-          color: PROVIDER_COLORS[provider],
-        });
-      }
-    }
-    return options;
-  }, [stats.providerCounts, projectFilter]);
-
-  // Age filter options
-  const ageOptions = useMemo((): FilterOption<AgeFilter>[] => {
-    return [
-      { value: "3", label: "Older than 3 days" },
-      { value: "3", label: t("globalSessionsAge3Days") },
-      { value: "7", label: t("globalSessionsAge7Days") },
-      { value: "14", label: t("globalSessionsAge14Days") },
-      { value: "30", label: t("globalSessionsAge30Days") },
-    ];
-  }, [t]);
-
-  // Build executor filter options with global counts from server
-  const executorOptions = useMemo((): FilterOption<string>[] => {
-    const showCounts = !projectFilter;
-    const executorCounts = stats.executorCounts;
-
-    // Only show executors that have sessions, sorted with "local" first
-    const entries = Object.entries(executorCounts).filter(
-      ([_, count]) => count > 0,
-    );
-    entries.sort((a, b) => {
-      // "local" always comes first
-      if (a[0] === "local") return -1;
-      if (b[0] === "local") return 1;
-      return a[0].localeCompare(b[0]);
-    });
-
-    return entries.map(([executor, count]) => ({
-      value: executor,
-      label: executor === "local" ? t("globalSessionsExecutorLocal") : executor,
-      count: showCounts ? count : undefined,
-    }));
-  }, [stats.executorCounts, projectFilter, t]);
 
   // Selection state for multi-select mode
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -600,29 +328,6 @@ export function GlobalSessionsPage() {
     [t],
   );
 
-  // "Archive all" for filtered results (no manual selection needed)
-  const handleArchiveAllFiltered = useCallback(async () => {
-    if (isBulkActionPending) return;
-    const archivable = filteredSessions.filter((s) => !s.isArchived);
-    if (archivable.length === 0) return;
-    setIsBulkActionPending(true);
-    try {
-      await Promise.all(
-        archivable.map((s) =>
-          api.updateSessionMetadata(s.id, { archived: true }),
-        ),
-      );
-    } finally {
-      setIsBulkActionPending(false);
-    }
-  }, [filteredSessions, isBulkActionPending]);
-
-  // Count of archivable sessions in filtered results
-  const archivableFilteredCount = useMemo(
-    () => filteredSessions.filter((s) => !s.isArchived).length,
-    [filteredSessions],
-  );
-
   // Compute which bulk actions are applicable based on selection
   const bulkActionState = useMemo(() => {
     const selectedSessions = sessions.filter((s) => selectedIds.has(s.id));
@@ -636,46 +341,6 @@ export function GlobalSessionsPage() {
     };
   }, [sessions, selectedIds]);
 
-  // Handle search form submit
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newParams = new URLSearchParams(searchParams);
-    if (searchInput.trim()) {
-      newParams.set("q", searchInput.trim());
-    } else {
-      newParams.delete("q");
-    }
-    setSearchParams(newParams);
-  };
-
-  // Handle project filter change
-  const handleProjectFilter = useCallback(
-    (selected: string[]) => {
-      const newParams = new URLSearchParams(searchParams);
-      if (selected.length > 0 && selected[0]) {
-        newParams.set("project", selected[0]);
-      } else {
-        newParams.delete("project");
-      }
-      setSearchParams(newParams);
-    },
-    [searchParams, setSearchParams],
-  );
-
-  // Build project filter options
-  const projectOptions = useMemo((): FilterOption<string>[] => {
-    return projects.map((project) => ({
-      value: project.id,
-      label: project.name,
-    }));
-  }, [projects]);
-
-  // Clear all filters
-  const clearFilters = () => {
-    setSearchInput("");
-    setSearchParams(new URLSearchParams());
-  };
-
   const isEmpty = filteredSessions.length === 0;
   const unreadVisibleCount = filteredSessions.filter((s) => s.hasUnread).length;
   const activeVisibleCount = filteredSessions.filter(
@@ -684,13 +349,6 @@ export function GlobalSessionsPage() {
   const starredVisibleCount = filteredSessions.filter(
     (s) => s.isStarred,
   ).length;
-  const hasFilters =
-    searchQuery ||
-    projectFilter ||
-    statusFilters.length > 0 ||
-    providerFilters.length > 0 ||
-    executorFilters.length > 0 ||
-    ageFilter;
 
   return (
     <div
@@ -705,38 +363,6 @@ export function GlobalSessionsPage() {
       >
         <PageHeader
           title={t("globalSessionsTitle")}
-          actions={
-            projectFilter ? (
-              <div className="page-header-actions">
-                <button
-                  type="button"
-                  className="page-header-action page-header-action--git"
-                  onClick={() =>
-                    navigate(
-                      `${basePath}/git-status?projectId=${projectFilter}`,
-                    )
-                  }
-                  title={t("sidebarSourceControl" as never)}
-                >
-                  <GitBranch size={15} strokeWidth={2} aria-hidden="true" />
-                  <span>{t("sidebarSourceControl" as never)}</span>
-                </button>
-                <button
-                  type="button"
-                  className="page-header-action page-header-action--primary"
-                  onClick={() =>
-                    navigate(
-                      `${basePath}/new-session?projectId=${projectFilter}`,
-                    )
-                  }
-                  title={t("newSessionTitle" as never)}
-                >
-                  <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
-                  <span>{t("projectCardNewSession" as never)}</span>
-                </button>
-              </div>
-            ) : undefined
-          }
           onOpenSidebar={openSidebar}
           onToggleSidebar={toggleSidebar}
           isWideScreen={isWideScreen}
@@ -746,13 +372,7 @@ export function GlobalSessionsPage() {
         <main className="page-scroll-container">
           <div className="page-content-inner">
             <PageHero
-              eyebrow={
-                projectFilter
-                  ? t("pageHeroSessionsProject")
-                  : t("pageHeroWorkspace")
-              }
               title={t("globalSessionsTitle")}
-              description={t("pageHeroSessionsDescription")}
               icon={
                 <MessagesSquare size={22} strokeWidth={2} aria-hidden="true" />
               }
@@ -778,89 +398,6 @@ export function GlobalSessionsPage() {
                 },
               ]}
             />
-
-            {/* Filter bar */}
-            <div className="filter-bar page-toolbar">
-              <form onSubmit={handleSearch} className="filter-search-form">
-                <input
-                  type="text"
-                  className="filter-search"
-                  placeholder={t("globalSessionsSearchPlaceholder")}
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                />
-                <button type="submit" className="filter-search-button">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                  </svg>
-                </button>
-              </form>
-              <div className="filter-dropdowns">
-                {projectOptions.length > 0 && (
-                  <FilterDropdown
-                    label={t("inboxFilterProject")}
-                    options={projectOptions}
-                    selected={projectFilter ? [projectFilter] : []}
-                    onChange={handleProjectFilter}
-                    multiSelect={false}
-                    placeholder={t("globalSessionsFilterProjectPlaceholder")}
-                  />
-                )}
-                <FilterDropdown
-                  label={t("globalSessionsFilterStatus")}
-                  options={statusOptions}
-                  selected={statusFilters}
-                  onChange={setStatusFilters}
-                  placeholder={t("globalSessionsStatusAll")}
-                />
-                {providerOptions.length > 1 && (
-                  <FilterDropdown
-                    label={t("globalSessionsFilterProvider")}
-                    options={providerOptions}
-                    selected={providerFilters}
-                    onChange={setProviderFilters}
-                    placeholder={t("globalSessionsStatusAll")}
-                  />
-                )}
-                {executorOptions.length > 1 && (
-                  <FilterDropdown
-                    label={t("globalSessionsFilterExecutor")}
-                    options={executorOptions}
-                    selected={executorFilters}
-                    onChange={setExecutorFilters}
-                    placeholder={t("globalSessionsFilterMachinePlaceholder")}
-                  />
-                )}
-                <FilterDropdown
-                  label={t("globalSessionsFilterAge")}
-                  options={ageOptions}
-                  selected={ageFilter ? [ageFilter] : []}
-                  onChange={setAgeFilter}
-                  multiSelect={false}
-                  placeholder={t("globalSessionsFilterAgePlaceholder")}
-                />
-              </div>
-              {hasFilters && (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="filter-clear-button"
-                >
-                  {t("globalSessionsClearFilters")}
-                </button>
-              )}
-            </div>
 
             {loading && sessions.length === 0 && (
               <p className="loading">{t("sidebarLoadingSessions")}</p>
@@ -888,11 +425,7 @@ export function GlobalSessionsPage() {
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
                 <h3>{t("globalSessionsNoResultsTitle")}</h3>
-                <p>
-                  {hasFilters
-                    ? t("globalSessionsNoResultsFiltered")
-                    : t("globalSessionsNoResultsEmpty")}
-                </p>
+                <p>{t("globalSessionsNoResultsEmpty")}</p>
               </div>
             )}
 
@@ -1100,10 +633,6 @@ export function GlobalSessionsPage() {
               canUnstar={bulkActionState.canUnstar}
               canMarkRead={bulkActionState.canMarkRead}
               canMarkUnread={bulkActionState.canMarkUnread}
-              onArchiveAllFiltered={
-                hasFilters ? handleArchiveAllFiltered : undefined
-              }
-              archivableFilteredCount={archivableFilteredCount}
             />
           </div>
         </main>

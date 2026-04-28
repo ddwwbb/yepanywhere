@@ -4,6 +4,7 @@ import { useI18n } from "../../i18n";
 
 interface AdapterStatus {
   channelType: string;
+  name?: string;
   running: boolean;
   lastMessageAt: string | null;
   error: string | null;
@@ -176,10 +177,13 @@ export function BridgeSection() {
             <p className="bridge-card-desc">{t("bridge.adaptersDesc")}</p>
           </div>
           <div className="bridge-adapter-list">
-            {status?.adapters.map((adapter) => (
-              <div key={adapter.channelType} className="bridge-adapter-item">
+            {status?.adapters.map((adapter, idx) => (
+              <div key={`${adapter.channelType}-${adapter.name ?? idx}`} className="bridge-adapter-item">
                 <div className="bridge-adapter-header">
-                  <span className="bridge-adapter-name">{t(`bridge.${adapter.channelType}Channel` as Parameters<typeof t>[0])}</span>
+                  <span className="bridge-adapter-name">
+                    {t(`bridge.${adapter.channelType}Channel` as Parameters<typeof t>[0])}
+                    {adapter.name && <span className="bridge-adapter-id">{adapter.name}</span>}
+                  </span>
                   <span className={`bridge-adapter-badge ${adapter.running ? "bridge-adapter-badge--running" : ""}`}>
                     {adapter.running ? t("bridge.adapterRunning") : t("bridge.adapterStopped")}
                   </span>

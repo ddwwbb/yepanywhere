@@ -1,5 +1,6 @@
-import { Activity } from "lucide-react";
+import { Activity, Search, Folder, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useMemo, useState } from "react";
 import { ContextUsageIndicator } from "../components/ContextUsageIndicator";
 import { PageHeader } from "../components/PageHeader";
 import { PageHero } from "../components/PageHero";
@@ -142,9 +143,13 @@ function ProcessCard({ process, isTerminated = false }: ProcessCardProps) {
           )}
         </div>
         <div className="agent-card-meta">
-          <span className="agent-card-project">{process.projectName}</span>
+          <span className="agent-card-project">
+            <Folder size={14} strokeWidth={2} />
+            {process.projectName}
+          </span>
           {!isTerminated && (
             <span className="agent-card-uptime">
+              <Clock size={14} strokeWidth={2} />
               {formatUptime(process.startedAt)}
             </span>
           )}
@@ -152,6 +157,7 @@ function ProcessCard({ process, isTerminated = false }: ProcessCardProps) {
             <ContextUsageIndicator usage={process.contextUsage} />
           )}
         </div>
+
       </div>
 
       {(process.permissionMode ||
@@ -194,16 +200,27 @@ function ProcessCard({ process, isTerminated = false }: ProcessCardProps) {
 
 export function AgentsPage() {
   const { t } = useI18n();
+  const [searchQuery, setSearchQuery] = useState("");
   const { processes, terminatedProcesses, loading, error } = useProcesses();
 
-  const { openSidebar, isWideScreen, toggleSidebar, isSidebarCollapsed } =
-    useNavigationLayout();
+  const filteredProcesses = useMemo(() => {
+    if (!searchQuery.trim()) return processes;
+    const query = searchQuery.toLowerCase();
+    return processes.filter(
+      (p) =>
+        p.sessionTitle?.toLowerCase().includes(query) ||
+        p.projectName?.toLowerCase().includes(query) ||
+        p.provider?.toLowerCase().includes(query),
+    );
+  }, [processes, searchQuery]);
 
   // Split processes into active (in-turn/waiting-input) and idle
-  const activeProcesses = processes.filter(
+  const activeProcesses = filteredProcesses.filter(
     (p) => p.state === "in-turn" || p.state === "waiting-input",
   );
-  const idleProcesses = processes.filter((p) => p.state === "idle");
+  const idleProcesses = filteredProcesses.filter((p) => p.state === "idle");
+  const { openSidebar, isWideScreen, toggleSidebar, isSidebarCollapsed } =
+    useNavigationLayout();
 
   return (
     <div
@@ -227,26 +244,38 @@ export function AgentsPage() {
         <main className="page-scroll-container">
           <div className="page-content-inner">
             <PageHero
-              eyebrow={t("pageHeroRuntime" as never)}
               title={t("agentsTitle" as never)}
-              description={t("pageHeroAgentsDescription" as never)}
-              icon={<Activity size={22} strokeWidth={2} aria-hidden="true" />}
+              icon={<Activity size={28} strokeWidth={2} aria-hidden="true" />}
               metrics={[
                 {
                   label: t("pageHeroAgentsActive" as never),
                   value: activeProcesses.length,
                   tone: activeProcesses.length > 0 ? "success" : "default",
+                  icon: <Activity size={18} />,
                 },
                 {
                   label: t("pageHeroAgentsIdle" as never),
                   value: idleProcesses.length,
+                  icon: <Activity size={18} />,
                 },
                 {
                   label: t("pageHeroAgentsStopped" as never),
                   value: terminatedProcesses.length,
+                  icon: <Activity size={18} />,
                 },
               ]}
-            />
+            >
+              <div className="page-hero__search">
+                <Search size={16} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search agents, projects, or providers..."
+                />
+              </div>
+            </PageHero>
+
 
             {loading && (
               <p className="loading">{t("agentsLoading" as never)}</p>

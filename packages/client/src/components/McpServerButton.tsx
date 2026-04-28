@@ -1,6 +1,7 @@
 import type { McpServerStatus } from "@yep-anywhere/shared";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
+import { Modal } from "./ui/Modal";
 
 interface McpServerButtonProps {
   processId?: string;
@@ -30,8 +31,6 @@ export function McpServerButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [togglingName, setTogglingName] = useState<string | null>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const fallbackServers = useMemo<McpServerStatus[]>(
     () =>
@@ -66,35 +65,6 @@ export function McpServerButton({
     }
   }, [isOpen, loadServers]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-        buttonRef.current?.focus();
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen]);
-
   const handleToggle = useCallback(
     async (serverName: string, enabled: boolean) => {
       if (!processId) return;
@@ -119,12 +89,13 @@ export function McpServerButton({
   return (
     <div className="mcp-server-container">
       <button
-        ref={buttonRef}
         type="button"
         className={`mcp-server-button ${isOpen ? "active" : ""}`}
         onClick={() => setIsOpen((open) => !open)}
         disabled={disabled || !processId}
-        title={processId ? "MCP servers" : "Resume session to manage MCP servers"}
+        title={
+          processId ? "MCP servers" : "Resume session to manage MCP servers"
+        }
         aria-label="Show MCP servers"
         aria-expanded={isOpen}
         aria-haspopup="menu"
@@ -137,70 +108,74 @@ export function McpServerButton({
         )}
       </button>
       {isOpen && (
-        <div
-          ref={menuRef}
-          className="mcp-server-menu"
-          role="menu"
-          aria-label="MCP servers"
-        >
-          <div className="mcp-server-menu-header">
-            <span>Current MCP servers</span>
-            <button
-              type="button"
-              className="mcp-server-refresh"
-              onClick={() => void loadServers()}
-              disabled={loading}
-            >
-              Refresh
-            </button>
-          </div>
-          {loading && displayedServers.length === 0 && (
-            <div className="mcp-server-empty">Loading MCP servers...</div>
-          )}
-          {error && <div className="mcp-server-error">{error}</div>}
-          {!loading && !error && displayedServers.length === 0 && (
-            <div className="mcp-server-empty">No MCP servers active</div>
-          )}
-          {displayedServers.length > 0 && (
-            <div className="mcp-server-list">
-              {displayedServers.map((server) => {
-                const enabled = isEnabled(server);
-                const toggling = togglingName === server.name;
-                return (
-                  <div className="mcp-server-item" key={server.name}>
-                    <div className="mcp-server-main">
-                      <span className="mcp-server-name">{server.name}</span>
-                      <span
-                        className={`mcp-server-status status-${server.status}`}
-                      >
-                        {STATUS_LABELS[server.status]}
-                      </span>
-                    </div>
-                    {server.error && (
-                      <div className="mcp-server-detail">{server.error}</div>
-                    )}
-                    {server.tools && server.tools.length > 0 && (
-                      <div className="mcp-server-detail">
-                        {server.tools.length} tools
-                      </div>
-                    )}
-                    <label className="toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={enabled}
-                        disabled={loading || toggling}
-                        onChange={(event) =>
-                          void handleToggle(server.name, event.target.checked)
-                        }
-                      />
-                      <span className="toggle-slider" />
-                    </label>
-                  </div>
-                );
-              })}
+        <Modal title="MCP servers" onClose={() => setIsOpen(false)}>
+          <div className="model-switch-content mcp-server-modal-content">
+            <div className="mcp-server-menu-header">
+              <span>Current MCP servers</span>
+              <button
+                type="button"
+                className="mcp-server-refresh"
+                onClick={() => void loadServers()}
+                disabled={loading}
+              >
+                Refresh
+              </button>
             </div>
-          )}
-        </div>
+            {loading && displayedServers.length === 0 && (
+              <div className="model-switch-loading">Loading MCP servers...</div>
+            )}
+            {error && <div className="model-switch-error">{error}</div>}
+            {!loading && !error && displayedServers.length === 0 && (
+              <div className="model-switch-loading">No MCP servers active</div>
+            )}
+            {displayedServers.length > 0 && (
+              <div className="model-switch-list mcp-server-list">
+                {displayedServers.map((server) => {
+                  const enabled = isEnabled(server);
+                  const toggling = togglingName === server.name;
+                  return (
+                    <div
+                      className={`model-switch-item mcp-server-item ${enabled ? "current" : ""}`}
+                      key={server.name}
+                    >
+                      <div className="mcp-server-main">
+                        <span className="model-switch-name mcp-server-name">
+                          {server.name}
+                        </span>
+                        <span
+                          className={`mcp-server-status status-${server.status}`}
+                        >
+                          {STATUS_LABELS[server.status]}
+                        </span>
+                      </div>
+                      {server.error && (
+                        <div className="model-switch-description mcp-server-detail">
+                          {server.error}
+                        </div>
+                      )}
+                      {server.tools && server.tools.length > 0 && (
+                        <div className="model-switch-description mcp-server-detail">
+                          {server.tools.length} tools
+                        </div>
+                      )}
+                      <label className="toggle-switch mcp-server-toggle">
+                        <input
+                          type="checkbox"
+                          checked={enabled}
+                          disabled={loading || toggling}
+                          onChange={(event) =>
+                            void handleToggle(server.name, event.target.checked)
+                          }
+                        />
+                        <span className="toggle-slider" />
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </Modal>
       )}
     </div>
   );

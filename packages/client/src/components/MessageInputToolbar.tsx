@@ -99,52 +99,96 @@ export function MessageInputToolbar({
 
   return (
     <div className="message-input-toolbar">
-      <div className="message-input-left">
-        {onModeChange && supportsPermissionMode && (
-          <ModeSelector
-            mode={mode}
-            onModeChange={onModeChange}
-            isHeld={isHeld}
-            onHoldChange={onHoldChange}
-          />
-        )}
-        <button
-          type="button"
-          className="attach-button"
-          onClick={onAttachClick}
-          disabled={!canAttach}
-          title={
-            canAttach ? t("toolbarAttachFiles") : t("toolbarAttachDisabled")
-          }
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            aria-hidden="true"
-          >
-            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-          </svg>
-          {attachmentCount > 0 && (
-            <span className="attach-count">{attachmentCount}</span>
+      <div className="message-input-tools" aria-label="Composer tools">
+        <div className="message-input-tool-group message-input-tool-group--context">
+          <ContextUsageIndicator usage={contextUsage} size={16} />
+        </div>
+        <div className="message-input-tool-group message-input-tool-group--compose">
+          {onModeChange && supportsPermissionMode && (
+            <ModeSelector
+              mode={mode}
+              onModeChange={onModeChange}
+              isHeld={isHeld}
+              onHoldChange={onHoldChange}
+            />
           )}
-        </button>
-        {supportsThinkingToggle && (
+          {supportsThinkingToggle && (
+            <button
+              type="button"
+              className={`thinking-toggle-button ${thinkingMode !== "off" ? `active ${thinkingMode}` : ""}`}
+              onClick={cycleThinkingMode}
+              title={
+                thinkingMode === "off"
+                  ? t("newSessionThinkingOff")
+                  : thinkingMode === "auto"
+                    ? t("newSessionThinkingAuto")
+                    : t("newSessionThinkingOn", { level: thinkingLevel })
+              }
+              aria-label={t("newSessionThinkingMode", { mode: thinkingMode })}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+                {thinkingMode === "auto" && (
+                  <g>
+                    <circle
+                      cx="19"
+                      cy="5"
+                      r="5.5"
+                      fill="currentColor"
+                      stroke="none"
+                    />
+                    <text
+                      x="19"
+                      y="5"
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fill="var(--bg-primary, #1a1a2e)"
+                      fontSize="8"
+                      fontWeight="700"
+                      fontFamily="system-ui, sans-serif"
+                      stroke="none"
+                    >
+                      A
+                    </text>
+                  </g>
+                )}
+              </svg>
+            </button>
+          )}
+          {onOpenModelSwitch && (
+            <button
+              type="button"
+              className="model-selector-button"
+              onClick={onOpenModelSwitch}
+              disabled={voiceDisabled}
+              title="Switch model"
+              aria-label="Switch model"
+            >
+              <span className="model-selector-icon">◆</span>
+              <span className="model-selector-label">Model</span>
+            </button>
+          )}
+        </div>
+        <div className="message-input-tool-group message-input-tool-group--resources">
           <button
             type="button"
-            className={`thinking-toggle-button ${thinkingMode !== "off" ? `active ${thinkingMode}` : ""}`}
-            onClick={cycleThinkingMode}
+            className="attach-button"
+            onClick={onAttachClick}
+            disabled={!canAttach}
             title={
-              thinkingMode === "off"
-                ? t("newSessionThinkingOff")
-                : thinkingMode === "auto"
-                  ? t("newSessionThinkingAuto")
-                  : t("newSessionThinkingOn", { level: thinkingLevel })
+              canAttach ? t("toolbarAttachFiles") : t("toolbarAttachDisabled")
             }
-            aria-label={t("newSessionThinkingMode", { mode: thinkingMode })}
           >
             <svg
               width="16"
@@ -153,76 +197,40 @@ export function MessageInputToolbar({
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
               aria-hidden="true"
             >
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-              {thinkingMode === "auto" && (
-                <g>
-                  <circle
-                    cx="19"
-                    cy="5"
-                    r="5.5"
-                    fill="currentColor"
-                    stroke="none"
-                  />
-                  <text
-                    x="19"
-                    y="5"
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fill="var(--bg-primary, #1a1a2e)"
-                    fontSize="8"
-                    fontWeight="700"
-                    fontFamily="system-ui, sans-serif"
-                    stroke="none"
-                  >
-                    A
-                  </text>
-                </g>
-              )}
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
             </svg>
+            {attachmentCount > 0 && (
+              <span className="attach-count">{attachmentCount}</span>
+            )}
           </button>
-        )}
-        {voiceButtonRef && onVoiceTranscript && onInterimTranscript && (
-          <VoiceInputButton
-            ref={voiceButtonRef}
-            onTranscript={onVoiceTranscript}
-            onInterimTranscript={onInterimTranscript}
-            onListeningStart={onListeningStart}
+          {voiceButtonRef && onVoiceTranscript && onInterimTranscript && (
+            <VoiceInputButton
+              ref={voiceButtonRef}
+              onTranscript={onVoiceTranscript}
+              onInterimTranscript={onInterimTranscript}
+              onListeningStart={onListeningStart}
+              disabled={voiceDisabled}
+            />
+          )}
+        </div>
+        <div className="message-input-tool-group message-input-tool-group--agent">
+          <McpServerButton
+            processId={processId}
+            initialServers={mcpServers}
             disabled={voiceDisabled}
           />
-        )}
-        {onOpenModelSwitch && (
-          <button
-            type="button"
-            className="model-selector-button"
-            onClick={onOpenModelSwitch}
-            disabled={voiceDisabled}
-            title="Switch model"
-            aria-label="Switch model"
-          >
-            <span className="model-selector-icon">◆</span>
-            <span className="model-selector-label">Model</span>
-          </button>
-        )}
-        <McpServerButton
-          processId={processId}
-          initialServers={mcpServers}
-          disabled={voiceDisabled}
-        />
-        {onSelectSlashCommand && (
-          <SlashCommandButton
-            commands={slashCommands}
-            onSelectCommand={onSelectSlashCommand}
-            disabled={voiceDisabled}
-          />
-        )}
+          {onSelectSlashCommand && (
+            <SlashCommandButton
+              commands={slashCommands}
+              onSelectCommand={onSelectSlashCommand}
+              disabled={voiceDisabled}
+            />
+          )}
+        </div>
       </div>
       <div className="message-input-actions">
-        {/* Pending approval indicator */}
         {pendingApproval && (
           <button
             type="button"
@@ -242,8 +250,6 @@ export function MessageInputToolbar({
             </span>
           </button>
         )}
-        <ContextUsageIndicator usage={contextUsage} size={16} />
-        {/* Queue button - shown when agent is running and there's content to queue */}
         {onQueue && canSend && (
           <button
             type="button"
@@ -272,7 +278,6 @@ export function MessageInputToolbar({
             </svg>
           </button>
         )}
-        {/* Show stop button when thinking and nothing to send, otherwise show send */}
         {isRunning && onStop && isThinking && !canSend ? (
           <button
             type="button"

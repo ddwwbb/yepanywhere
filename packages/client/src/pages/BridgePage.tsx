@@ -129,8 +129,16 @@ export function BridgePage() {
   };
 
   return (
-    <div className="main-content-wrapper">
-      <div className="main-content-constrained">
+    <div
+      className={isWideScreen ? "main-content-wrapper" : "main-content-mobile"}
+    >
+      <div
+        className={
+          isWideScreen
+            ? "main-content-constrained"
+            : "main-content-mobile-inner"
+        }
+      >
         <PageHeader
           title={t("bridge.title")}
           onOpenSidebar={openSidebar}
@@ -141,9 +149,7 @@ export function BridgePage() {
         <main className="page-scroll-container">
           <div className="page-content-inner bridge-page-content">
             <PageHero
-              eyebrow={t("pageHeroRuntime" as never)}
               title={t("bridge.title")}
-              description={t("bridge.description")}
               icon={<Radio size={22} strokeWidth={2} aria-hidden="true" />}
               metrics={[
                 {
@@ -157,7 +163,24 @@ export function BridgePage() {
                 },
               ]}
             />
+
+            {/* Mobile Navigation Chips */}
+            <nav className="bridge-mobile-nav">
+              {SIDEBAR_ITEMS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`bridge-nav-chip ${activeSection === item.id ? "active" : ""}`}
+                  onClick={() => handleSectionChange(item.id)}
+                >
+                  <NavIcon icon={item.icon} />
+                  <span>{t(item.labelKey as Parameters<typeof t>[0])}</span>
+                </button>
+              ))}
+            </nav>
+
             <div className="bridge-layout">
+              {/* Desktop Sidebar Navigation */}
               <nav className="bridge-sidebar-nav">
                 {SIDEBAR_ITEMS.map((item) => (
                   <button
@@ -180,14 +203,16 @@ export function BridgePage() {
                   </button>
                 ))}
               </nav>
-              <div className="bridge-content-panel bridge-detail-page">
-                <PageHero
-                  eyebrow={t("pageHeroRuntime" as never)}
-                  title={activeLabel}
-                  description={activeDescription}
-                  icon={<NavIcon icon={activeItem.icon} />}
-                  compact
-                />
+
+              {/* Active Detail Panel */}
+              <div key={activeSection} className="bridge-content-panel bridge-detail-page">
+                {isWideScreen && (
+                  <PageHero
+                    title={activeLabel}
+                    icon={<NavIcon icon={activeItem.icon} />}
+                    compact
+                  />
+                )}
                 {renderSection()}
               </div>
             </div>

@@ -70,6 +70,8 @@ createRoot(rootElement).render(
               <Route path="/devices" element={<EmulatorPage />} />
               <Route path="/devices/:deviceId" element={<EmulatorPage />} />
               <Route path="/new-session" element={<NewSessionPage />} />
+              <Route path="/activity" element={<ActivityPage />} />
+
               <Route
                 path="/projects/:projectId/sessions/:sessionId"
                 element={<SessionPage />}
@@ -77,8 +79,7 @@ createRoot(rootElement).render(
             </Route>
             {/* File page has its own layout (no sidebar) */}
             <Route path="/projects/:projectId/file" element={<FilePage />} />
-            {/* Activity page has its own layout */}
-            <Route path="/activity" element={<ActivityPage />} />
+
           </Routes>
         </App>
       </BrowserRouter>

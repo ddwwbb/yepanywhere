@@ -19,7 +19,6 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { ConnectionBar } from "./components/ConnectionBar";
-import { FloatingActionButton } from "./components/FloatingActionButton";
 import { HostOfflineModal } from "./components/HostOfflineModal";
 import { ReloadBanner } from "./components/ReloadBanner";
 import { Modal } from "./components/ui/Modal";
@@ -120,7 +119,6 @@ export function ConnectedAppContent({ children }: { children: ReactNode }) {
         />
       )}
       {children}
-      <FloatingActionButton />
     </>
   );
 }

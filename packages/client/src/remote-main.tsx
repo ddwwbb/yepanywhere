@@ -80,6 +80,8 @@ const APP_ROUTES = (
       <Route path="settings/:category" element={<SettingsLayout />} />
       <Route path="bridge" element={<BridgePage />} />
       <Route path="new-session" element={<NewSessionPage />} />
+      <Route path="activity" element={<ActivityPage />} />
+
       <Route
         path="projects/:projectId/sessions/:sessionId"
         element={<SessionPage />}
@@ -88,7 +90,7 @@ const APP_ROUTES = (
 
     {/* Pages with custom layouts */}
     <Route path="projects/:projectId/file" element={<FilePage />} />
-    <Route path="activity" element={<ActivityPage />} />
+
 
     {/* Catch-all redirect to projects (must use ../ to escape splat route's relative resolution) */}
     <Route path="*" element={<Navigate to="../projects" replace />} />

@@ -89,9 +89,7 @@ export function GitStatusPage() {
             ) : gitStatus && effectiveProjectId ? (
               <>
                 <PageHero
-                  eyebrow={project?.name ?? t("gitStatusTitle")}
                   title={t("gitStatusTitle")}
-                  description={t("pageHeroGitDescription" as never)}
                   icon={
                     <GitBranch size={22} strokeWidth={2} aria-hidden="true" />
                   }

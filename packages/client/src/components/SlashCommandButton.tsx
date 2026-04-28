@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Modal } from "./ui/Modal";
 
 export interface SlashCommandItem {
   name: string;
@@ -118,9 +119,7 @@ export function SlashCommandButton({
 }: SlashCommandButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const buttonRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const items = useMemo(() => buildCommandList(commands), [commands]);
   const filteredItems = useMemo(() => {
@@ -131,38 +130,6 @@ export function SlashCommandButton({
       return haystack.includes(normalizedQuery);
     });
   }, [items, query]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(e.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsOpen(false);
-        buttonRef.current?.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -194,20 +161,22 @@ export function SlashCommandButton({
           <button
             key={command.name}
             type="button"
-            className="slash-command-item"
+            className="model-switch-item slash-command-item"
             onClick={() => handleCommandClick(command)}
             role="menuitem"
           >
             <span className="slash-command-item-main">
-              <span className="slash-command-item-name">/{command.name}</span>
+              <span className="model-switch-name slash-command-item-name">
+                /{command.name}
+              </span>
               {command.argumentHint && (
-                <span className="slash-command-item-hint">
+                <span className="model-switch-badge slash-command-item-hint">
                   {command.argumentHint}
                 </span>
               )}
             </span>
             {command.description && (
-              <span className="slash-command-item-description">
+              <span className="model-switch-description slash-command-item-description">
                 {command.description}
               </span>
             )}
@@ -220,7 +189,6 @@ export function SlashCommandButton({
   return (
     <div className="slash-command-container">
       <button
-        ref={buttonRef}
         type="button"
         className={`slash-command-button ${isOpen ? "active" : ""}`}
         onClick={() => setIsOpen(!isOpen)}
@@ -233,31 +201,30 @@ export function SlashCommandButton({
         <span className="slash-icon">/</span>
       </button>
       {isOpen && (
-        <div
-          ref={menuRef}
-          className="slash-command-menu"
-          role="menu"
-          aria-label="Slash commands"
-        >
-          <div className="slash-command-search-wrap">
-            <input
-              ref={searchRef}
-              className="slash-command-search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search commands or skills"
-              aria-label="Search commands or skills"
-            />
+        <Modal title="Commands and skills" onClose={() => setIsOpen(false)}>
+          <div className="model-switch-content slash-command-modal-content">
+            <div className="slash-command-search-wrap">
+              <input
+                ref={searchRef}
+                className="slash-command-search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search commands or skills"
+                aria-label="Search commands or skills"
+              />
+            </div>
+            <div className="model-switch-list slash-command-list">
+              {renderGroup("command")}
+              {renderGroup("slash")}
+              {renderGroup("skill")}
+              {filteredItems.length === 0 && (
+                <div className="model-switch-loading slash-command-empty">
+                  No commands found
+                </div>
+              )}
+            </div>
           </div>
-          <div className="slash-command-list">
-            {renderGroup("command")}
-            {renderGroup("slash")}
-            {renderGroup("skill")}
-            {filteredItems.length === 0 && (
-              <div className="slash-command-empty">No commands found</div>
-            )}
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

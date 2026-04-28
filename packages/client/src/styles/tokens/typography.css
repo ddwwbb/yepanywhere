@@ -5,10 +5,8 @@
 
 :root {
   /* 字体族 */
-  --font-sans: "Outfit", "Geist", "Satoshi", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", "Roboto", sans-serif;
-  --font-mono: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", Consolas,
-    monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", "Roboto", sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", Monaco, "Cascadia Code", Consolas, monospace;
 
   /* 字号刻度（rem — 支持用户浏览器缩放） */
   --text-xs: 0.75rem; /* 12px */

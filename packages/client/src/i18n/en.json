@@ -1025,6 +1025,7 @@
   "feishu.quickCreateDesc": "Click the button to open the Feishu authorization page and create the app with permissions auto-configured.",
   "feishu.quickCreateBtn": "Create & Bind Feishu App",
   "feishu.rebind": "Rebind",
+  "feishu.unbind": "Unbind",
   "feishu.waitingAuth": "Waiting for Feishu authorization...",
   "feishu.createSuccess": "Feishu app created and bound successfully.",
   "feishu.createFailed": "Feishu app creation failed",

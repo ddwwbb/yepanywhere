@@ -1,7 +1,7 @@
-import { Link, useNavigate } from "react-router-dom";
 import { GitBranch, Plus } from "lucide-react";
-import { shortenPath } from "../lib/text";
+import { Link, useNavigate } from "react-router-dom";
 import { useI18n } from "../i18n";
+import { shortenPath } from "../lib/text";
 import type { Project } from "../types";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 
@@ -60,66 +60,70 @@ export function ProjectCard({
 
   return (
     <li className="project-card">
-      <Link
-        to={`${basePath}/sessions?project=${project.id}`}
-        className="project-card__link"
-      >
-        <div className="project-card__header">
-          <strong className="project-card__name">
-            {needsAttentionCount > 0 && (
-              <span className="project-card__attention-badge">
-                {needsAttentionCount}
-              </span>
-            )}
-            {project.name}
-          </strong>
-          <div className="project-card__actions">
-            <button
-              type="button"
-              className="project-card__action-btn project-card__action-btn--git"
-              onClick={handleGitStatus}
-              title={t("sidebarSourceControl" as never)}
-            >
-              <GitBranch size={15} strokeWidth={2} aria-hidden="true" />
-              <span className="project-card__new-session-label">Git</span>
-            </button>
-            <button
-              type="button"
-              className="project-card__action-btn project-card__action-btn--new"
-              onClick={handleNewSession}
-              title={t("newSessionTitle" as never)}
-            >
-              <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
-              <span className="project-card__new-session-label">{t("projectCardNewSession" as never)}</span>
-            </button>
-          </div>
-        </div>
-        <div className="project-card__meta">
-          <span className="project-card__path" title={project.path}>
-            {shortenPath(project.path)}
-          </span>
-          <span className="project-card__stats">
-            <span className="project-card__sessions">
-              {project.sessionCount} session
-              {project.sessionCount !== 1 ? "s" : ""}
-            </span>
-            {thinkingCount > 0 && (
-              <span className="project-card__thinking">
-                <ThinkingIndicator />
-                <span>{thinkingCount}</span>
-              </span>
-            )}
-            {project.lastActivity && (
-              <>
-                <span className="project-card__separator">·</span>
-                <span className="project-card__time">
-                  {formatRelativeTime(project.lastActivity)}
+      <div className="project-card__surface">
+        <Link
+          to={`${basePath}/sessions?project=${project.id}`}
+          className="project-card__link"
+        >
+          <div className="project-card__header">
+            <strong className="project-card__name">
+              {needsAttentionCount > 0 && (
+                <span className="project-card__attention-badge">
+                  {needsAttentionCount}
                 </span>
-              </>
-            )}
-          </span>
+              )}
+              {project.name}
+            </strong>
+          </div>
+          <div className="project-card__meta">
+            <span className="project-card__path" title={project.path}>
+              {shortenPath(project.path)}
+            </span>
+            <span className="project-card__stats">
+              <span className="project-card__sessions">
+                {project.sessionCount} session
+                {project.sessionCount !== 1 ? "s" : ""}
+              </span>
+              {thinkingCount > 0 && (
+                <span className="project-card__thinking">
+                  <ThinkingIndicator />
+                  <span>{thinkingCount}</span>
+                </span>
+              )}
+              {project.lastActivity && (
+                <>
+                  <span className="project-card__separator">·</span>
+                  <span className="project-card__time">
+                    {formatRelativeTime(project.lastActivity)}
+                  </span>
+                </>
+              )}
+            </span>
+          </div>
+        </Link>
+        <div className="project-card__actions">
+          <button
+            type="button"
+            className="project-card__action-btn project-card__action-btn--git"
+            onClick={handleGitStatus}
+            title={t("sidebarSourceControl" as never)}
+          >
+            <GitBranch size={15} strokeWidth={2} aria-hidden="true" />
+            <span className="project-card__new-session-label">Git</span>
+          </button>
+          <button
+            type="button"
+            className="project-card__action-btn project-card__action-btn--new"
+            onClick={handleNewSession}
+            title={t("newSessionTitle" as never)}
+          >
+            <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
+            <span className="project-card__new-session-label">
+              {t("projectCardNewSession" as never)}
+            </span>
+          </button>
         </div>
-      </Link>
+      </div>
     </li>
   );
 }
