@@ -23,10 +23,8 @@ import { HostOfflineModal } from "./components/HostOfflineModal";
 import { ReloadBanner } from "./components/ReloadBanner";
 import { Modal } from "./components/ui/Modal";
 import { InboxProvider } from "./contexts/InboxContext";
-import {
-  RemoteConnectionProvider,
-  useRemoteConnection,
-} from "./contexts/RemoteConnectionContext";
+import { RemoteConnectionProvider } from "./contexts/RemoteConnectionContext";
+import { useRemoteConnection } from "./contexts/RemoteConnectionState";
 import { SchemaValidationProvider } from "./contexts/SchemaValidationContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import { useNeedsAttentionBadge } from "./hooks/useNeedsAttentionBadge";

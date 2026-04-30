@@ -65,7 +65,7 @@ export function ModelSwitchModal({
   };
 
   return (
-    <Modal title={t("modelSwitchTitle")} onClose={onClose}>
+    <Modal title={t("modelSwitchTitle")} onClose={onClose} variant="sheet">
       <div className="model-switch-content">
         {loading && (
           <div className="model-switch-loading">{t("modelSwitchLoading")}</div>

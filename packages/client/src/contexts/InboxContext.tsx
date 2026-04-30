@@ -18,7 +18,7 @@ import { type InboxItem, type InboxResponse, api } from "../api/client";
 import { useFileActivity } from "../hooks/useFileActivity";
 import { authEvents } from "../lib/authEvents";
 import { isRemoteClient } from "../lib/connection";
-import { useOptionalRemoteConnection } from "./RemoteConnectionContext";
+import { useOptionalRemoteConnection } from "./RemoteConnectionState";
 
 // Re-export types for consumers
 export type { InboxItem, InboxResponse } from "../api/client";

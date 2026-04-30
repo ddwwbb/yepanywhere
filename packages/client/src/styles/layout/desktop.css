@@ -111,7 +111,14 @@
 
   .sidebar-collapsed .sidebar-sessions {
     overflow: hidden;
+    padding: 0 var(--space-1);
+  }
+
+  .sidebar-collapsed .sidebar-nav-card {
+    margin-bottom: var(--space-2);
     padding: 0;
+    background: transparent;
+    border-color: transparent;
   }
 
   .sidebar-collapsed .sidebar-nav-section {
@@ -120,6 +127,8 @@
 
   .sidebar-collapsed .sidebar-nav-item {
     justify-content: center;
+    width: 44px;
+    min-height: 44px;
     padding: 0.5rem;
   }
 

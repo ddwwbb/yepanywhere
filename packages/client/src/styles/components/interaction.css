@@ -440,6 +440,65 @@ h2 {
   color: var(--text-muted);
 }
 
+@media (max-width: 767px) {
+  .project-list-cards {
+    gap: var(--space-2);
+  }
+
+  .project-card {
+    animation: none;
+  }
+
+  .project-card__surface {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .project-card__link {
+    min-height: 44px;
+  }
+
+  .project-card__name {
+    font-size: var(--text-sm);
+    font-weight: 760;
+  }
+
+  .project-card__meta {
+    margin-top: 2px;
+    font-size: var(--text-xs);
+  }
+
+  .project-card__path {
+    max-width: 100%;
+  }
+
+  .project-card__stats {
+    gap: var(--space-1);
+  }
+
+  .project-card__separator,
+  .project-card__time {
+    display: none;
+  }
+
+  .project-card__actions {
+    align-self: stretch;
+  }
+
+  .project-card__action-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: var(--radius-lg);
+  }
+
+  .project-card__new-session-label {
+    display: none;
+  }
+}
+
 .meta {
   display: block;
   font-size: var(--text-lg);

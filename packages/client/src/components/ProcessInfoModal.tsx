@@ -244,7 +244,7 @@ export function ProcessInfoModal({
   };
 
   return (
-    <Modal title={t("processInfoTitle")} onClose={onClose}>
+    <Modal title={t("processInfoTitle")} onClose={onClose} variant="sheet">
       <div className="process-info-content">
         {/* Session Info - always available */}
         <Section title={t("processInfoSectionSession")}>

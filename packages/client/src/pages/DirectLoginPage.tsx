@@ -8,7 +8,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { YepAnywhereLogo } from "../components/YepAnywhereLogo";
-import { useRemoteConnection } from "../contexts/RemoteConnectionContext";
+import { useRemoteConnection } from "../contexts/RemoteConnectionState";
 import { useI18n } from "../i18n";
 import { createDirectHost, loadSavedHosts, saveHost } from "../lib/hostStorage";
 

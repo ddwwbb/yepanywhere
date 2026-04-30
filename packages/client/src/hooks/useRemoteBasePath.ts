@@ -8,7 +8,7 @@
  * rather than React Router params (unreliable in nested Routes).
  */
 
-import { useOptionalRemoteConnection } from "../contexts/RemoteConnectionContext";
+import { useOptionalRemoteConnection } from "../contexts/RemoteConnectionState";
 
 /**
  * Get the base path for the current relay host.

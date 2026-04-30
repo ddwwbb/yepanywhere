@@ -1,4 +1,5 @@
 import { Settings, SlidersHorizontal } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../components/PageHeader";
 import { PageHero } from "../../components/PageHero";
@@ -82,28 +83,31 @@ export function SettingsLayout() {
     useNavigationLayout();
   const { isManualReloadMode } = useReloadNotifications();
   const { version: versionInfo } = useVersion();
-  const capabilities = versionInfo?.capabilities ?? [];
+  const [settingsQuery, setSettingsQuery] = useState("");
+  const capabilities = useMemo(
+    () => versionInfo?.capabilities ?? [],
+    [versionInfo?.capabilities],
+  );
 
-  // Build the list of categories, conditionally including emulator and dev
-  const categories: SettingsCategory[] = [
-    ...getSettingsCategories((key) => t(key as never)),
-  ];
-  if (
-    capabilities.includes("deviceBridge") ||
-    capabilities.includes("deviceBridge-download") ||
-    capabilities.includes("deviceBridge-available")
-  ) {
-    // Insert before "about"
-    const aboutIndex = categories.findIndex((c) => c.id === "about");
-    categories.splice(
-      aboutIndex >= 0 ? aboutIndex : categories.length,
-      0,
-      getEmulatorCategory((key) => t(key as never)),
-    );
-  }
-  if (isManualReloadMode) {
-    categories.push(getDevelopmentCategory((key) => t(key as never)));
-  }
+  const categories = useMemo<SettingsCategory[]>(() => {
+    const items = [...getSettingsCategories((key) => t(key as never))];
+    if (
+      capabilities.includes("deviceBridge") ||
+      capabilities.includes("deviceBridge-download") ||
+      capabilities.includes("deviceBridge-available")
+    ) {
+      const aboutIndex = items.findIndex((c) => c.id === "about");
+      items.splice(
+        aboutIndex >= 0 ? aboutIndex : items.length,
+        0,
+        getEmulatorCategory((key) => t(key as never)),
+      );
+    }
+    if (isManualReloadMode) {
+      items.push(getDevelopmentCategory((key) => t(key as never)));
+    }
+    return items;
+  }, [capabilities, isManualReloadMode, t]);
 
   // On wide screen, default to first category if none selected
   const effectiveCategory =
@@ -122,6 +126,14 @@ export function SettingsLayout() {
     ? CATEGORY_COMPONENTS[effectiveCategory]
     : null;
   const currentCategory = categories.find((c) => c.id === effectiveCategory);
+  const filteredCategories = useMemo(() => {
+    const query = settingsQuery.trim().toLocaleLowerCase();
+    if (!query) return categories;
+    return categories.filter((cat) => {
+      const haystack = `${cat.label} ${cat.description}`.toLocaleLowerCase();
+      return haystack.includes(query);
+    });
+  }, [categories, settingsQuery]);
   const detailHeroIcon = currentCategory?.icon ?? (
     <SlidersHorizontal size={22} strokeWidth={2} aria-hidden="true" />
   );
@@ -149,15 +161,24 @@ export function SettingsLayout() {
                   }
                   metrics={[
                     {
-                      label: t("pageHeroSettingsSections" as never),
+                      label: t("pageHeroSettingsSections"),
                       value: categories.length,
                       tone: "brand",
                     },
                   ]}
                   compact
                 />
-                <div className="settings-category-list">
-                  {categories.map((cat) => (
+                <div className="settings-command-search">
+                  <input
+                    type="search"
+                    value={settingsQuery}
+                    onChange={(event) => setSettingsQuery(event.target.value)}
+                    placeholder={t("settingsSearchPlaceholder")}
+                    aria-label={t("settingsSearchPlaceholder")}
+                  />
+                </div>
+                <div className="settings-category-list settings-command-list">
+                  {filteredCategories.map((cat) => (
                     <SettingsCategoryItem
                       key={cat.id}
                       category={cat}
@@ -218,7 +239,7 @@ export function SettingsLayout() {
               icon={<Settings size={22} strokeWidth={2} aria-hidden="true" />}
               metrics={[
                 {
-                  label: t("pageHeroSettingsSections" as never),
+                  label: t("pageHeroSettingsSections"),
                   value: categories.length,
                   tone: "brand",
                 },

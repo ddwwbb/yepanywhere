@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
-import { DEFAULT_PORT, DEFAULT_VITE_PORT } from "@yep-anywhere/shared";
 import react from "@vitejs/plugin-react";
+import { DEFAULT_PORT, DEFAULT_VITE_PORT } from "@yep-anywhere/shared";
 import { defineConfig } from "vite";
 import { cspPlugin } from "./vite-plugin-csp";
 import { reloadNotify } from "./vite-plugin-reload-notify";
@@ -43,6 +43,23 @@ export default defineConfig({
   ],
   resolve: {
     conditions: ["source"],
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          const normalizedId = id.replaceAll("\\", "/");
+          if (normalizedId.includes("/src/pages/settings/")) return "page-settings";
+          if (normalizedId.includes("/src/pages/SessionPage")) return "page-session";
+          if (normalizedId.includes("/src/pages/")) return "pages";
+          if (!normalizedId.includes("node_modules")) return undefined;
+          if (normalizedId.includes("lucide-react")) return "vendor-icons";
+          if (normalizedId.includes("react")) return "vendor-react";
+          if (normalizedId.includes("zod")) return "vendor-validation";
+          return "vendor";
+        },
+      },
+    },
   },
   server: {
     port: vitePort,

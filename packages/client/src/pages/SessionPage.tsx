@@ -896,7 +896,7 @@ function SessionPageContent({
       <div
         className={
           isWideScreen
-            ? "main-content-constrained"
+            ? "main-content-constrained main-content-constrained--with-inspector"
             : "main-content-mobile-inner"
         }
       >
@@ -1020,6 +1020,14 @@ function SessionPageContent({
                     onTerminate={handleTerminate}
                     sharingConfigured={sharingConfigured}
                     onShare={handleShare}
+                    onOpenGitStatus={
+                      canOpenGitStatus
+                        ? () => navigate(`${basePath}/git-status?projectId=${projectId}`)
+                        : undefined
+                    }
+                    onCreateSession={() =>
+                      navigate(`${basePath}/new-session?projectId=${projectId}`)
+                    }
                     useFixedPositioning
                     useEllipsisIcon
                   />
@@ -1035,10 +1043,10 @@ function SessionPageContent({
                     onClick={() =>
                       navigate(`${basePath}/git-status?projectId=${projectId}`)
                     }
-                    title={t("sidebarSourceControl" as never)}
+                    title={t("sidebarSourceControl")}
                   >
                     <GitBranch size={15} strokeWidth={2} aria-hidden="true" />
-                    <span>{t("sidebarSourceControl" as never)}</span>
+                    <span>{t("sidebarSourceControl")}</span>
                   </button>
                 )}
                 <button
@@ -1047,10 +1055,10 @@ function SessionPageContent({
                   onClick={() =>
                     navigate(`${basePath}/new-session?projectId=${projectId}`)
                   }
-                  title={t("newSessionTitle" as never)}
+                  title={t("newSessionTitle")}
                 >
                   <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
-                  <span>{t("projectCardNewSession" as never)}</span>
+                  <span>{t("projectCardNewSession")}</span>
                 </button>
               </div>
               {!loading && effectiveProvider && (
@@ -1149,6 +1157,92 @@ function SessionPageContent({
             </SessionMetadataProvider>
           )}
         </main>
+
+        {isWideScreen && session && (
+          <aside className="session-inspector" aria-label={t("processInfoTitle")}>
+            <div className="session-inspector-card session-inspector-card--identity">
+              <div className="session-inspector-eyebrow">
+                {t("processInfoSectionSession")}
+              </div>
+              <div className="session-inspector-title">{displayTitle}</div>
+              <div className="session-inspector-meta">
+                <span>{session.provider}</span>
+                <span>{session.model || t("processInfoDefaultModel")}</span>
+              </div>
+            </div>
+
+            <div className="session-inspector-card">
+              <div className="session-inspector-eyebrow">
+                {t("processInfoSectionProcess")}
+              </div>
+              <div className="session-inspector-row">
+                <span>{t("processInfoLabelOwnership")}</span>
+                <strong>{status.owner}</strong>
+              </div>
+              <div className="session-inspector-row">
+                <span>{t("processInfoLabelActivity")}</span>
+                <strong>{processState}</strong>
+              </div>
+              <div className="session-inspector-row">
+                <span>{t("processInfoLabelProcessId")}</span>
+                <strong>{activeProcessId ?? "—"}</strong>
+              </div>
+            </div>
+
+            {session.contextUsage && (
+              <div className="session-inspector-card">
+                <div className="session-inspector-eyebrow">
+                  {t("processInfoSectionTokenUsage")}
+                </div>
+                <div className="session-inspector-meter">
+                  <span
+                    style={{
+                      width: `${Math.min(100, session.contextUsage.percentage)}%`,
+                    }}
+                  />
+                </div>
+                <div className="session-inspector-row">
+                  <span>{t("processInfoLabelContextUsed")}</span>
+                  <strong>{session.contextUsage.percentage.toFixed(1)}%</strong>
+                </div>
+              </div>
+            )}
+
+            <div className="session-inspector-card">
+              <div className="session-inspector-eyebrow">
+                {t("processInfoSectionConnection")}
+              </div>
+              <div className="session-inspector-row">
+                <span>{t("processInfoLabelActivityStream")}</span>
+                <strong>
+                  {connected ? t("processInfoConnected") : t("processInfoDisconnected")}
+                </strong>
+              </div>
+              <div className="session-inspector-row">
+                <span>{t("processInfoLabelSessionStream")}</span>
+                <strong>
+                  {sessionUpdatesConnected
+                    ? t("processInfoConnected")
+                    : t("processInfoDisconnected")}
+                </strong>
+              </div>
+            </div>
+
+            <div className="session-inspector-card">
+              <div className="session-inspector-eyebrow">
+                {t("processInfoSectionTools")}
+              </div>
+              <div className="session-inspector-row">
+                <span>{t("processInfoLabelMcp")}</span>
+                <strong>{mcpServers.length}</strong>
+              </div>
+              <div className="session-inspector-row">
+                <span>{t("processInfoLabelSessionTools")}</span>
+                <strong>{sessionTools.length}</strong>
+              </div>
+            </div>
+          </aside>
+        )}
 
         {/* Queued message banner - shown above input when messages are waiting */}
         {deferredMessages.length > 0 && (

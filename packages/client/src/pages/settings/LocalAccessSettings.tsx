@@ -3,7 +3,7 @@ import { useState } from "react";
 import { api } from "../../api/client";
 import { FilterDropdown } from "../../components/FilterDropdown";
 import { useOptionalAuth } from "../../contexts/AuthContext";
-import { useOptionalRemoteConnection } from "../../contexts/RemoteConnectionContext";
+import { useOptionalRemoteConnection } from "../../contexts/RemoteConnectionState";
 import { useDeveloperMode } from "../../hooks/useDeveloperMode";
 import { useNetworkBinding } from "../../hooks/useNetworkBinding";
 import { useServerInfo } from "../../hooks/useServerInfo";

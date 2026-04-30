@@ -6,7 +6,7 @@ import {
   type ServerSettings,
   api,
 } from "../api/client";
-import { useOptionalRemoteConnection } from "../contexts/RemoteConnectionContext";
+import { useOptionalRemoteConnection } from "../contexts/RemoteConnectionState";
 import { useDrafts } from "../hooks/useDrafts";
 import { useGlobalSessions } from "../hooks/useGlobalSessions";
 import { useNeedsAttentionBadge } from "../hooks/useNeedsAttentionBadge";
@@ -27,7 +27,7 @@ import {
 import { YepAnywhereLogo } from "./YepAnywhereLogo";
 
 const SWIPE_THRESHOLD = 50; // Minimum distance to trigger close
-const SWIPE_ENGAGE_THRESHOLD = 15; // Minimum horizontal distance before swipe engages
+const SWIPE_ENGAGE_THRESHOLD = 15; // Minimum vertical distance before sheet drag engages
 const RECENT_SESSIONS_INITIAL = 12; // Initial number of recent sessions to show
 const RECENT_SESSIONS_INCREMENT = 10; // How many more to show on each expand
 
@@ -272,34 +272,28 @@ export function Sidebar({
     const diffX = currentX - touchStartX.current;
     const diffY = currentY - touchStartY.current;
 
-    // If not yet engaged, check if we should engage the swipe
     if (!swipeEngaged.current) {
       const absDiffX = Math.abs(diffX);
       const absDiffY = Math.abs(diffY);
 
-      // Engage swipe only if:
-      // 1. Horizontal movement exceeds threshold
-      // 2. Horizontal movement is greater than vertical (user is swiping, not scrolling)
-      // 3. Movement is to the left (closing gesture)
       if (
-        absDiffX > SWIPE_ENGAGE_THRESHOLD &&
-        absDiffX > absDiffY &&
-        diffX < 0
+        absDiffY > SWIPE_ENGAGE_THRESHOLD &&
+        absDiffY > absDiffX &&
+        diffY > 0
       ) {
         swipeEngaged.current = true;
       } else {
-        return; // Not engaged yet, don't track offset
+        return;
       }
     }
 
-    // Only allow swiping left (negative offset)
-    if (diffX < 0) {
-      setSwipeOffset(diffX);
+    if (diffY > 0) {
+      setSwipeOffset(diffY);
     }
   };
 
   const handleTouchEnd = () => {
-    if (swipeEngaged.current && swipeOffset < -SWIPE_THRESHOLD) {
+    if (swipeEngaged.current && swipeOffset > SWIPE_THRESHOLD) {
       onClose();
     }
     touchStartX.current = null;
@@ -365,10 +359,52 @@ export function Sidebar({
     [t],
   );
 
-  const sectionLabels =
-    locale === "zh-CN"
-      ? { create: "创建", work: "工作流", control: "控制" }
-      : { create: "Create", work: "Work", control: "Control" };
+  const primaryNavItems = [
+    {
+      to: "/inbox",
+      icon: SidebarIcons.inbox,
+      label: t("sidebarInbox"),
+      badge: inboxCount,
+    },
+    {
+      to: "/sessions",
+      icon: SidebarIcons.allSessions,
+      label: t("sidebarAllSessions"),
+    },
+    {
+      to: "/projects",
+      icon: SidebarIcons.projects,
+      label: t("sidebarProjects"),
+    },
+  ];
+
+  const controlNavItems = [
+    capabilities.includes("git-status")
+      ? {
+          to: "/git-status",
+          icon: SidebarIcons.sourceControl,
+          label: t("sidebarSourceControl"),
+        }
+      : null,
+    capabilities.includes("deviceBridge") ||
+    capabilities.includes("deviceBridge-download")
+      ? {
+          to: "/devices",
+          icon: SidebarIcons.emulator,
+          label: t("sidebarDevices"),
+        }
+      : null,
+    {
+      to: "/bridge",
+      icon: SidebarIcons.bridge,
+      label: t("sidebarBridge"),
+    },
+    {
+      to: "/settings",
+      icon: SidebarIcons.settings,
+      label: t("sidebarSettings"),
+    },
+  ].filter((item) => item !== null);
 
   // Starred sessions come from dedicated fetch (filtered by server)
   // Filter out archived just in case
@@ -437,8 +473,8 @@ export function Sidebar({
         onTouchMove={!isDesktop ? handleTouchMove : undefined}
         onTouchEnd={!isDesktop ? handleTouchEnd : undefined}
         style={
-          !isDesktop && swipeOffset < 0
-            ? { transform: `translateX(${swipeOffset}px)`, transition: "none" }
+          !isDesktop && swipeOffset > 0
+            ? { transform: `translateY(${swipeOffset}px)`, transition: "none" }
             : undefined
         }
       >
@@ -489,7 +525,7 @@ export function Sidebar({
         </div>
 
         <div className="sidebar-actions">
-          <SidebarNavSection title={sectionLabels.create}>
+          <SidebarNavSection title={t("sidebarSectionCreate")}>
             <SidebarNavItem
               to={
                 newSessionProjectId
@@ -500,72 +536,42 @@ export function Sidebar({
               label={t("sidebarNewSession")}
               onClick={onNavigate}
               basePath={basePath}
+              variant="primary"
             />
           </SidebarNavSection>
         </div>
 
         <div className="sidebar-sessions">
-          <SidebarNavSection title={sectionLabels.work}>
-            <SidebarNavItem
-              to="/inbox"
-              icon={SidebarIcons.inbox}
-              label={t("sidebarInbox")}
-              badge={inboxCount}
-              onClick={onNavigate}
-              basePath={basePath}
-            />
-            <SidebarNavItem
-              to="/sessions"
-              icon={SidebarIcons.allSessions}
-              label={t("sidebarAllSessions")}
-              onClick={onNavigate}
-              basePath={basePath}
-            />
-            <SidebarNavItem
-              to="/projects"
-              icon={SidebarIcons.projects}
-              label={t("sidebarProjects")}
-              onClick={onNavigate}
-              basePath={basePath}
-            />
-            <AgentsNavItem onClick={onNavigate} basePath={basePath} />
-          </SidebarNavSection>
+          <div className="sidebar-nav-card">
+            <SidebarNavSection title={t("sidebarSectionWork")}>
+              {primaryNavItems.map((item) => (
+                <SidebarNavItem
+                  key={item.to}
+                  to={item.to}
+                  icon={item.icon}
+                  label={item.label}
+                  badge={item.badge}
+                  onClick={onNavigate}
+                  basePath={basePath}
+                />
+              ))}
+              <AgentsNavItem onClick={onNavigate} basePath={basePath} />
+            </SidebarNavSection>
+          </div>
 
-          <SidebarNavSection title={sectionLabels.control}>
-            {capabilities.includes("git-status") && (
-              <SidebarNavItem
-                to="/git-status"
-                icon={SidebarIcons.sourceControl}
-                label={t("sidebarSourceControl")}
-                onClick={onNavigate}
-                basePath={basePath}
-              />
-            )}
-            {(capabilities.includes("deviceBridge") ||
-              capabilities.includes("deviceBridge-download")) && (
-              <SidebarNavItem
-                to="/devices"
-                icon={SidebarIcons.emulator}
-                label={t("sidebarDevices")}
-                onClick={onNavigate}
-                basePath={basePath}
-              />
-            )}
-            <SidebarNavItem
-              to="/bridge"
-              icon={SidebarIcons.bridge}
-              label={t("sidebarBridge")}
-              onClick={onNavigate}
-              basePath={basePath}
-            />
-            <SidebarNavItem
-              to="/settings"
-              icon={SidebarIcons.settings}
-              label={t("sidebarSettings")}
-              onClick={onNavigate}
-              basePath={basePath}
-            />
-            {remoteConnection && (
+          <div className="sidebar-nav-card sidebar-nav-card--secondary">
+            <SidebarNavSection title={t("sidebarSectionControl")}>
+              {controlNavItems.map((item) => (
+                <SidebarNavItem
+                  key={item.to}
+                  to={item.to}
+                  icon={item.icon}
+                  label={item.label}
+                  onClick={onNavigate}
+                  basePath={basePath}
+                />
+              ))}
+              {remoteConnection && (
               <button
                 type="button"
                 className="sidebar-nav-item sidebar-switch-host"
@@ -582,8 +588,9 @@ export function Sidebar({
                   {t("sidebarSwitchHost")}
                 </span>
               </button>
-            )}
-          </SidebarNavSection>
+              )}
+            </SidebarNavSection>
+          </div>
 
           {/* Global sessions list */}
           {filteredStarredSessions.length > 0 && (

@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { YepAnywhereLogo } from "../components/YepAnywhereLogo";
-import { useRemoteConnection } from "../contexts/RemoteConnectionContext";
+import { useRemoteConnection } from "../contexts/RemoteConnectionState";
 import { useI18n } from "../i18n";
 import { type SavedHost, loadSavedHosts, removeHost } from "../lib/hostStorage";
 

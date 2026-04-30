@@ -18,9 +18,7 @@ import {
 } from "@yep-anywhere/shared";
 import {
   type ReactNode,
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -32,16 +30,22 @@ import {
   getGlobalConnection,
   setGlobalConnection,
 } from "../lib/connection";
-import {
-  SecureConnection,
-  type StoredSession,
-} from "../lib/connection/SecureConnection";
+import { SecureConnection } from "../lib/connection/SecureConnection";
 import type { Connection } from "../lib/connection/types";
 import {
   getHostById,
   updateHostSession,
   upsertRelayHost,
 } from "../lib/hostStorage";
+import {
+  type AutoResumeError,
+  type AutoResumeErrorReason,
+  type ConnectViaRelayOptions,
+  type RelayConnectionStatus,
+  RemoteConnectionContext,
+  type RemoteConnectionState,
+  type StoredSession,
+} from "./RemoteConnectionState";
 
 /** Stored credentials for auto-reconnect */
 interface StoredCredentials {
@@ -54,97 +58,6 @@ interface StoredCredentials {
   /** Relay username (only for relay mode) */
   relayUsername?: string;
 }
-
-/** Relay connection status for UI feedback */
-export type RelayConnectionStatus =
-  | "idle"
-  | "connecting_relay"
-  | "waiting_server"
-  | "authenticating"
-  | "error";
-
-/** Categorized auto-resume failure reason */
-export type AutoResumeErrorReason =
-  | "server_offline" // Server not connected to relay
-  | "unknown_username" // No server with that username on relay
-  | "relay_timeout" // Timeout waiting for relay or server
-  | "relay_unreachable" // Can't connect to relay server
-  | "direct_unreachable" // Can't reach server via direct WebSocket
-  | "resume_incompatible" // Server is too old for two-phase session resume
-  | "auth_failed" // Session expired or auth error
-  | "other"; // Unexpected error
-
-/** Structured error from auto-resume failure */
-export interface AutoResumeError {
-  reason: AutoResumeErrorReason;
-  mode: "relay" | "direct";
-  /** Relay username (relay mode only) */
-  relayUsername?: string;
-  /** Server URL (direct mode) or relay URL (relay mode) */
-  serverUrl?: string;
-  /** Original error message */
-  message: string;
-}
-
-/** Options for connecting via relay */
-export interface ConnectViaRelayOptions {
-  relayUrl: string;
-  relayUsername: string;
-  srpUsername: string;
-  srpPassword: string;
-  rememberMe?: boolean;
-  onStatusChange?: (status: RelayConnectionStatus) => void;
-  /** Optional session for resumption (if provided, srpPassword is ignored) */
-  session?: StoredSession;
-}
-
-interface RemoteConnectionState {
-  /** The active connection (null if not connected) */
-  connection: Connection | null;
-  /** Whether a connection attempt is in progress */
-  isConnecting: boolean;
-  /** Whether auto-resume is being attempted (subset of isConnecting) */
-  isAutoResuming: boolean;
-  /** Error from last connection attempt */
-  error: string | null;
-  /** Structured error from auto-resume failure (for showing modal) */
-  autoResumeError: AutoResumeError | null;
-  /** Current host ID from hostStorage (for multi-host tracking) */
-  currentHostId: string | null;
-  /** Relay username of the current host (derived from currentHostId) */
-  currentRelayUsername: string | null;
-  /** Set the current host ID (called by RelayConnectionGate after connect) */
-  setCurrentHostId: (hostId: string | null) => void;
-  /** Whether user intentionally disconnected (prevents auto-redirect) */
-  isIntentionalDisconnect: boolean;
-  /** Connect to server with credentials (direct mode) */
-  connect: (
-    wsUrl: string,
-    username: string,
-    password: string,
-    rememberMe?: boolean,
-  ) => Promise<void>;
-  /** Connect via relay server */
-  connectViaRelay: (options: ConnectViaRelayOptions) => Promise<void>;
-  /** Disconnect and clear credentials. Set isIntentional=false for programmatic host switches. */
-  disconnect: (isIntentional?: boolean) => void;
-  /** Clear auto-resume error (e.g., user chose to go to login) */
-  clearAutoResumeError: () => void;
-  /** Retry auto-resume after failure */
-  retryAutoResume: () => void;
-  /** Stored server URL (for pre-filling form) */
-  storedUrl: string | null;
-  /** Stored username (for pre-filling form) */
-  storedUsername: string | null;
-  /** Whether there's a stored session that can be resumed */
-  hasStoredSession: boolean;
-  /** Try to resume a stored session (requires password for fallback) */
-  resumeSession: (password: string) => Promise<void>;
-}
-
-const RemoteConnectionContext = createContext<RemoteConnectionState | null>(
-  null,
-);
 
 const STORAGE_KEY = "yep-anywhere-remote-credentials";
 
@@ -846,34 +759,4 @@ export function RemoteConnectionProvider({ children }: Props) {
       {children}
     </RemoteConnectionContext.Provider>
   );
-}
-
-export function useRemoteConnection(): RemoteConnectionState {
-  const context = useContext(RemoteConnectionContext);
-  if (!context) {
-    throw new Error(
-      "useRemoteConnection must be used within RemoteConnectionProvider",
-    );
-  }
-  return context;
-}
-
-/**
- * Hook to optionally access remote connection state.
- * Returns null if not within a RemoteConnectionProvider (e.g., non-remote mode).
- */
-export function useOptionalRemoteConnection(): RemoteConnectionState | null {
-  return useContext(RemoteConnectionContext);
-}
-
-/**
- * Hook to get the connection, throwing if not connected.
- * Use this in components that require an active connection.
- */
-export function useRequiredConnection(): Connection {
-  const { connection } = useRemoteConnection();
-  if (!connection) {
-    throw new Error("No active connection");
-  }
-  return connection;
 }

@@ -6,6 +6,7 @@ interface ModalProps {
   title: ReactNode;
   children: ReactNode;
   onClose: () => void;
+  variant?: "default" | "sheet";
 }
 
 /**
@@ -13,7 +14,7 @@ interface ModalProps {
  * Renders via portal to avoid event bubbling issues.
  * Closes on Escape key or clicking the overlay.
  */
-export function Modal({ title, children, onClose }: ModalProps) {
+export function Modal({ title, children, onClose, variant = "default" }: ModalProps) {
   const { t } = useI18n();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -66,7 +67,7 @@ export function Modal({ title, children, onClose }: ModalProps) {
     >
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: click only stops propagation, keyboard handled globally */}
       <div
-        className="modal"
+        className={`modal modal--${variant}`}
         role="dialog"
         aria-modal="true"
         onClick={handleModalClick}

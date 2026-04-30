@@ -17,7 +17,7 @@ import { HostOfflineModal } from "../components/HostOfflineModal";
 import {
   type AutoResumeError,
   useRemoteConnection,
-} from "../contexts/RemoteConnectionContext";
+} from "../contexts/RemoteConnectionState";
 import { getHostById, getHostByRelayUsername } from "../lib/hostStorage";
 
 type ConnectionState =

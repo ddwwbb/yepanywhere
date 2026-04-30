@@ -55,13 +55,78 @@
   }
 }
 
+@keyframes sheetIn {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1099px) {
+  .sidebar-overlay {
+    background: color-mix(in srgb, black 46%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .sidebar {
+    top: auto;
+    right: var(--space-2);
+    left: var(--space-2);
+    bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom, 0px) + var(--space-3));
+    width: auto;
+    max-width: none;
+    max-height: min(76dvh, 720px);
+    padding-top: 0;
+    padding-bottom: var(--space-2);
+    border: 1px solid color-mix(in srgb, var(--border-default) 76%, transparent);
+    border-radius: var(--radius-2xl);
+    box-shadow: 0 24px 70px color-mix(in srgb, black 28%, transparent);
+    animation: sheetIn var(--duration-bounce) var(--ease-fluid);
+    overflow: hidden;
+  }
+
+  .sidebar::before {
+    content: "";
+    width: 38px;
+    height: 4px;
+    margin: var(--space-2) auto 0;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--text-muted) 42%, transparent);
+    flex: 0 0 auto;
+  }
+
+  .sidebar-header {
+    padding: var(--space-3) var(--space-4) var(--space-2);
+  }
+
+  .sidebar-actions,
+  .sidebar-sessions {
+    padding-right: var(--space-3);
+    padding-left: var(--space-3);
+  }
+
+  .sidebar-sessions {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: var(--space-3);
+  }
+}
+
 .sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4) var(--space-4) var(--space-3);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-default) 54%, transparent);
   margin-bottom: var(--space-2);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bg-glass) 74%, transparent),
+    transparent
+  );
 }
 
 .sidebar-brand {
@@ -142,7 +207,7 @@
 }
 
 .sidebar-actions {
-  padding: var(--space-2) var(--space-2) 0;
+  padding: var(--space-2) var(--space-3) 0;
   display: flex;
   flex-direction: column;
 }
@@ -173,7 +238,19 @@
 .sidebar-sessions {
   flex: 1;
   overflow-y: hidden;
-  padding: var(--space-1) var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-3) var(--space-4);
+}
+
+.sidebar-nav-card {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2);
+  background: color-mix(in srgb, var(--bg-secondary) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-default) 48%, transparent);
+  border-radius: var(--radius-xl);
+}
+
+.sidebar-nav-card--secondary {
+  background: transparent;
 }
 
 /* Unified sidebar navigation section and items */
@@ -181,15 +258,15 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding: var(--space-2) 0;
+  padding: var(--space-1) 0;
 }
 
 .sidebar-nav-section-title {
   margin: 0 var(--space-2);
   color: var(--text-dimmed);
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: var(--font-bold);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.13em;
   line-height: var(--leading-tight);
   text-transform: uppercase;
 }
@@ -228,7 +305,7 @@ a.sidebar-nav-item {
     box-shadow var(--duration-smooth) var(--ease-fluid);
 }
 
-.sidebar-actions .sidebar-nav-item {
+.sidebar-nav-item--primary {
   min-height: 48px;
   color: white;
   background: linear-gradient(
@@ -248,7 +325,7 @@ a.sidebar-nav-item {
   transform: translateX(3px) translateY(-1px);
 }
 
-.sidebar-actions .sidebar-nav-item:hover {
+.sidebar-nav-item--primary:hover {
   background: linear-gradient(
     135deg,
     var(--color-brand-light),
@@ -284,7 +361,7 @@ a.sidebar-nav-item {
     var(--duration-smooth) var(--ease-fluid);
 }
 
-.sidebar-actions .sidebar-nav-icon {
+.sidebar-nav-item--primary .sidebar-nav-icon {
   color: white;
 }
 
@@ -317,10 +394,11 @@ a.sidebar-nav-item {
   min-width: 20px;
   padding: 0 6px;
   border-radius: var(--radius-full);
-  background-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-warning) 88%, var(--color-brand));
   color: #fff;
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .sidebar-section {

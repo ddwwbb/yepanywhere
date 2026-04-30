@@ -30,6 +30,9 @@ export interface SessionMenuProps {
   sharingConfigured?: boolean;
   /** Called to share the session as a snapshot */
   onShare?: () => void | Promise<void>;
+  /** Optional navigation actions shown in the session action sheet */
+  onOpenGitStatus?: () => void | Promise<void>;
+  onCreateSession?: () => void | Promise<void>;
   /** Additional class for the wrapper */
   className?: string;
   /** Use fixed positioning for dropdown (escapes overflow clipping) */
@@ -55,6 +58,8 @@ export function SessionMenu({
   onDelete,
   sharingConfigured,
   onShare,
+  onOpenGitStatus,
+  onCreateSession,
   useEllipsisIcon = false,
   className = "",
   useFixedPositioning = false,
@@ -349,6 +354,42 @@ export function SessionMenu({
             <line x1="10" y1="14" x2="21" y2="3" />
           </svg>
           {isSharing ? t("sessionMenuSharing") : t("sessionMenuShare")}
+        </button>
+      )}
+      {onOpenGitStatus && (
+        <button type="button" onClick={() => handleAction(onOpenGitStatus)}>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            aria-hidden="true"
+          >
+            <line x1="6" y1="3" x2="6" y2="15" />
+            <circle cx="18" cy="6" r="3" />
+            <circle cx="6" cy="18" r="3" />
+            <path d="M18 9a9 9 0 0 1-9 9" />
+          </svg>
+          {t("sidebarSourceControl" as never)}
+        </button>
+      )}
+      {onCreateSession && (
+        <button type="button" onClick={() => handleAction(onCreateSession)}>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            aria-hidden="true"
+          >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          {t("projectCardNewSession" as never)}
         </button>
       )}
       <button type="button" onClick={() => handleAction(onToggleArchive)}>

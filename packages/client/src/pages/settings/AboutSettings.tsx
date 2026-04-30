@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, fetchJSON } from "../../api/client";
-import { useOptionalRemoteConnection } from "../../contexts/RemoteConnectionContext";
+import { useOptionalRemoteConnection } from "../../contexts/RemoteConnectionState";
 import { useDeveloperMode } from "../../hooks/useDeveloperMode";
 import { useOnboarding } from "../../hooks/useOnboarding";
 import { usePwaInstall } from "../../hooks/usePwaInstall";

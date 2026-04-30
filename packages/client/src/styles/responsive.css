@@ -534,7 +534,7 @@
   }
 
   .provider-badge-button {
-    display: none;
+    display: inline-flex;
   }
 
   .session-messages {
@@ -778,19 +778,32 @@
 
 @media (max-width: 767px) {
   .app-layout-main {
-    /* Leave space for bottom tab bar on mobile */
     padding-bottom: calc(
       var(--tabbar-height, 64px) +
       env(safe-area-inset-bottom, 0px)
     );
+  }
+
+  .app-layout-main:has(.session-input) {
+    padding-bottom: 0;
+  }
+
+  .session-page:has(.session-input) .mobile-tab-bar {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-tab-bar {
+    display: none !important;
   }
 }
 
 .mobile-tab-bar {
   position: fixed;
   bottom: 0;
-  left: var(--space-3);
-  right: var(--space-3);
+  left: var(--space-2);
+  right: var(--space-2);
   height: calc(var(--tabbar-height, 64px) + env(safe-area-inset-bottom, 0px));
   padding: var(--space-1);
   padding-bottom: calc(var(--space-1) + env(safe-area-inset-bottom, 0px));
@@ -812,7 +825,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
+  padding: 0 var(--space-1);
   color: var(--text-muted);
   text-decoration: none;
   background: transparent;
@@ -841,6 +855,17 @@
   color: var(--color-primary);
   background: color-mix(in srgb, var(--color-brand) 12%, transparent);
   border-color: color-mix(in srgb, var(--color-brand) 22%, transparent);
+}
+
+.tab-bar-item--primary {
+  color: white;
+  background: linear-gradient(135deg, var(--color-brand-light), var(--color-brand-hover));
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-brand) 24%, transparent);
+}
+
+.tab-bar-item--primary.active {
+  color: white;
+  border-color: transparent;
 }
 
 .tab-icon-wrapper {
@@ -1035,6 +1060,66 @@
 @media (max-width: 767px) {
   .page-content-inner {
     width: 100%;
+    gap: var(--space-3);
+    padding-inline: var(--space-2);
+  }
+
+  .page-hero {
+    margin-bottom: var(--space-2);
+  }
+
+  .page-hero__container {
+    padding: var(--space-3);
+    border-radius: var(--radius-xl);
+  }
+
+  .page-hero__main {
+    gap: var(--space-2);
+  }
+
+  .page-hero__copy h1 {
+    font-size: clamp(1.25rem, 7vw, 1.7rem);
+    line-height: 1.05;
+  }
+
+  .page-hero__copy p {
+    display: none;
+  }
+
+  .page-hero__metrics {
+    gap: var(--space-2);
+  }
+
+  .page-hero__metric {
+    padding: var(--space-2);
+    border-radius: var(--radius-lg);
+  }
+
+  .project-card__surface,
+  .agent-card,
+  .settings-category-item,
+  .session-project-group,
+  .activity-item {
+    border-radius: var(--radius-lg);
+  }
+
+  .project-card__surface,
+  .agent-card,
+  .settings-category-item {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .session-project-group {
+    padding: var(--space-2);
+  }
+
+  .session-project-group-header {
+    padding: var(--space-2);
+  }
+
+  .session-list-item__link {
+    min-height: 42px;
+    padding: var(--space-2);
   }
 
   .session-header-inner {
@@ -1066,6 +1151,15 @@
   .session-header-actions {
     flex-shrink: 0;
     gap: var(--space-1);
+  }
+
+  .session-header-actions {
+    display: none;
+  }
+
+  .provider-badge-button {
+    max-width: 92px;
+    overflow: hidden;
   }
 
   .page-hero__header,
@@ -1116,6 +1210,16 @@
     flex: initial;
     flex-wrap: nowrap;
     padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .message-input-tools::-webkit-scrollbar {
+    display: none;
+  }
+
+  .message-input-tool-group--context,
+  .message-input-tool-group--agent {
+    display: none;
   }
 
   .message-input-actions {
@@ -1145,22 +1249,34 @@
   }
 
   .activity-scroll-container {
-    padding: var(--space-2);
+    padding: var(--space-1);
+    border-radius: var(--radius-xl);
+  }
+
+  .activity-date-group {
+    gap: var(--space-1);
+    margin-bottom: var(--space-3);
   }
 
   .activity-item {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto auto minmax(0, 1fr);
     gap: var(--space-2);
-    align-items: start;
-    padding: var(--space-3);
+    align-items: center;
+    padding: var(--space-2);
   }
 
   .activity-item__time {
-    grid-column: 1 / -1;
+    grid-column: auto;
+    font-size: var(--text-xs);
+  }
+
+  .activity-item__file-type {
+    display: none;
   }
 
   .activity-item__path {
-    grid-column: 1 / -1;
+    grid-column: auto;
+    font-size: var(--text-xs);
   }
 }
 

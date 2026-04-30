@@ -66,6 +66,9 @@ export default defineConfig({
   clearScreen: false,
   plugins: [serveRemoteHtml(), react(), cspPlugin({ isRemote: true })],
   resolve: {
+    alias: {
+      crypto: resolve(__dirname, "src/lib/crypto-browser-shim.ts"),
+    },
     conditions: ["source"],
   },
   // Define build-time constants
@@ -80,6 +83,20 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, "remote.html"),
+      },
+      output: {
+        manualChunks(id) {
+          const normalizedId = id.replaceAll("\\", "/");
+          if (normalizedId.includes("/src/pages/settings/")) return "page-settings";
+          if (normalizedId.includes("/src/pages/SessionPage")) return "page-session";
+          if (normalizedId.includes("/src/pages/")) return "pages";
+          if (!normalizedId.includes("node_modules")) return undefined;
+          if (normalizedId.includes("tssrp6a") || normalizedId.includes("tweetnacl")) return "vendor-crypto";
+          if (normalizedId.includes("lucide-react")) return "vendor-icons";
+          if (normalizedId.includes("react")) return "vendor-react";
+          if (normalizedId.includes("zod")) return "vendor-validation";
+          return "vendor";
+        },
       },
     },
   },

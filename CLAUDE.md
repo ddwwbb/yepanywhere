@@ -218,6 +218,10 @@ The npm package is published as `yepanywhere` via GitHub Actions OIDC trusted pu
 
 The website deploys separately from npm. Pushing to `main` does not deploy the site; deployment happens from a `site-v*` tag or manual workflow. Use `scripts/release-website.sh <version>` after updating `site/CHANGELOG.md`.
 
+## Design System
+
+Always read `DESIGN.md` before making visual or UI decisions. All font choices, colors, spacing, responsive behavior, and aesthetic direction are defined there. Do not deviate without explicit user approval. In QA mode, flag any code that does not match `DESIGN.md`.
+
 ## Repository-Specific Rules
 
 - `AGENTS.md` points future agents back to this file as the source of truth.

@@ -290,6 +290,67 @@
   border-radius: 50%;
 }
 
+@media (max-width: 767px) {
+  .session-list-item {
+    gap: var(--space-1);
+  }
+
+  .session-list-item--card .session-list-item__link {
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+  }
+
+  .session-list-item--card .session-list-item__title {
+    gap: var(--space-1);
+    font-size: var(--text-sm);
+    font-weight: 760;
+  }
+
+  .session-list-item--card .session-list-item__meta {
+    gap: var(--space-1);
+    margin-top: 2px;
+    font-size: var(--text-xs);
+  }
+
+  .session-list-item__project {
+    max-width: min(34vw, 128px);
+  }
+
+  .session-list-item__menu {
+    opacity: 1;
+    padding-left: var(--space-2);
+    background: linear-gradient(
+      to right,
+      transparent,
+      color-mix(in srgb, var(--bg-secondary) 92%, transparent) 34%
+    );
+  }
+
+  .session-list-item__menu .session-menu-trigger {
+    width: 34px;
+    height: 34px;
+  }
+
+  .session-project-group {
+    border-radius: var(--radius-xl);
+  }
+
+  .session-project-group-header {
+    min-height: 42px;
+    font-size: var(--text-sm);
+  }
+
+  .session-project-group-name {
+    font-weight: 760;
+  }
+
+  .session-project-group-delete {
+    width: 34px;
+    height: 34px;
+  }
+}
+
 /* ==========================================================================
    FilterDropdown Component
    ========================================================================== */

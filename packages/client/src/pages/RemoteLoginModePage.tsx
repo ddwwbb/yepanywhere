@@ -8,7 +8,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { YepAnywhereLogo } from "../components/YepAnywhereLogo";
-import { useRemoteConnection } from "../contexts/RemoteConnectionContext";
+import { useRemoteConnection } from "../contexts/RemoteConnectionState";
 
 export function RemoteLoginModePage() {
   const navigate = useNavigate();

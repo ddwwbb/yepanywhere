@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { RemoteAccessSetup } from "../../components/RemoteAccessSetup";
-import { useOptionalRemoteConnection } from "../../contexts/RemoteConnectionContext";
+import { useOptionalRemoteConnection } from "../../contexts/RemoteConnectionState";
 import { useServerSettings } from "../../hooks/useServerSettings";
 import { useI18n } from "../../i18n";
 import { getHostById } from "../../lib/hostStorage";
