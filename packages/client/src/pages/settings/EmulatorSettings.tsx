@@ -224,7 +224,7 @@ export function EmulatorSettings() {
                   type="text"
                   name="chromeosHost"
                   placeholder={t("emulatorHostAliasPlaceholder")}
-                  className="settings-select"
+                  className="settings-input"
                   autoComplete="off"
                   value={hostInput}
                   onChange={(event) => setHostInput(event.target.value)}

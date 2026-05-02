@@ -13,6 +13,7 @@ import { useActivityBusState } from "../hooks/useActivityBusState";
 import { useDeveloperMode } from "../hooks/useDeveloperMode";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { useEngagementTracking } from "../hooks/useEngagementTracking";
+import { useFunPlaceholder } from "../hooks/useFunPlaceholder";
 import { useProject } from "../hooks/useProjects";
 import { useProviders } from "../hooks/useProviders";
 import { recordSessionVisit } from "../hooks/useRecentSessions";
@@ -187,6 +188,24 @@ function SessionPageContent({
   const allSlashCommands = useMemo<SlashCommand[]>(
     () => (status.owner === "self" ? slashCommands : []),
     [slashCommands, status.owner],
+  );
+
+  // Fun placeholder: compute scenario and default, then maybe show a fun phrase
+  const placeholderScenario =
+    status.owner === "external"
+      ? "resume"
+      : processState === "idle"
+        ? "resume"
+        : "queue";
+  const defaultPlaceholder =
+    status.owner === "external"
+      ? t("sessionPlaceholderExternal")
+      : processState === "idle"
+        ? t("sessionPlaceholderResume")
+        : t("sessionPlaceholderQueue");
+  const placeholder = useFunPlaceholder(
+    defaultPlaceholder,
+    placeholderScenario,
   );
 
   // Get provider capabilities based on session's provider
@@ -776,13 +795,7 @@ function SessionPageContent({
               ? handleQueue
               : undefined
           }
-          placeholder={
-            status.owner === "external"
-              ? t("sessionPlaceholderExternal")
-              : processState === "idle"
-                ? t("sessionPlaceholderResume")
-                : t("sessionPlaceholderQueue")
-          }
+          placeholder={placeholder}
           draftKey={`draft-message-${sessionId}`}
           onDraftControlsReady={handleDraftControlsReady}
           projectId={projectId}

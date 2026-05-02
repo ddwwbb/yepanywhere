@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import {
   type KeyboardEvent,
   useCallback,
@@ -6,9 +7,9 @@ import {
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
 import { useDraftPersistence } from "../hooks/useDraftPersistence";
 import { useFabVisibility } from "../hooks/useFabVisibility";
+import { useFunPlaceholder } from "../hooks/useFunPlaceholder";
 import { useProjects } from "../hooks/useProjects";
 import {
   resolvePreferredProjectId,
@@ -46,6 +47,7 @@ function setFabPrefill(text: string): void {
  */
 export function FloatingActionButton() {
   const { t } = useI18n();
+  const fabPlaceholder = useFunPlaceholder(t("fabPlaceholder"), "new");
   const navigate = useNavigate();
   const location = useLocation();
   const basePath = useRemoteBasePath();
@@ -198,7 +200,7 @@ export function FloatingActionButton() {
               setMessage(e.target.value);
             }}
             onKeyDown={handleKeyDown}
-            placeholder={t("fabPlaceholder")}
+            placeholder={fabPlaceholder}
             className="fab-textarea"
             rows={3}
           />

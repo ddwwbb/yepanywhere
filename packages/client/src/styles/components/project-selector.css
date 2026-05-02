@@ -1,4 +1,4 @@
-/* Project Selector (New Session page) */
+/* Project Selector (New Session page) — 使用 --dropdown-* 统一令牌 */
 .project-selector-container {
   position: relative;
   display: inline-flex;
@@ -13,18 +13,18 @@
   gap: var(--space-1);
   background: transparent;
   border: none;
-  color: var(--text-primary);
+  color: var(--dropdown-text);
   font-weight: 500;
   font-size: inherit;
   cursor: pointer;
   padding: var(--space-1) var(--space-2);
   margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-2));
-  border-radius: var(--radius-md);
+  border-radius: var(--dropdown-opt-radius);
   transition: background 0.15s ease;
 }
 
 .project-selector-button:hover {
-  background: var(--bg-hover);
+  background: var(--dropdown-opt-hover);
 }
 
 .project-selector-text {
@@ -57,11 +57,11 @@
   left: 0;
   min-width: 480px;
   max-width: 800px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  z-index: 100;
+  background: var(--dropdown-bg);
+  border: 1px solid var(--dropdown-border);
+  border-radius: var(--dropdown-radius);
+  box-shadow: var(--dropdown-shadow);
+  z-index: var(--dropdown-z);
   overflow: hidden;
 }
 
@@ -76,7 +76,8 @@
   align-items: flex-start;
   gap: var(--space-0);
   width: 100%;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--dropdown-opt-pad);
+  min-height: var(--dropdown-opt-min-h);
   background: transparent;
   border: none;
   text-align: left;
@@ -85,21 +86,21 @@
 }
 
 .project-selector-option:hover {
-  background: var(--bg-hover);
+  background: var(--dropdown-opt-hover);
 }
 
 .project-selector-option.selected {
-  background: var(--bg-active);
+  background: var(--dropdown-opt-selected);
 }
 
 .project-selector-name {
-  color: var(--text-primary);
+  color: var(--dropdown-text);
   font-weight: 500;
-  font-size: var(--text-sm);
+  font-size: var(--dropdown-text-size);
 }
 
 .project-selector-meta {
-  color: var(--text-muted);
+  color: var(--dropdown-text-muted);
   font-size: var(--text-xs);
 }
 
@@ -108,17 +109,17 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  z-index: var(--dropdown-z);
   display: flex;
   align-items: flex-end;
   justify-content: center;
 }
 
 .project-selector-sheet {
-  background: var(--bg-surface);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--dropdown-bg);
+  border-radius: var(--dropdown-sheet-radius);
   width: 100%;
-  max-height: 70vh;
+  max-height: var(--dropdown-sheet-max-h);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -136,21 +137,21 @@
 
 .project-selector-header {
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--dropdown-divider);
 }
 
 .project-selector-title {
   font-weight: 600;
   font-size: var(--text-base);
-  color: var(--text-primary);
+  color: var(--dropdown-text);
 }
 
 .project-selector-sheet .project-selector-options {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-2) 0;
+  padding: var(--space-1) 0;
 }
 
 .project-selector-sheet .project-selector-option {
-  padding: var(--space-3) var(--space-4);
+  padding: var(--dropdown-opt-pad-m);
 }

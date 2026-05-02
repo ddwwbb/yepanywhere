@@ -317,14 +317,14 @@
   bottom: 100%;
   left: 0;
   margin-bottom: var(--space-2);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
+  background: var(--dropdown-bg);
+  border: 1px solid var(--dropdown-border);
+  border-radius: var(--dropdown-radius);
+  box-shadow: var(--dropdown-shadow);
   width: min(520px, calc(100vw - 2rem));
   max-height: 360px;
   overflow: hidden;
-  z-index: 100;
+  z-index: var(--dropdown-z);
 }
 
 .mcp-server-menu {
@@ -333,7 +333,7 @@
 
 .slash-command-search-wrap {
   padding: var(--space-2);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--dropdown-divider);
 }
 
 .slash-command-search {
@@ -392,7 +392,7 @@
 }
 
 .slash-command-item:hover {
-  background: var(--bg-hover);
+  background: var(--dropdown-opt-hover);
 }
 
 .slash-command-item-main {

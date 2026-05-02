@@ -116,14 +116,15 @@
 /* Select dropdown for settings */
 .settings-select {
   padding: var(--space-2) var(--space-3);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: var(--text-base);
   cursor: pointer;
   min-width: 160px;
-  transition: border-color var(--duration-smooth) var(--ease-default);
+  transition: border-color var(--duration-smooth) var(--ease-default),
+    box-shadow var(--duration-smooth) var(--ease-default);
 }
 
 .settings-select:hover {
@@ -137,6 +138,69 @@
 }
 
 .settings-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Text input for settings */
+.settings-input {
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  width: 100%;
+  max-width: 320px;
+  transition: border-color var(--duration-smooth) var(--ease-default),
+    box-shadow var(--duration-smooth) var(--ease-default);
+}
+
+.settings-input:hover {
+  border-color: var(--text-muted);
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-brand-alpha);
+}
+
+.settings-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.settings-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* Compact input for short values (port numbers, etc.) */
+.settings-input-small {
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  width: 100px;
+  text-align: right;
+  transition: border-color var(--duration-smooth) var(--ease-default),
+    box-shadow var(--duration-smooth) var(--ease-default);
+}
+
+.settings-input-small:hover {
+  border-color: var(--text-muted);
+}
+
+.settings-input-small:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-brand-alpha);
+}
+
+.settings-input-small:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -298,10 +362,10 @@
 .settings-textarea {
   width: 100%;
   min-height: 120px;
-  padding: var(--space-3) var(--space-3);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-default);
-  background: var(--bg-secondary);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-input);
+  background: var(--bg-input);
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: var(--text-base);
@@ -312,10 +376,19 @@
     box-shadow var(--duration-smooth) var(--ease-default);
 }
 
+.settings-textarea:hover {
+  border-color: var(--text-muted);
+}
+
 .settings-textarea:focus {
   outline: none;
   border-color: var(--color-brand);
   box-shadow: 0 0 0 3px var(--color-brand-alpha);
+}
+
+.settings-textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .settings-textarea::placeholder {

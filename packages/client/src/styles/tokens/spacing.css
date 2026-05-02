@@ -38,4 +38,40 @@
   --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-glow: 0 0 15px var(--color-brand-alpha);
+
+  /* ==========================================================================
+     下拉菜单统一令牌 (Dropdown Tokens)
+     所有 dropdown / bottom-sheet 类组件共享
+     ========================================================================== */
+
+  /* 面板 */
+  --dropdown-bg:         var(--bg-surface);
+  --dropdown-border:     var(--border-default);
+  --dropdown-radius:     var(--radius-lg);
+  --dropdown-shadow:     var(--shadow-lg);
+  --dropdown-z:          10000;
+
+  /* 选项 */
+  --dropdown-opt-pad:    var(--space-2) var(--space-3);
+  --dropdown-opt-pad-m:  var(--space-3) var(--space-4);   /* 移动端 */
+  --dropdown-opt-hover:  var(--bg-hover);
+  --dropdown-opt-active: var(--bg-active);
+  --dropdown-opt-selected: rgba(217, 119, 87, 0.08);
+  --dropdown-opt-min-h:  36px;
+  --dropdown-opt-gap:    var(--space-2);
+  --dropdown-opt-radius: var(--radius-md);
+
+  /* 文字 */
+  --dropdown-text:       var(--text-primary);
+  --dropdown-text-muted: var(--text-muted);
+  --dropdown-text-size:  var(--text-sm);
+
+  /* 移动端底部弹出 */
+  --dropdown-sheet-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  --dropdown-sheet-max-h:  80vh;
+  --dropdown-sheet-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+
+  /* 分割线 */
+  --dropdown-divider:    var(--border-subtle);
+  --dropdown-divider-m:  var(--space-1) var(--space-3);
 }

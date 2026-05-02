@@ -1,5 +1,6 @@
 /* ==========================================================================
    FilterDropdown Component
+   使用 --dropdown-* 统一令牌
    ========================================================================== */
 
 .filter-dropdown-container {
@@ -7,52 +8,72 @@
   display: inline-block;
 }
 
+/* ── 触发按钮 ── */
 .filter-dropdown-button {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  color: var(--text-muted);
+  border: 1px solid var(--dropdown-border);
+  border-radius: var(--dropdown-opt-radius);
+  font-size: var(--dropdown-text-size);
+  color: var(--dropdown-text-muted);
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  min-height: var(--dropdown-opt-min-h);
 }
 
 .filter-dropdown-button:hover {
-  background: var(--bg-hover);
+  background: var(--dropdown-opt-hover);
+  border-color: var(--border-input);
+}
+
+.filter-dropdown-button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .filter-dropdown-button.has-selection {
   border-color: var(--color-brand);
-  color: var(--text-primary);
+  color: var(--dropdown-text);
+}
+
+.filter-dropdown-button.has-selection:hover {
+  box-shadow: 0 0 0 1px var(--color-brand);
 }
 
 .filter-dropdown-chevron {
   transition: transform 0.15s ease;
+  opacity: 0.6;
 }
 
+.filter-dropdown-button[aria-expanded="true"] .filter-dropdown-chevron {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+/* ── 移动端遮罩 ── */
 .filter-dropdown-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 10001;
+  z-index: var(--dropdown-z);
   display: flex;
   align-items: flex-end;
   justify-content: center;
 }
 
+/* ── 移动端底部弹出 ── */
 .filter-dropdown-sheet {
-  background: var(--bg-surface);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--dropdown-bg);
+  border-radius: var(--dropdown-sheet-radius);
   width: 100%;
   max-width: 500px;
-  max-height: 80vh;
+  max-height: var(--dropdown-sheet-max-h);
   overflow-y: auto;
   animation: filterSlideUp 0.2s ease-out;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--dropdown-sheet-shadow);
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
@@ -65,52 +86,59 @@
   }
 }
 
+/* ── 弹出头部（移动端） ── */
 .filter-dropdown-header {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--dropdown-divider);
 }
 
 .filter-dropdown-title {
   font-size: var(--text-base);
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--dropdown-text);
 }
 
+/* ── 选项列表 ── */
 .filter-dropdown-options {
   display: flex;
   flex-direction: column;
-  padding: var(--space-2) 0;
+  padding: var(--space-1) 0;
 }
 
+/* ── 选项按钮 ── */
 .filter-dropdown-option {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--dropdown-opt-gap);
+  padding: var(--dropdown-opt-pad);
   background: transparent;
   border: none;
+  border-radius: 0;
   cursor: pointer;
   text-align: left;
   width: 100%;
+  min-height: var(--dropdown-opt-min-h);
   transition: background 0.15s ease;
-  color: var(--text-primary);
+  color: var(--dropdown-text);
+  font-size: var(--dropdown-text-size);
 }
 
 .filter-dropdown-option:hover {
-  background: var(--bg-hover);
+  background: var(--dropdown-opt-hover);
 }
 
 .filter-dropdown-option.selected {
-  background: rgba(217, 119, 87, 0.08);
+  background: var(--dropdown-opt-selected);
 }
 
+/* ── 复选框 ── */
 .filter-dropdown-checkbox {
   width: 18px;
   height: 18px;
-  border: 2px solid var(--border-default);
+  border: 2px solid var(--dropdown-border);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
@@ -125,12 +153,13 @@
   color: white;
 }
 
-/* Single-select mode: show checkmark on right side instead of checkbox */
+/* ── 单选模式 ── */
 .filter-dropdown-option.single-select {
   position: relative;
   padding-right: var(--space-8);
 }
 
+/* ── 颜色圆点 ── */
 .filter-dropdown-color-dot {
   width: 10px;
   height: 10px;
@@ -138,6 +167,7 @@
   flex-shrink: 0;
 }
 
+/* ── 标签 ── */
 .filter-dropdown-label-wrapper {
   flex: 1;
   display: flex;
@@ -147,37 +177,41 @@
 }
 
 .filter-dropdown-label {
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
 }
 
 .filter-dropdown-description {
   font-size: var(--text-xs);
-  color: var(--text-muted);
+  color: var(--dropdown-text-muted);
   line-height: 1.3;
 }
 
+/* ── 计数徽章 ── */
 .filter-dropdown-count {
   font-size: var(--text-xs);
-  color: var(--text-muted);
+  color: var(--dropdown-text-muted);
   background: var(--bg-secondary);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
 }
 
+/* ── 清除按钮 ── */
 .filter-dropdown-clear .filter-dropdown-label {
-  color: var(--text-muted);
+  color: var(--dropdown-text-muted);
 }
 
 .filter-dropdown-clear:hover .filter-dropdown-label {
-  color: var(--text-primary);
+  color: var(--dropdown-text);
 }
 
+/* ── 分割线 ── */
 .filter-dropdown-divider {
   height: 1px;
-  background: var(--border-subtle);
-  margin: var(--space-2) var(--space-4);
+  background: var(--dropdown-divider);
+  margin: var(--dropdown-divider-m);
 }
 
+/* ── 桌面端下拉面板（默认隐藏） ── */
 .filter-dropdown-dropdown {
   display: none;
 }
@@ -189,12 +223,13 @@
     top: 100%;
     left: 0;
     margin-top: var(--space-1);
-    background: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-lg);
+    background: var(--dropdown-bg);
+    border: 1px solid var(--dropdown-border);
+    border-radius: var(--dropdown-radius);
     min-width: 200px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 100;
+    box-shadow: var(--dropdown-shadow);
+    z-index: var(--dropdown-z);
+    overflow: hidden;
     animation: filterDropdownFadeIn 0.15s ease-out;
   }
 
@@ -208,11 +243,12 @@
   }
 
   .filter-dropdown-dropdown .filter-dropdown-option {
-    padding: var(--space-2) var(--space-3);
+    padding: var(--dropdown-opt-pad);
+    border-radius: 0;
   }
 
   .filter-dropdown-dropdown .filter-dropdown-divider {
-    margin: var(--space-1) var(--space-3);
+    margin: var(--dropdown-divider-m);
   }
 
   @keyframes filterDropdownFadeIn {
@@ -228,5 +264,16 @@
 
   .filter-dropdown-overlay {
     display: none;
+  }
+}
+
+/* ── 移动端选项加大内边距 ── */
+@media (max-width: 767px) {
+  .filter-dropdown-sheet .filter-dropdown-option {
+    padding: var(--dropdown-opt-pad-m);
+  }
+
+  .filter-dropdown-sheet .filter-dropdown-divider {
+    margin: var(--space-2) var(--space-4);
   }
 }

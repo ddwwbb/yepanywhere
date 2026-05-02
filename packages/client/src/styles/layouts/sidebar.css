@@ -470,32 +470,32 @@ a.sidebar-nav-item {
   opacity: 1;
 }
 
-/* Recent sessions dropdown */
+/* Recent sessions dropdown — 使用 --dropdown-* 统一令牌 */
 .recent-sessions-dropdown {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  background: var(--dropdown-bg);
+  border: 1px solid var(--dropdown-border);
+  border-radius: var(--dropdown-radius);
+  box-shadow: var(--dropdown-shadow);
   min-width: 280px;
   max-width: min(830px, calc(100vw - 32px));
-  z-index: 10001;
+  z-index: var(--dropdown-z);
   overflow: hidden;
 }
 
 .recent-sessions-header {
-  padding: 0.5rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs);
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--dropdown-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--dropdown-border);
 }
 
 .recent-sessions-empty {
-  padding: 1rem 0.75rem;
-  color: var(--text-muted);
-  font-size: var(--text-sm);
+  padding: var(--space-3) var(--space-3);
+  color: var(--dropdown-text-muted);
+  font-size: var(--dropdown-text-size);
   text-align: center;
 }
 
@@ -508,11 +508,12 @@ a.sidebar-nav-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  min-height: var(--dropdown-opt-min-h);
   text-decoration: none;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border-subtle);
+  color: var(--dropdown-text);
+  border-bottom: 1px solid var(--dropdown-divider);
   transition: background-color 0.1s ease;
 }
 
@@ -521,11 +522,11 @@ a.sidebar-nav-item {
 }
 
 .recent-session-item:hover {
-  background-color: var(--bg-hover);
+  background-color: var(--dropdown-opt-hover);
 }
 
 .recent-session-item:active {
-  background-color: var(--bg-active);
+  background-color: var(--dropdown-opt-active);
 }
 
 .recent-session-content {

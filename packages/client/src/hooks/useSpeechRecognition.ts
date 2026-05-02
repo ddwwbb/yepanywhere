@@ -130,7 +130,7 @@ export interface UseSpeechRecognitionReturn {
 /**
  * Get the SpeechRecognition constructor if available.
  */
-function getSpeechRecognition(): SpeechRecognitionConstructor | null {
+export function getSpeechRecognitionConstructor(): SpeechRecognitionConstructor | null {
   if (typeof window === "undefined") return null;
   return window.SpeechRecognition ?? window.webkitSpeechRecognition ?? null;
 }
@@ -145,7 +145,7 @@ export function useSpeechRecognition(
   const { lang, onResult, onInterimResult, onEnd, onError } = options;
 
   const [isSupported, setIsSupported] = useState(
-    () => !!getSpeechRecognition(),
+    () => !!getSpeechRecognitionConstructor(),
   );
   const [isListening, setIsListening] = useState(false);
   const [status, setStatus] = useState<SpeechRecognitionStatus>("idle");
@@ -179,7 +179,8 @@ export function useSpeechRecognition(
   }, [onResult, onInterimResult, onEnd, onError]);
 
   useEffect(() => {
-    const updateSupport = () => setIsSupported(!!getSpeechRecognition());
+    const updateSupport = () =>
+      setIsSupported(!!getSpeechRecognitionConstructor());
     updateSupport();
     window.addEventListener("focus", updateSupport);
     document.addEventListener("visibilitychange", updateSupport);
@@ -203,7 +204,7 @@ export function useSpeechRecognition(
   }, []);
 
   const startListening = useCallback(() => {
-    const SpeechRecognitionAPI = getSpeechRecognition();
+    const SpeechRecognitionAPI = getSpeechRecognitionConstructor();
     setIsSupported(!!SpeechRecognitionAPI);
     if (!SpeechRecognitionAPI) {
       setError("Speech recognition not supported");
@@ -331,10 +332,12 @@ export function useSpeechRecognition(
           errorMessage = "Microphone permission denied";
           break;
         case "network":
-          errorMessage = "Network error - check connection";
+          errorMessage =
+            "Speech recognition service network error in this browser";
           break;
         case "service-not-allowed":
-          errorMessage = "Speech service not available";
+          errorMessage =
+            "Speech recognition service is not available in this browser";
           break;
         default:
           errorMessage = `Error: ${event.error}`;

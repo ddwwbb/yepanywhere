@@ -1,11 +1,23 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useSpeechRecognition } from "../useSpeechRecognition";
+import {
+  getSpeechRecognitionConstructor,
+  useSpeechRecognition,
+} from "../useSpeechRecognition";
 
-type RecognitionErrorName = "no-speech" | "not-allowed";
+type RecognitionErrorName =
+  | "no-speech"
+  | "not-allowed"
+  | "network"
+  | "service-not-allowed";
 type RecognitionError = Event & {
   error: RecognitionErrorName;
   message: string;
+};
+
+type SpeechRecognitionWindow = {
+  SpeechRecognition?: typeof MockSpeechRecognition;
+  webkitSpeechRecognition?: typeof MockSpeechRecognition;
 };
 
 class MockSpeechRecognition {
@@ -28,13 +40,24 @@ class MockSpeechRecognition {
   }
 }
 
-function installSpeechRecognition() {
+function speechWindow(): SpeechRecognitionWindow {
+  return window as unknown as SpeechRecognitionWindow;
+}
+
+function installSpeechRecognition({
+  standard = false,
+  webkit = true,
+}: {
+  standard?: boolean;
+  webkit?: boolean;
+} = {}) {
   MockSpeechRecognition.instances = [];
-  (
-    window as unknown as {
-      webkitSpeechRecognition?: typeof MockSpeechRecognition;
-    }
-  ).webkitSpeechRecognition = MockSpeechRecognition;
+  speechWindow().SpeechRecognition = standard
+    ? MockSpeechRecognition
+    : undefined;
+  speechWindow().webkitSpeechRecognition = webkit
+    ? MockSpeechRecognition
+    : undefined;
 }
 
 function currentRecognition() {
@@ -56,12 +79,46 @@ describe("useSpeechRecognition", () => {
 
   afterEach(() => {
     cleanup();
-    (
-      window as unknown as {
-        webkitSpeechRecognition?: typeof MockSpeechRecognition;
-      }
-    ).webkitSpeechRecognition = undefined;
+    speechWindow().SpeechRecognition = undefined;
+    speechWindow().webkitSpeechRecognition = undefined;
     vi.restoreAllMocks();
+  });
+
+  it("supports the standard SpeechRecognition constructor used by Chromium browsers", () => {
+    installSpeechRecognition({ standard: true, webkit: false });
+
+    const { result } = renderHook(() => useSpeechRecognition());
+
+    expect(getSpeechRecognitionConstructor()).toBe(MockSpeechRecognition);
+    expect(result.current.isSupported).toBe(true);
+
+    act(() => result.current.startListening());
+    expect(currentRecognition().start).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to the webkitSpeechRecognition constructor", () => {
+    installSpeechRecognition({ standard: false, webkit: true });
+
+    const { result } = renderHook(() => useSpeechRecognition());
+
+    expect(getSpeechRecognitionConstructor()).toBe(MockSpeechRecognition);
+    expect(result.current.isSupported).toBe(true);
+
+    act(() => result.current.startListening());
+    expect(currentRecognition().start).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports unsupported when no speech recognition constructor exists", () => {
+    installSpeechRecognition({ standard: false, webkit: false });
+
+    const { result } = renderHook(() => useSpeechRecognition());
+
+    expect(getSpeechRecognitionConstructor()).toBeNull();
+    expect(result.current.isSupported).toBe(false);
+
+    act(() => result.current.startListening());
+    expect(result.current.status).toBe("error");
+    expect(result.current.error).toBe("Speech recognition not supported");
   });
 
   it("does not auto-restart after fatal recognition errors", () => {
@@ -84,6 +141,47 @@ describe("useSpeechRecognition", () => {
     expect(result.current.status).toBe("error");
     expect(result.current.error).toBe("Microphone permission denied");
     expect(result.current.isListening).toBe(false);
+  });
+
+  it("reports speech service errors without auto-restarting", () => {
+    const onError = vi.fn();
+    const { result } = renderHook(() => useSpeechRecognition({ onError }));
+
+    act(() => result.current.startListening());
+    const recognition = currentRecognition();
+
+    act(() => recognition.onstart?.(new Event("start")));
+    act(() => recognition.onerror?.(speechError("service-not-allowed")));
+
+    const message =
+      "Speech recognition service is not available in this browser";
+    expect(onError).toHaveBeenCalledWith(message);
+    expect(result.current.status).toBe("error");
+    expect(result.current.error).toBe(message);
+
+    act(() => recognition.onend?.(new Event("end")));
+    expect(recognition.start).toHaveBeenCalledTimes(1);
+    expect(result.current.status).toBe("error");
+  });
+
+  it("reports speech service network errors without auto-restarting", () => {
+    const onError = vi.fn();
+    const { result } = renderHook(() => useSpeechRecognition({ onError }));
+
+    act(() => result.current.startListening());
+    const recognition = currentRecognition();
+
+    act(() => recognition.onstart?.(new Event("start")));
+    act(() => recognition.onerror?.(speechError("network")));
+
+    const message = "Speech recognition service network error in this browser";
+    expect(onError).toHaveBeenCalledWith(message);
+    expect(result.current.status).toBe("error");
+    expect(result.current.error).toBe(message);
+
+    act(() => recognition.onend?.(new Event("end")));
+    expect(recognition.start).toHaveBeenCalledTimes(1);
+    expect(result.current.status).toBe("error");
   });
 
   it("continues auto-restarting after no-speech events", () => {
