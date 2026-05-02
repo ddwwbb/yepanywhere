@@ -1,0 +1,153 @@
+/* ==========================================================================
+   Device List (Push Notifications Settings)
+   ========================================================================== */
+
+.device-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.device-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-md);
+}
+
+.device-list-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.device-list-info strong {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+}
+
+.device-list-info p {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.device-current-badge {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  padding: 2px 6px;
+  background: var(--color-brand);
+  color: #000;
+  border-radius: var(--radius-sm);
+}
+
+.device-status {
+  margin-right: var(--space-2);
+}
+
+.device-status-online::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.device-status-offline::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.device-no-push {
+  font-size: var(--text-xs);
+  padding: 1px 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  margin-left: var(--space-2);
+}
+
+.device-subscribed-date {
+  margin-left: var(--space-2);
+  color: var(--text-muted);
+}
+
+.device-origins {
+  margin-top: var(--space-1);
+}
+
+.device-origin {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--space-2);
+}
+
+.device-origin-url {
+  font-size: var(--text-sm);
+  word-break: break-all;
+}
+
+.device-origin-details {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.device-origin-time {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.device-profile-meta {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
+
+.settings-button-danger-subtle {
+  background: transparent;
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.settings-button-danger-subtle:hover {
+  background: var(--color-error);
+  color: #fff;
+}
+
+/* Info box for explaining things like "SW disabled only affects this device" */
+.settings-info-box {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: var(--text-base);
+  color: var(--text-muted);
+}
+
+.settings-info-box p {
+  margin: 0 0 var(--space-2);
+}
+
+.settings-info-box p:last-child {
+  margin-bottom: 0;
+}
+
+.settings-info-box a {
+  color: var(--color-link);
+}

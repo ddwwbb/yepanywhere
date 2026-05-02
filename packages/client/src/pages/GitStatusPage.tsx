@@ -4,11 +4,12 @@ import { useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import { PageHeader } from "../components/PageHeader";
 import { ProjectSelector } from "../components/ProjectSelector";
+import { TrustedHtml } from "../components/TrustedHtml";
 import { Modal } from "../components/ui/Modal";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { useGitStatus } from "../hooks/useGitStatus";
 import { useProject, useProjects } from "../hooks/useProjects";
-import { useI18n } from "../i18n";
+import { type Translate, useI18n } from "../i18n";
 import { useNavigationLayout } from "../layouts";
 
 interface PatchHunk {
@@ -88,7 +89,7 @@ export function GitStatusPage() {
               <GitStatusContent
                 status={gitStatus}
                 projectId={effectiveProjectId}
-                t={t as never}
+                t={t}
               />
             ) : null}
           </div>
@@ -105,7 +106,7 @@ function GitStatusContent({
 }: {
   status: import("@yep-anywhere/shared").GitStatusInfo;
   projectId: string;
-  t: (key: string, vars?: Record<string, string | number>) => string;
+  t: Translate;
 }) {
   const [selectedFile, setSelectedFile] = useState<GitFileChange | null>(null);
 
@@ -271,7 +272,7 @@ function GitDiffModal({
 }: {
   file: GitFileChange;
   projectId: string;
-  t: (key: string, vars?: Record<string, string | number>) => string;
+  t: Translate;
   onClose: () => void;
 }) {
   const [diffResult, setDiffResult] = useState<GitDiffResult | null>(null);
@@ -336,7 +337,7 @@ function GitDiffModalContent({
   file: GitFileChange;
   projectId: string;
   diffResult: GitDiffResult;
-  t: (key: string, vars?: Record<string, string | number>) => string;
+  t: Translate;
 }) {
   const [showFullContext, setShowFullContext] = useState(false);
   const [fullContextResult, setFullContextResult] =
@@ -439,10 +440,10 @@ function GitDiffModalContent({
 
       {showMarkdownPreview && markdownHtml ? (
         <div className="markdown-preview">
-          <div
+          <TrustedHtml
             className="markdown-rendered"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered HTML
-            dangerouslySetInnerHTML={{ __html: markdownHtml }}
+            html={markdownHtml}
+            source="server-rendered-markdown"
           />
         </div>
       ) : displayResult.diffHtml ? (
@@ -463,10 +464,10 @@ const HighlightedDiff = memo(function HighlightedDiff({
   diffHtml: string;
 }) {
   return (
-    <div
+    <TrustedHtml
       className="highlighted-diff"
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: shiki output is safe
-      dangerouslySetInnerHTML={{ __html: diffHtml }}
+      html={diffHtml}
+      source="server-rendered-diff"
     />
   );
 });

@@ -1,0 +1,273 @@
+/* ==========================================================================
+   Task Tool
+   ========================================================================== */
+
+.task-tool-use {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.task-description {
+  font-weight: 500;
+  color: var(--text-secondary, var(--text-primary));
+}
+
+.task-prompt {
+  margin-top: 0.5rem;
+}
+
+.task-prompt-toggle {
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  font-size: var(--text-sm);
+}
+
+.task-prompt-toggle:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary, var(--text-primary));
+}
+
+.task-prompt-content {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: var(--bg-code);
+  border-radius: 4px;
+  font-size: var(--text-base);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.task-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-result-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.task-stats {
+  color: var(--text-muted);
+  font-size: var(--text-base);
+}
+
+.task-content {
+  border-left: 2px solid var(--border-default);
+  padding-left: 1rem;
+  margin-left: 0.25rem;
+}
+
+.task-error {
+  color: var(--color-error);
+  padding: 0.5rem;
+  background: var(--bg-error, rgba(207, 34, 46, 0.1));
+  border-radius: 4px;
+}
+
+/* Error summary shown in collapsed task header */
+.task-error-summary {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 400px;
+  flex-shrink: 1;
+}
+
+/* Error details shown in expanded task view */
+.task-error-details {
+  padding: 0.75rem;
+}
+
+.task-error-message {
+  background: var(--bg-error, rgba(207, 34, 46, 0.08));
+  color: var(--text-primary);
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  border-left: 3px solid var(--color-error);
+}
+
+.task-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: var(--text-lg);
+}
+
+/* Task Inline - Subtle Subagent Card */
+.task-inline {
+  border-radius: 6px;
+  margin: 0.5rem 0;
+  background: rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+}
+
+.task-inline.expanded {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.task-inline.status-running {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Completed tasks use default background - they should fade into background */
+
+.task-inline.status-failed,
+.task-inline.status-error {
+  background: rgba(255, 100, 100, 0.03);
+}
+
+/* Task Header - Clickable Row */
+.task-inline-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-size: var(--text-base);
+  color: inherit;
+  transition: background 0.15s;
+}
+
+.task-inline-header:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.task-inline-header:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.task-expand-icon {
+  color: var(--text-muted);
+  font-size: 0.625rem;
+  width: 1rem;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.task-inline.expanded .task-expand-icon {
+  color: var(--text-muted);
+}
+
+.task-inline-title {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-primary);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-agent-type {
+  flex-shrink: 0;
+}
+
+.task-model {
+  flex-shrink: 0;
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+/* Spinner Animation */
+.task-spinner {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  color: #88aaff;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Badge for running status */
+.badge-running {
+  background: var(--bg-secondary);
+  color: var(--color-link);
+}
+
+.badge-pending {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+/* Task Inline Content - Expanded View */
+.task-inline-content {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: transparent;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* Task Nested Content - Full Agent Messages */
+.task-nested-content {
+  padding: 0.75rem;
+}
+
+.task-nested-content > * + * {
+  margin-top: 0.5rem;
+}
+
+/* Loading State */
+.task-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  color: var(--text-muted);
+  font-size: var(--text-base);
+  border-top: 1px solid var(--border-subtle, var(--border-default));
+}
+
+/* Task Stats in Header */
+.task-stats {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Real-time context usage during streaming */
+.task-context-usage {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}

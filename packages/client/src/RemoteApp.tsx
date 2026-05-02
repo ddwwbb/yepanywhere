@@ -18,21 +18,17 @@
 
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import { AppProviders } from "./app/AppProviders";
+import { AppShellContent } from "./app/AppShellContent";
 import { ConnectionBar } from "./components/ConnectionBar";
-import { FloatingActionButton } from "./components/FloatingActionButton";
 import { HostOfflineModal } from "./components/HostOfflineModal";
-import { ReloadBanner } from "./components/ReloadBanner";
 import { Modal } from "./components/ui/Modal";
-import { InboxProvider } from "./contexts/InboxContext";
 import {
   RemoteConnectionProvider,
   useRemoteConnection,
 } from "./contexts/RemoteConnectionContext";
-import { SchemaValidationProvider } from "./contexts/SchemaValidationContext";
-import { ToastProvider } from "./contexts/ToastContext";
 import { useNeedsAttentionBadge } from "./hooks/useNeedsAttentionBadge";
 import { useSyncNotifyInAppSetting } from "./hooks/useNotifyInApp";
-import { useReloadNotifications } from "./hooks/useReloadNotifications";
 import { useRemoteActivityBusConnection } from "./hooks/useRemoteActivityBusConnection";
 import { useRemoteBasePath } from "./hooks/useRemoteBasePath";
 import { useVersion } from "./hooks/useVersion";
@@ -54,16 +50,6 @@ export function ConnectedAppContent({ children }: { children: ReactNode }) {
   const { version: versionInfo } = useVersion();
   const [dismissedRelayResumeWarning, setDismissedRelayResumeWarning] =
     useState(false);
-
-  const {
-    isManualReloadMode,
-    pendingReloads,
-    reloadBackend,
-    reloadFrontend,
-    dismiss,
-    unsafeToRestart,
-    workerActivity,
-  } = useReloadNotifications();
 
   const showRelayResumeWarning = useMemo(() => {
     if (dismissedRelayResumeWarning) return false;
@@ -103,24 +89,7 @@ export function ConnectedAppContent({ children }: { children: ReactNode }) {
           </div>
         </Modal>
       )}
-      {isManualReloadMode && pendingReloads.backend && (
-        <ReloadBanner
-          target="backend"
-          onReload={reloadBackend}
-          onDismiss={() => dismiss("backend")}
-          unsafeToRestart={unsafeToRestart}
-          activeWorkers={workerActivity.activeWorkers}
-        />
-      )}
-      {isManualReloadMode && pendingReloads.frontend && (
-        <ReloadBanner
-          target="frontend"
-          onReload={reloadFrontend}
-          onDismiss={() => dismiss("frontend")}
-        />
-      )}
-      {children}
-      <FloatingActionButton />
+      <AppShellContent showConnectionBar={false}>{children}</AppShellContent>
     </>
   );
 }
@@ -230,14 +199,8 @@ export function RemoteApp({ children }: Props) {
   useSyncNotifyInAppSetting();
 
   return (
-    <ToastProvider>
-      <RemoteConnectionProvider>
-        <InboxProvider>
-          <SchemaValidationProvider>
-            <RemoteAppInner>{children}</RemoteAppInner>
-          </SchemaValidationProvider>
-        </InboxProvider>
-      </RemoteConnectionProvider>
-    </ToastProvider>
+    <AppProviders AccessProvider={RemoteConnectionProvider}>
+      <RemoteAppInner>{children}</RemoteAppInner>
+    </AppProviders>
   );
 }

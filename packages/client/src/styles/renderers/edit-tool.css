@@ -1,0 +1,87 @@
+/* ==========================================================================
+   Edit Tool
+   ========================================================================== */
+
+.edit-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.edit-result-error {
+  padding: 0.5rem;
+}
+
+.edit-result-warning {
+  padding: 0.5rem;
+}
+
+.edit-result-muted {
+  padding: 0.5rem;
+}
+
+.edit-error-message {
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  font-size: var(--text-lg);
+}
+
+.edit-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.edit-change-summary {
+  color: var(--text-muted, #888);
+  font-size: var(--text-base);
+}
+
+.edit-simple {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.edit-label {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  margin-bottom: 0.25rem;
+}
+
+/* Edit collapsed preview */
+.edit-collapsed-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.edit-collapsed-preview .diff-view-container {
+  position: relative;
+}
+
+.edit-collapsed-preview .diff-expand-button {
+  position: relative;
+  bottom: auto;
+  right: auto;
+  align-self: flex-end;
+  margin-top: 0.25rem;
+}
+
+/* Show button on hover for desktop */
+.edit-collapsed-preview:hover .diff-expand-button {
+  opacity: 1;
+}
+
+.edit-collapsed-error {
+  padding: 0.5rem;
+}
+
+.edit-collapsed-warning {
+  padding: 0.5rem;
+}
+
+.edit-collapsed-muted {
+  padding: 0.5rem;
+}

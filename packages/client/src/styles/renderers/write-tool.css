@@ -1,0 +1,103 @@
+/* ==========================================================================
+   Write Tool
+   ========================================================================== */
+
+.write-tool-use {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.write-info {
+  color: var(--text-muted);
+  font-size: var(--text-base);
+}
+
+.write-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.write-error {
+  color: var(--color-error);
+  padding: 0.5rem;
+  background: var(--bg-error, rgba(207, 34, 46, 0.1));
+  border-radius: 4px;
+}
+
+/* Write Collapsed Preview */
+.write-collapsed-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-size: var(--text-base);
+  background: var(--bg-code);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  overflow: hidden;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  margin-top: 0.25rem;
+}
+
+.write-collapsed-preview:hover {
+  border-color: var(--border-input, var(--border-default));
+}
+
+.write-collapsed-preview:focus {
+  outline: 1px solid var(--focus-border, #007acc);
+  outline-offset: -1px;
+}
+
+.write-collapsed-error {
+  border-color: var(--color-error);
+  cursor: default;
+  padding: 0.5rem;
+}
+
+.write-preview-lines {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  padding: 0.25rem 0.5rem;
+}
+
+.write-preview-error {
+  color: var(--color-error);
+  font-size: var(--text-base);
+}
+
+.write-preview-content {
+  position: relative;
+  padding: 0.375rem 0.5rem;
+  max-height: 4.5rem;
+  overflow: hidden;
+}
+
+.write-preview-content pre {
+  margin: 0;
+  font-family: "SF Mono", Monaco, "Cascadia Code", "Consolas", monospace;
+  font-size: var(--text-base);
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-secondary, var(--text-muted));
+}
+
+.write-preview-truncated {
+  max-height: 4.5rem;
+}
+
+.write-preview-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2rem;
+  background: linear-gradient(to bottom, transparent, var(--bg-code));
+  pointer-events: none;
+}

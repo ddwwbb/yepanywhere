@@ -17,8 +17,9 @@
       html { background-color: #09090b; }
       html[data-theme="light"] { background-color: #ffffff; }
       html[data-theme="dark"] { background-color: #18181b; }
+      html[data-theme="auto"] { background-color: #09090b; }
       @media (prefers-color-scheme: light) {
-        html:not([data-theme]) { background-color: #ffffff; }
+        html:not([data-theme]), html[data-theme="auto"] { background-color: #ffffff; }
       }
     </style>
     <script>

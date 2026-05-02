@@ -1,0 +1,315 @@
+/* ==========================================================================
+   RemoteAccessSetup Component
+   ========================================================================== */
+
+.remote-access-setup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.remote-access-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.remote-access-header h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.remote-access-header p {
+  margin: var(--space-1) 0 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.remote-access-loading {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.remote-access-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.remote-access-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.remote-access-status .status-label {
+  color: var(--text-muted);
+}
+
+.remote-access-status .status-indicator {
+  font-weight: 500;
+}
+
+.remote-access-status .status-indicator::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: var(--space-1);
+  vertical-align: middle;
+}
+
+.remote-access-status .status-success::before {
+  background-color: var(--success-color, var(--color-brand));
+}
+
+.remote-access-status .status-warning::before {
+  background-color: var(--warning-color, #f59e0b);
+}
+
+.remote-access-status .status-error::before {
+  background-color: var(--error-color, #ef4444);
+}
+
+.remote-access-status .status-pending::before {
+  background-color: var(--text-muted);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.remote-access-status .status-disabled::before {
+  background-color: var(--text-muted);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.remote-access-status .status-error-detail {
+  color: var(--color-error);
+  font-size: var(--text-xs);
+}
+
+.remote-access-connect {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.remote-access-connect .connect-label {
+  color: var(--text-muted);
+}
+
+.connect-url-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.connect-url {
+  background: var(--bg-secondary);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  word-break: break-all;
+}
+
+.copy-button {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.copy-button:hover {
+  background: var(--bg-secondary);
+}
+
+.remote-access-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.form-select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-md);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  cursor: pointer;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--color-focus);
+}
+
+.form-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Remote Access QR Code */
+.remote-access-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+}
+
+.qr-toggle-button {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.qr-toggle-button:hover {
+  background: var(--bg-hover);
+}
+
+.qr-code-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: white;
+  border-radius: var(--radius-md);
+}
+
+.qr-code-hint {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 200px;
+}
+
+/* Remote Access Sessions */
+.remote-access-sessions {
+  border-top: 1px solid var(--border-default);
+  padding-top: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.sessions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.sessions-title {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.revoke-all-button {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-danger);
+  cursor: pointer;
+}
+
+.revoke-all-button:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.revoke-all-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sessions-empty {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-align: center;
+  padding: var(--space-2);
+}
+
+.sessions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.session-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.session-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.session-device {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.session-origin {
+  font-size: var(--text-xs);
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+}
+
+.session-dates {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.revoke-button {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-danger);
+  cursor: pointer;
+}
+
+.revoke-button:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.revoke-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -20,7 +20,6 @@ export function AppearanceSettings() {
   const { streamingEnabled, setStreamingEnabled } = useStreamingEnabled();
   const { funPhrasesEnabled, setFunPhrasesEnabled } = useFunPhrases();
   const { showConnectionBars, setShowConnectionBars } = useDeveloperMode();
-  const translate = (key: string) => t(key as never);
 
   return (
     <section className="settings-section">
@@ -41,7 +40,7 @@ export function AppearanceSettings() {
           >
             {SUPPORTED_LOCALES.map((value) => (
               <option key={value} value={value}>
-                {getLocaleLabel(value, translate)}
+                {getLocaleLabel(value, t)}
               </option>
             ))}
           </select>
@@ -59,7 +58,7 @@ export function AppearanceSettings() {
                 className={`font-size-option ${theme === themeValue ? "active" : ""}`}
                 onClick={() => setTheme(themeValue)}
               >
-                {getThemeLabel(themeValue, translate)}
+                {getThemeLabel(themeValue, t)}
               </button>
             ))}
           </div>
@@ -77,7 +76,7 @@ export function AppearanceSettings() {
                 className={`font-size-option ${fontSize === size ? "active" : ""}`}
                 onClick={() => setFontSize(size)}
               >
-                {getFontSizeLabel(size, translate)}
+                {getFontSizeLabel(size, t)}
               </button>
             ))}
           </div>

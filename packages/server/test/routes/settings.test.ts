@@ -108,6 +108,79 @@ describe("Settings Routes", () => {
     });
   });
 
+  describe("PUT /remote-channels/bots/:botId/bind", () => {
+    it("replaces a session binding with another bot", async () => {
+      settings = {
+        ...settings,
+        remoteChannels: {
+          telegram: {
+            enabled: true,
+            bots: [
+              {
+                id: "bot-old",
+                botToken: "token-old",
+                chatId: "chat-old",
+                boundSessionId: "session-1",
+              },
+              {
+                id: "bot-new",
+                botToken: "token-new",
+                chatId: "chat-new",
+                boundSessionId: "session-2",
+              },
+            ],
+          },
+        },
+      };
+      const remoteChannelService = {
+        sendTestNotification: vi.fn(),
+        reload: vi.fn(async () => {}),
+      };
+      const routes = createSettingsRoutes({
+        serverSettingsService: mockServerSettingsService,
+        remoteChannelService,
+      });
+
+      const response = await routes.request(
+        "/remote-channels/bots/bot-new/bind",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: "session-1" }),
+        },
+      );
+
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({
+        ok: true,
+        botId: "bot-new",
+        boundSessionId: "session-1",
+      });
+      expect(mockServerSettingsService.updateSettings).toHaveBeenCalledWith({
+        remoteChannels: {
+          telegram: {
+            enabled: true,
+            bots: [
+              {
+                id: "bot-old",
+                botToken: "token-old",
+                chatId: "chat-old",
+                boundSessionId: undefined,
+              },
+              {
+                id: "bot-new",
+                botToken: "token-new",
+                chatId: "chat-new",
+                boundSessionId: "session-1",
+              },
+            ],
+          },
+        },
+      });
+      expect(remoteChannelService.reload).toHaveBeenCalledOnce();
+    });
+  });
+
   describe("PUT /", () => {
     it("accepts clearing globalInstructions with null", async () => {
       settings = {
@@ -272,9 +345,7 @@ describe("Settings Routes", () => {
 
       expect(response.status).toBe(200);
       const json = await response.json();
-      expect(json.settings.remoteChannels.feishu.appSecret).toBe(
-        "***et-value",
-      );
+      expect(json.settings.remoteChannels.feishu.appSecret).toBe("***et-value");
     });
 
     it("keeps existing Feishu app secret when saving masked value", async () => {
@@ -316,7 +387,6 @@ describe("Settings Routes", () => {
         },
       });
     });
-
   });
 
   describe("POST /remote-executors/:host/test", () => {

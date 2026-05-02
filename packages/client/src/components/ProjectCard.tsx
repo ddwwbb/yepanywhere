@@ -1,7 +1,7 @@
-import { Link, useNavigate } from "react-router-dom";
 import { GitBranch, Plus } from "lucide-react";
-import { shortenPath } from "../lib/text";
+import { Link, useNavigate } from "react-router-dom";
 import { useI18n } from "../i18n";
+import { shortenPath } from "../lib/text";
 import type { Project } from "../types";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 
@@ -78,7 +78,7 @@ export function ProjectCard({
               type="button"
               className="project-card__action-btn project-card__action-btn--git"
               onClick={handleGitStatus}
-              title={t("sidebarSourceControl" as never)}
+              title={t("sidebarSourceControl")}
             >
               <GitBranch size={15} strokeWidth={2} aria-hidden="true" />
               <span className="project-card__new-session-label">Git</span>
@@ -87,10 +87,12 @@ export function ProjectCard({
               type="button"
               className="project-card__action-btn project-card__action-btn--new"
               onClick={handleNewSession}
-              title={t("newSessionTitle" as never)}
+              title={t("newSessionTitle")}
             >
               <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
-              <span className="project-card__new-session-label">{t("projectCardNewSession" as never)}</span>
+              <span className="project-card__new-session-label">
+                {t("projectCardNewSession")}
+              </span>
             </button>
           </div>
         </div>

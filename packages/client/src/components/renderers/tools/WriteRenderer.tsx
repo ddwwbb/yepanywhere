@@ -3,6 +3,7 @@ import type { ZodError } from "zod";
 import { useSchemaValidationContext } from "../../../contexts/SchemaValidationContext";
 import { validateToolResult } from "../../../lib/validateToolResult";
 import { SchemaWarning } from "../../SchemaWarning";
+import { TrustedHtml } from "../../TrustedHtml";
 import { Modal } from "../../ui/Modal";
 import type { ToolRenderer, WriteInput, WriteResult } from "./types";
 
@@ -102,10 +103,10 @@ function WriteModalContent({
       <div className="file-content-modal">
         {toggleButton}
         <div className="markdown-preview">
-          <div
+          <TrustedHtml
             className="markdown-rendered"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered HTML
-            dangerouslySetInnerHTML={{ __html: input._renderedMarkdownHtml }}
+            html={input._renderedMarkdownHtml}
+            source="server-rendered-markdown"
           />
         </div>
       </div>
@@ -118,10 +119,10 @@ function WriteModalContent({
       <div className="file-content-modal">
         {toggleButton}
         <div className="file-viewer-code file-viewer-code-highlighted">
-          <div
+          <TrustedHtml
             className="shiki-container"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered HTML
-            dangerouslySetInnerHTML={{ __html: input._highlightedContentHtml }}
+            html={input._highlightedContentHtml}
+            source="server-rendered-syntax-highlight"
           />
           {input._highlightedTruncated && (
             <div className="file-viewer-truncated">
@@ -224,10 +225,10 @@ function WriteToolResult({
           )}
         </div>
         <div className="file-viewer-code file-viewer-code-highlighted">
-          <div
+          <TrustedHtml
             className="shiki-container"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered HTML
-            dangerouslySetInnerHTML={{ __html: input._highlightedContentHtml }}
+            html={input._highlightedContentHtml}
+            source="server-rendered-syntax-highlight"
           />
           {input._highlightedTruncated && (
             <div className="file-viewer-truncated">
@@ -381,10 +382,10 @@ function WriteCollapsedPreview({
           className={`write-preview-content ${isTruncated ? "write-preview-truncated" : ""}`}
         >
           {previewHtml ? (
-            <div
+            <TrustedHtml
               className="shiki-container"
-              // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered HTML
-              dangerouslySetInnerHTML={{ __html: previewHtml }}
+              html={previewHtml}
+              source="server-rendered-syntax-highlight"
             />
           ) : (
             <pre>

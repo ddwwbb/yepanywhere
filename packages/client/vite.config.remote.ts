@@ -9,6 +9,7 @@ import { execSync } from "node:child_process";
 import { resolve } from "node:path";
 import react from "@vitejs/plugin-react";
 import { type Plugin, defineConfig } from "vite";
+import { manualChunks } from "./vite-build-options";
 import { cspPlugin } from "./vite-plugin-csp";
 
 function getGitVersion(): string {
@@ -66,6 +67,9 @@ export default defineConfig({
   clearScreen: false,
   plugins: [serveRemoteHtml(), react(), cspPlugin({ isRemote: true })],
   resolve: {
+    alias: {
+      crypto: resolve(__dirname, "src/lib/browserCryptoShim.ts"),
+    },
     conditions: ["source"],
   },
   // Define build-time constants
@@ -80,6 +84,9 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, "remote.html"),
+      },
+      output: {
+        manualChunks,
       },
     },
   },

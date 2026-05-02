@@ -91,7 +91,7 @@ function EmulatorListItem({
         {canConnect && (
           <button
             type="button"
-            className="emulator-btn emulator-btn-primary"
+            className="ui-button ui-button--primary ui-button--sm"
             onClick={() => onConnect(device)}
           >
             Connect
@@ -100,7 +100,7 @@ function EmulatorListItem({
         {canStop && (
           <button
             type="button"
-            className="emulator-btn emulator-btn-secondary"
+            className="ui-button ui-button--secondary ui-button--sm"
             onClick={() => onStop(device.id)}
           >
             Stop
@@ -109,7 +109,7 @@ function EmulatorListItem({
         {!canStop && canStart && (
           <button
             type="button"
-            className="emulator-btn emulator-btn-secondary"
+            className="ui-button ui-button--secondary ui-button--sm"
             onClick={() => onStart(device.id)}
           >
             Start
@@ -277,7 +277,7 @@ function StreamView({
       <div className="emulator-stream-header">
         <button
           type="button"
-          className="emulator-btn emulator-btn-secondary"
+          className="ui-button ui-button--secondary ui-button--sm"
           onClick={handleBack}
         >
           Back
@@ -289,7 +289,7 @@ function StreamView({
           {supportsImmersiveKeyboard && (
             <button
               type="button"
-              className="emulator-btn emulator-btn-secondary"
+              className="ui-button ui-button--secondary ui-button--sm"
               onClick={() => {
                 if (immersiveKeyboardActive) {
                   void exitImmersiveKeyboard();
@@ -429,7 +429,7 @@ export function BridgeRuntimePrompt({
       {error && <div className="emulator-error">{error}</div>}
       <button
         type="button"
-        className="emulator-btn emulator-btn-primary"
+        className="ui-button ui-button--primary ui-button--sm"
         onClick={handleDownload}
         disabled={downloading}
       >

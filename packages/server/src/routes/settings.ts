@@ -25,8 +25,8 @@ import { postThroughTunnel } from "../remote-channels/proxy-tunnel.js";
 import { testSSHConnection } from "../sdk/remote-spawn.js";
 import type {
   RemoteChannelFeishuBot,
-  RemoteChannelTelegramBot,
   RemoteChannelQqBot,
+  RemoteChannelTelegramBot,
   RemoteChannelWeixinBot,
   ServerSettings,
   ServerSettingsService,
@@ -39,7 +39,10 @@ import {
 export interface SettingsRoutesDeps {
   serverSettingsService: ServerSettingsService;
   remoteChannelService?: {
-    sendTestNotification(botId?: string): Promise<{ ok: boolean; error?: string }>;
+    sendTestNotification(
+      botId?: string,
+    ): Promise<{ ok: boolean; error?: string }>;
+    reload?(): Promise<void>;
   };
   /** Callback to apply allowedHosts changes at runtime */
   onAllowedHostsChanged?: (value: string | undefined) => void;
@@ -124,7 +127,12 @@ function redactSettings(settings: ServerSettings): ServerSettings {
   const hasTelegramSecret = telegram?.bots?.some((b) => b.botToken);
   const hasQqSecret = qq?.bots?.some((b) => b.appSecret);
   const hasWeixinSecret = weixin?.bots?.some((b) => b.botToken);
-  if (!hasFeishuSecret && !hasTelegramSecret && !hasQqSecret && !hasWeixinSecret) {
+  if (
+    !hasFeishuSecret &&
+    !hasTelegramSecret &&
+    !hasQqSecret &&
+    !hasWeixinSecret
+  ) {
     return settings;
   }
 
@@ -133,16 +141,40 @@ function redactSettings(settings: ServerSettings): ServerSettings {
     remoteChannels: {
       ...settings.remoteChannels,
       feishu: feishu
-        ? { ...feishu, bots: feishu.bots?.map((b) => ({ ...b, appSecret: maskSecret(b.appSecret) })) }
+        ? {
+            ...feishu,
+            bots: feishu.bots?.map((b) => ({
+              ...b,
+              appSecret: maskSecret(b.appSecret),
+            })),
+          }
         : undefined,
       telegram: telegram
-        ? { ...telegram, bots: telegram.bots?.map((b) => ({ ...b, botToken: maskSecret(b.botToken) })) }
+        ? {
+            ...telegram,
+            bots: telegram.bots?.map((b) => ({
+              ...b,
+              botToken: maskSecret(b.botToken),
+            })),
+          }
         : undefined,
       qq: qq
-        ? { ...qq, bots: qq.bots?.map((b) => ({ ...b, appSecret: maskSecret(b.appSecret) })) }
+        ? {
+            ...qq,
+            bots: qq.bots?.map((b) => ({
+              ...b,
+              appSecret: maskSecret(b.appSecret),
+            })),
+          }
         : undefined,
       weixin: weixin
-        ? { ...weixin, bots: weixin.bots?.map((b) => ({ ...b, botToken: maskSecret(b.botToken) })) }
+        ? {
+            ...weixin,
+            bots: weixin.bots?.map((b) => ({
+              ...b,
+              botToken: maskSecret(b.botToken),
+            })),
+          }
         : undefined,
     },
   };
@@ -205,7 +237,10 @@ async function getFeishuTenantAccessToken(
     tenant_access_token?: string;
   };
   if (body.code !== 0 || !body.tenant_access_token) {
-    return { ok: false, error: body.msg ?? `Feishu auth failed with code ${body.code}` };
+    return {
+      ok: false,
+      error: body.msg ?? `Feishu auth failed with code ${body.code}`,
+    };
   }
 
   return { ok: true, token: body.tenant_access_token };
@@ -231,18 +266,26 @@ async function sendFeishuAppTestMessage(
       body: JSON.stringify({
         receive_id: chatId,
         msg_type: "text",
-        content: JSON.stringify({ text: "Yep Anywhere Feishu App test message" }),
+        content: JSON.stringify({
+          text: "Yep Anywhere Feishu App test message",
+        }),
       }),
     },
   );
 
   if (!response.ok) {
-    return { ok: false, error: `Feishu message returned HTTP ${response.status}` };
+    return {
+      ok: false,
+      error: `Feishu message returned HTTP ${response.status}`,
+    };
   }
 
   const body = (await response.json()) as { code?: number; msg?: string };
   if (body.code !== 0) {
-    return { ok: false, error: body.msg ?? `Feishu message failed with code ${body.code}` };
+    return {
+      ok: false,
+      error: body.msg ?? `Feishu message failed with code ${body.code}`,
+    };
   }
 
   return { ok: true };
@@ -253,13 +296,17 @@ async function startFeishuRegistration(): Promise<{
   verificationUrl: string;
   interval: number;
 }> {
-  const response = await fetch(`${FEISHU_ACCOUNTS_BASE}${FEISHU_REGISTRATION_PATH}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: "action=begin&archetype=PersonalAgent&auth_method=client_secret&request_user_info=open_id+tenant_brand",
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!response.ok) throw new Error(`Feishu registration returned HTTP ${response.status}`);
+  const response = await fetch(
+    `${FEISHU_ACCOUNTS_BASE}${FEISHU_REGISTRATION_PATH}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "action=begin&archetype=PersonalAgent&auth_method=client_secret&request_user_info=open_id+tenant_brand",
+      signal: AbortSignal.timeout(15_000),
+    },
+  );
+  if (!response.ok)
+    throw new Error(`Feishu registration returned HTTP ${response.status}`);
 
   const body = (await response.json()) as {
     device_code?: string;
@@ -284,7 +331,9 @@ async function startFeishuRegistration(): Promise<{
     session,
   );
   setTimeout(() => {
-    getGlobalMap<FeishuRegistrationSession>(FEISHU_REGISTRATION_GLOBAL_KEY).delete(sessionId);
+    getGlobalMap<FeishuRegistrationSession>(
+      FEISHU_REGISTRATION_GLOBAL_KEY,
+    ).delete(sessionId);
   }, FEISHU_REGISTRATION_CLEANUP_MS).unref();
 
   return {
@@ -298,7 +347,9 @@ async function pollFeishuRegistration(
   sessionId: string,
   serverSettingsService: ServerSettingsService,
 ): Promise<FeishuRegistrationSession> {
-  const sessions = getGlobalMap<FeishuRegistrationSession>(FEISHU_REGISTRATION_GLOBAL_KEY);
+  const sessions = getGlobalMap<FeishuRegistrationSession>(
+    FEISHU_REGISTRATION_GLOBAL_KEY,
+  );
   const session = sessions.get(sessionId);
   if (!session) throw new Error("Feishu registration session not found");
   if (session.status !== "waiting") return session;
@@ -308,7 +359,8 @@ async function pollFeishuRegistration(
     return session;
   }
 
-  const accountsBase = session.domain === "lark" ? LARK_ACCOUNTS_BASE : FEISHU_ACCOUNTS_BASE;
+  const accountsBase =
+    session.domain === "lark" ? LARK_ACCOUNTS_BASE : FEISHU_ACCOUNTS_BASE;
   const response = await fetch(`${accountsBase}${FEISHU_REGISTRATION_PATH}`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -405,7 +457,12 @@ async function verifyTelegramBot(
   botToken: string,
   chatId: string | undefined,
   proxyUrl: string | undefined,
-): Promise<{ verified: boolean; botName?: string; chatId?: string; error?: string }> {
+): Promise<{
+  verified: boolean;
+  botName?: string;
+  chatId?: string;
+  error?: string;
+}> {
   const meResponse = await telegramPost(
     botToken,
     "getMe",
@@ -419,24 +476,47 @@ async function verifyTelegramBot(
     result?: { username?: string; first_name?: string };
   };
   if (!meResponse.ok || !meBody.ok) {
-    return { verified: false, error: meBody.description ?? `Telegram returned HTTP ${meResponse.status}` };
+    return {
+      verified: false,
+      error:
+        meBody.description ?? `Telegram returned HTTP ${meResponse.status}`,
+    };
   }
   if (!chatId) {
-    return { verified: true, botName: meBody.result?.username ?? meBody.result?.first_name };
+    return {
+      verified: true,
+      botName: meBody.result?.username ?? meBody.result?.first_name,
+    };
   }
 
   const sendResponse = await telegramPost(
     botToken,
     "sendMessage",
-    JSON.stringify({ chat_id: chatId, text: "Yep Anywhere Telegram test message" }),
+    JSON.stringify({
+      chat_id: chatId,
+      text: "Yep Anywhere Telegram test message",
+    }),
     proxyUrl,
     AbortSignal.timeout(10_000),
   );
-  const sendBody = (await sendResponse.json()) as { ok?: boolean; description?: string };
+  const sendBody = (await sendResponse.json()) as {
+    ok?: boolean;
+    description?: string;
+  };
   if (!sendResponse.ok || !sendBody.ok) {
-    return { verified: false, botName: meBody.result?.username, error: sendBody.description ?? `Telegram message returned HTTP ${sendResponse.status}` };
+    return {
+      verified: false,
+      botName: meBody.result?.username,
+      error:
+        sendBody.description ??
+        `Telegram message returned HTTP ${sendResponse.status}`,
+    };
   }
-  return { verified: true, botName: meBody.result?.username ?? meBody.result?.first_name, chatId };
+  return {
+    verified: true,
+    botName: meBody.result?.username ?? meBody.result?.first_name,
+    chatId,
+  };
 }
 
 async function detectTelegramChatId(
@@ -453,16 +533,23 @@ async function detectTelegramChatId(
   const body = (await response.json()) as {
     ok?: boolean;
     description?: string;
-    result?: Array<{ message?: { chat?: { id?: number | string } }; channel_post?: { chat?: { id?: number | string } } }>;
+    result?: Array<{
+      message?: { chat?: { id?: number | string } };
+      channel_post?: { chat?: { id?: number | string } };
+    }>;
   };
   if (!response.ok || !body.ok) {
-    return { detected: false, error: body.description ?? `Telegram returned HTTP ${response.status}` };
+    return {
+      detected: false,
+      error: body.description ?? `Telegram returned HTTP ${response.status}`,
+    };
   }
   const chat = [...(body.result ?? [])]
     .reverse()
     .map((update) => update.message?.chat ?? update.channel_post?.chat)
     .find((item) => item?.id !== undefined);
-  if (!chat?.id) return { detected: false, error: "No recent Telegram chat found" };
+  if (!chat?.id)
+    return { detected: false, error: "No recent Telegram chat found" };
   return { detected: true, chatId: String(chat.id) };
 }
 
@@ -470,34 +557,63 @@ async function verifyQqBot(
   appId: string,
   appSecret: string,
 ): Promise<{ verified: boolean; gatewayUrl?: string; error?: string }> {
-  const tokenResponse = await fetch("https://bots.qq.com/app/getAppAccessToken", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ appId, clientSecret: appSecret }),
-    signal: AbortSignal.timeout(10_000),
-  });
-  const tokenBody = (await tokenResponse.json()) as { access_token?: string; message?: string };
+  const tokenResponse = await fetch(
+    "https://bots.qq.com/app/getAppAccessToken",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ appId, clientSecret: appSecret }),
+      signal: AbortSignal.timeout(10_000),
+    },
+  );
+  const tokenBody = (await tokenResponse.json()) as {
+    access_token?: string;
+    message?: string;
+  };
   if (!tokenResponse.ok || !tokenBody.access_token) {
-    return { verified: false, error: tokenBody.message ?? `QQ token returned HTTP ${tokenResponse.status}` };
+    return {
+      verified: false,
+      error:
+        tokenBody.message ?? `QQ token returned HTTP ${tokenResponse.status}`,
+    };
   }
 
   const gatewayResponse = await fetch("https://api.sgroup.qq.com/gateway", {
     headers: { Authorization: `QQBot ${tokenBody.access_token}` },
     signal: AbortSignal.timeout(10_000),
   });
-  const gatewayBody = (await gatewayResponse.json()) as { url?: string; message?: string };
+  const gatewayBody = (await gatewayResponse.json()) as {
+    url?: string;
+    message?: string;
+  };
   if (!gatewayResponse.ok || !gatewayBody.url) {
-    return { verified: false, error: gatewayBody.message ?? `QQ gateway returned HTTP ${gatewayResponse.status}` };
+    return {
+      verified: false,
+      error:
+        gatewayBody.message ??
+        `QQ gateway returned HTTP ${gatewayResponse.status}`,
+    };
   }
   return { verified: true, gatewayUrl: gatewayBody.url };
 }
 
-async function startWeixinLogin(): Promise<{ sessionId: string; qrImage: string }> {
-  const response = await fetch(`${WEIXIN_QR_BASE}/ilink/bot/get_bot_qrcode?bot_type=3`, {
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!response.ok) throw new Error(`Weixin QR start returned HTTP ${response.status}`);
-  const body = (await response.json()) as { qrcode?: string; qrcode_img_content?: string; errmsg?: string };
+async function startWeixinLogin(): Promise<{
+  sessionId: string;
+  qrImage: string;
+}> {
+  const response = await fetch(
+    `${WEIXIN_QR_BASE}/ilink/bot/get_bot_qrcode?bot_type=3`,
+    {
+      signal: AbortSignal.timeout(15_000),
+    },
+  );
+  if (!response.ok)
+    throw new Error(`Weixin QR start returned HTTP ${response.status}`);
+  const body = (await response.json()) as {
+    qrcode?: string;
+    qrcode_img_content?: string;
+    errmsg?: string;
+  };
   if (!body.qrcode || !body.qrcode_img_content) {
     throw new Error(body.errmsg ?? "Invalid Weixin QR response");
   }
@@ -523,7 +639,8 @@ async function pollWeixinLogin(
   const sessions = getGlobalMap<WeixinLoginSession>(WEIXIN_LOGIN_GLOBAL_KEY);
   const session = sessions.get(sessionId);
   if (!session) throw new Error("Weixin login session not found");
-  if (session.status === "confirmed" || session.status === "failed") return session;
+  if (session.status === "confirmed" || session.status === "failed")
+    return session;
   if (Date.now() - session.startedAt > WEIXIN_QR_TTL_MS) {
     session.status = "expired";
     return session;
@@ -533,7 +650,8 @@ async function pollWeixinLogin(
     `${WEIXIN_QR_BASE}/ilink/bot/get_qrcode_status?qrcode=${encodeURIComponent(session.qrcode)}`,
     { signal: AbortSignal.timeout(40_000) },
   );
-  if (!response.ok) throw new Error(`Weixin QR poll returned HTTP ${response.status}`);
+  if (!response.ok)
+    throw new Error(`Weixin QR poll returned HTTP ${response.status}`);
   const body = (await response.json()) as {
     status?: "wait" | "scaned" | "confirmed" | "expired";
     bot_token?: string;
@@ -561,11 +679,17 @@ async function pollWeixinLogin(
   return session;
 }
 
-function parseBotField(raw: Record<string, unknown>, field: string, maxLen: number): string | undefined | null {
+function parseBotField(
+  raw: Record<string, unknown>,
+  field: string,
+  maxLen: number,
+): string | undefined | null {
   return parseOptionalString(raw[field], maxLen);
 }
 
-function parseBotProxyUrl(raw: Record<string, unknown>): string | undefined | null {
+function parseBotProxyUrl(
+  raw: Record<string, unknown>,
+): string | undefined | null {
   return parseRemoteChannelProxyUrl(raw.proxyUrl);
 }
 
@@ -583,7 +707,13 @@ function parseFeishuBots(
     const appId = parseBotField(b, "appId", 200);
     const appSecretInput = parseBotField(b, "appSecret", 500);
     const appChatId = parseBotField(b, "appChatId", 200);
-    if (proxyUrl === null || appId === null || appSecretInput === null || appChatId === null) return null;
+    if (
+      proxyUrl === null ||
+      appId === null ||
+      appSecretInput === null ||
+      appChatId === null
+    )
+      return null;
     const existing = existingBots?.find((eb) => eb.id === b.id);
     const appSecret = appSecretInput?.startsWith(MASKED_SECRET_PREFIX)
       ? existing?.appSecret
@@ -615,7 +745,8 @@ function parseTelegramBots(
     const botTokenInput = parseBotField(b, "botToken", 500);
     const chatId = parseBotField(b, "chatId", 200);
     const proxyUrl = parseBotProxyUrl(b);
-    if (botTokenInput === null || chatId === null || proxyUrl === null) return null;
+    if (botTokenInput === null || chatId === null || proxyUrl === null)
+      return null;
     const existing = existingBots?.find((eb) => eb.id === b.id);
     const botToken = botTokenInput?.startsWith(MASKED_SECRET_PREFIX)
       ? existing?.botToken
@@ -646,7 +777,8 @@ function parseQqBots(
     const appId = parseBotField(b, "appId", 200);
     const appSecretInput = parseBotField(b, "appSecret", 500);
     const openId = parseBotField(b, "openId", 200);
-    if (appId === null || appSecretInput === null || openId === null) return null;
+    if (appId === null || appSecretInput === null || openId === null)
+      return null;
     const existing = existingBots?.find((eb) => eb.id === b.id);
     const appSecret = appSecretInput?.startsWith(MASKED_SECRET_PREFIX)
       ? existing?.appSecret
@@ -687,7 +819,8 @@ function parseWeixinBots(
       baseUrl === null ||
       contextToken === null ||
       getUpdatesBuf === null
-    ) return null;
+    )
+      return null;
     const existing = existingBots?.find((eb) => eb.id === b.id);
     const botToken = botTokenInput?.startsWith(MASKED_SECRET_PREFIX)
       ? existing?.botToken
@@ -720,17 +853,27 @@ function parseRemoteChannels(
 
   if ("telegram" in input) {
     const telegramRaw = input.telegram;
-    if (telegramRaw === undefined || telegramRaw === null || telegramRaw === "") {
+    if (
+      telegramRaw === undefined ||
+      telegramRaw === null ||
+      telegramRaw === ""
+    ) {
       parsed.telegram = undefined;
     } else if (typeof telegramRaw !== "object") {
       return null;
     } else {
       const telegramInput = telegramRaw as Record<string, unknown>;
       const existingBots = existingSettings.remoteChannels?.telegram?.bots;
-      const bots = "bots" in telegramInput ? parseTelegramBots(telegramInput.bots, existingBots) : undefined;
+      const bots =
+        "bots" in telegramInput
+          ? parseTelegramBots(telegramInput.bots, existingBots)
+          : undefined;
       if (bots === null) return null;
       parsed.telegram = {
-        enabled: typeof telegramInput.enabled === "boolean" ? telegramInput.enabled : undefined,
+        enabled:
+          typeof telegramInput.enabled === "boolean"
+            ? telegramInput.enabled
+            : undefined,
         bots: bots ?? [],
       };
     }
@@ -745,10 +888,12 @@ function parseRemoteChannels(
     } else {
       const qqInput = qqRaw as Record<string, unknown>;
       const existingBots = existingSettings.remoteChannels?.qq?.bots;
-      const bots = "bots" in qqInput ? parseQqBots(qqInput.bots, existingBots) : undefined;
+      const bots =
+        "bots" in qqInput ? parseQqBots(qqInput.bots, existingBots) : undefined;
       if (bots === null) return null;
       parsed.qq = {
-        enabled: typeof qqInput.enabled === "boolean" ? qqInput.enabled : undefined,
+        enabled:
+          typeof qqInput.enabled === "boolean" ? qqInput.enabled : undefined,
         bots: bots ?? [],
       };
     }
@@ -763,10 +908,16 @@ function parseRemoteChannels(
     } else {
       const weixinInput = weixinRaw as Record<string, unknown>;
       const existingBots = existingSettings.remoteChannels?.weixin?.bots;
-      const bots = "bots" in weixinInput ? parseWeixinBots(weixinInput.bots, existingBots) : undefined;
+      const bots =
+        "bots" in weixinInput
+          ? parseWeixinBots(weixinInput.bots, existingBots)
+          : undefined;
       if (bots === null) return null;
       parsed.weixin = {
-        enabled: typeof weixinInput.enabled === "boolean" ? weixinInput.enabled : undefined,
+        enabled:
+          typeof weixinInput.enabled === "boolean"
+            ? weixinInput.enabled
+            : undefined,
         bots: bots ?? [],
       };
     }
@@ -781,10 +932,16 @@ function parseRemoteChannels(
     } else {
       const feishuInput = feishuRaw as Record<string, unknown>;
       const existingBots = existingSettings.remoteChannels?.feishu?.bots;
-      const bots = "bots" in feishuInput ? parseFeishuBots(feishuInput.bots, existingBots) : undefined;
+      const bots =
+        "bots" in feishuInput
+          ? parseFeishuBots(feishuInput.bots, existingBots)
+          : undefined;
       if (bots === null) return null;
       parsed.feishu = {
-        enabled: typeof feishuInput.enabled === "boolean" ? feishuInput.enabled : undefined,
+        enabled:
+          typeof feishuInput.enabled === "boolean"
+            ? feishuInput.enabled
+            : undefined,
         bots: bots ?? [],
       };
     }
@@ -889,11 +1046,16 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
   });
 
   app.post("/remote-channels/feishu/app/test", async (c) => {
-    const body = await c.req.json<{ botId?: string }>().catch(() => ({ botId: undefined }));
+    const body = await c.req
+      .json<{ botId?: string }>()
+      .catch(() => ({ botId: undefined }));
     const feishu = serverSettingsService.getSettings().remoteChannels?.feishu;
     const bot = feishu?.bots?.find((b) => b.id === body.botId);
     if (!bot?.appId || !bot.appSecret) {
-      return c.json({ error: "Feishu App ID and App Secret are required" }, 400);
+      return c.json(
+        { error: "Feishu App ID and App Secret are required" },
+        400,
+      );
     }
 
     const result = await sendFeishuAppTestMessage(
@@ -914,7 +1076,10 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
       return c.json(result);
     } catch (err) {
       return c.json(
-        { error: err instanceof Error ? err.message : "Feishu registration failed" },
+        {
+          error:
+            err instanceof Error ? err.message : "Feishu registration failed",
+        },
         500,
       );
     }
@@ -938,7 +1103,12 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
       });
     } catch (err) {
       return c.json(
-        { error: err instanceof Error ? err.message : "Feishu registration poll failed" },
+        {
+          error:
+            err instanceof Error
+              ? err.message
+              : "Feishu registration poll failed",
+        },
         400,
       );
     }
@@ -947,9 +1117,9 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
   app.post("/remote-channels/feishu/register/cancel", async (c) => {
     const body = await c.req.json<{ sessionId?: string }>();
     if (body.sessionId) {
-      getGlobalMap<FeishuRegistrationSession>(FEISHU_REGISTRATION_GLOBAL_KEY).delete(
-        body.sessionId,
-      );
+      getGlobalMap<FeishuRegistrationSession>(
+        FEISHU_REGISTRATION_GLOBAL_KEY,
+      ).delete(body.sessionId);
     }
     return c.json({ ok: true });
   });
@@ -968,16 +1138,25 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
       ? storedBot?.botToken
       : body.botToken || storedBot?.botToken;
     const proxyUrl = body.proxyUrl || storedBot?.proxyUrl;
-    if (!botToken) return c.json({ error: "Telegram bot token is required" }, 400);
+    if (!botToken)
+      return c.json({ error: "Telegram bot token is required" }, 400);
 
     try {
-      const result = body.action === "detect_chat_id"
-        ? await detectTelegramChatId(botToken, proxyUrl)
-        : await verifyTelegramBot(botToken, body.chatId || storedBot?.chatId, proxyUrl);
+      const result =
+        body.action === "detect_chat_id"
+          ? await detectTelegramChatId(botToken, proxyUrl)
+          : await verifyTelegramBot(
+              botToken,
+              body.chatId || storedBot?.chatId,
+              proxyUrl,
+            );
       return c.json(result);
     } catch (err) {
       return c.json(
-        { error: err instanceof Error ? err.message : "Telegram verification failed" },
+        {
+          error:
+            err instanceof Error ? err.message : "Telegram verification failed",
+        },
         500,
       );
     }
@@ -999,7 +1178,9 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
       return c.json(result);
     } catch (err) {
       return c.json(
-        { error: err instanceof Error ? err.message : "QQ verification failed" },
+        {
+          error: err instanceof Error ? err.message : "QQ verification failed",
+        },
         500,
       );
     }
@@ -1011,7 +1192,9 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
       return c.json(result);
     } catch (err) {
       return c.json(
-        { error: err instanceof Error ? err.message : "Weixin QR login failed" },
+        {
+          error: err instanceof Error ? err.message : "Weixin QR login failed",
+        },
         500,
       );
     }
@@ -1022,7 +1205,10 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
     if (!body.sessionId) return c.json({ error: "sessionId is required" }, 400);
 
     try {
-      const session = await pollWeixinLogin(body.sessionId, serverSettingsService);
+      const session = await pollWeixinLogin(
+        body.sessionId,
+        serverSettingsService,
+      );
       return c.json({
         status: session.status,
         accountId: session.accountId,
@@ -1033,7 +1219,10 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
       });
     } catch (err) {
       return c.json(
-        { error: err instanceof Error ? err.message : "Weixin QR login poll failed" },
+        {
+          error:
+            err instanceof Error ? err.message : "Weixin QR login poll failed",
+        },
         400,
       );
     }
@@ -1116,7 +1305,9 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
    */
   app.put("/remote-channels/bots/:botId/bind", async (c) => {
     const { botId } = c.req.param();
-    const body = await c.req.json<{ sessionId?: string | null }>().catch(() => ({ sessionId: undefined }));
+    const body = await c.req
+      .json<{ sessionId?: string | null }>()
+      .catch(() => ({ sessionId: undefined }));
     const sessionId = body.sessionId ?? null;
 
     const settings = serverSettingsService.getSettings();
@@ -1125,33 +1316,28 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
 
     const updatedRc = { ...rc };
 
-    // 查找并更新对应 bot 的 boundSessionId
+    // 一个 session 只能对应一个远程 bot，替换绑定时清理旧引用。
     for (const channel of ["feishu", "telegram", "qq", "weixin"] as const) {
       const channelSettings = rc[channel];
       if (!channelSettings?.bots) continue;
-      const botIndex = channelSettings.bots.findIndex((b) => b.id === botId);
-      if (botIndex === -1) continue;
 
-      found = true;
-      // 绑定校验：如果 sessionId 非空，检查该 session 是否已被其他 bot 绑定
-      if (sessionId) {
-        for (const ch of ["feishu", "telegram", "qq", "weixin"] as const) {
-          const chBots = rc[ch]?.bots ?? [];
-          for (const b of chBots) {
-            if (b.boundSessionId === sessionId && b.id !== botId) {
-              return c.json(
-                { error: `Session ${sessionId} is already bound to bot ${b.id}` },
-                409,
-              );
-            }
-          }
+      let changed = false;
+      const updatedBots = channelSettings.bots.map((bot) => {
+        if (!found && bot.id === botId) {
+          found = true;
+          changed = true;
+          return { ...bot, boundSessionId: sessionId ?? undefined };
         }
-      }
+        if (sessionId && bot.boundSessionId === sessionId) {
+          changed = true;
+          return { ...bot, boundSessionId: undefined };
+        }
+        return bot;
+      });
 
-      const updatedBots = [...channelSettings.bots];
-      updatedBots[botIndex] = { ...updatedBots[botIndex]!, boundSessionId: sessionId ?? undefined };
-      updatedRc[channel] = { ...channelSettings, bots: updatedBots };
-      break;
+      if (changed) {
+        updatedRc[channel] = { ...channelSettings, bots: updatedBots };
+      }
     }
 
     if (!found) {
@@ -1159,6 +1345,7 @@ export function createSettingsRoutes(deps: SettingsRoutesDeps): Hono {
     }
 
     await serverSettingsService.updateSettings({ remoteChannels: updatedRc });
+    await remoteChannelService?.reload?.();
     return c.json({ ok: true, botId, boundSessionId: sessionId ?? undefined });
   });
 

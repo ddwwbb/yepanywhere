@@ -26,13 +26,11 @@ export function StatusIndicator({
 
   // Determine status text for tooltip/accessibility
   const getStatusText = () => {
-    if (!connected && status.owner === "self")
-      return t("statusReconnecting" as never);
-    if (status.owner === "external") return t("statusExternalProcess" as never);
-    if (processState === "in-turn") return t("statusProcessing" as never);
-    if (processState === "waiting-input")
-      return t("statusWaitingForInput" as never);
-    return t("statusReady" as never);
+    if (!connected && status.owner === "self") return t("statusReconnecting");
+    if (status.owner === "external") return t("statusExternalProcess");
+    if (processState === "in-turn") return t("statusProcessing");
+    if (processState === "waiting-input") return t("statusWaitingForInput");
+    return t("statusReady");
   };
 
   const statusText = getStatusText();

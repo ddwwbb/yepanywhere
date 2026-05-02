@@ -1,0 +1,75 @@
+/* ==========================================================================
+   TodoWrite Tool
+   ========================================================================== */
+
+.todo-tool-use {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.todo-summary {
+  color: var(--text-muted);
+  font-size: var(--text-lg);
+}
+
+.todo-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.todo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.125rem 0;
+}
+
+.todo-checkbox {
+  font-size: 1rem;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.todo-content {
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.todo-completed {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Todo status colors - muted gray tones */
+.todo-status-pending .todo-checkbox {
+  color: var(--text-muted);
+}
+
+.todo-status-in-progress .todo-checkbox {
+  color: var(--text-muted);
+}
+
+.todo-status-completed .todo-checkbox {
+  color: var(--text-muted);
+}
+
+.todo-error {
+  color: var(--color-error);
+  padding: 0.5rem;
+  background: var(--bg-error, rgba(207, 34, 46, 0.1));
+  border-radius: 4px;
+}
+
+.todo-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: var(--text-lg);
+}

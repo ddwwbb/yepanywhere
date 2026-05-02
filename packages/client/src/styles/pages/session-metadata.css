@@ -1,0 +1,559 @@
+/* ==========================================================================
+   Session Metadata UI (rename, archive, filter)
+   ========================================================================== */
+
+/* Session title row with action buttons */
+.session-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  flex: 1;
+  /* Note: Don't use overflow:hidden here - it clips the dropdown menu */
+}
+
+/* Star indicator next to title */
+.star-indicator-inline {
+  color: var(--color-warning);
+  margin-right: var(--space-1);
+  flex-shrink: 0;
+}
+
+/* Session menu dropdown */
+.session-menu-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.session-menu-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity var(--duration-fast), color var(--duration-fast),
+    background var(--duration-fast);
+}
+
+.session-menu-trigger:hover {
+  opacity: 1;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.session-menu-trigger:active {
+  opacity: 1;
+  background: var(--bg-tertiary);
+}
+
+.session-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: var(--space-1);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 140px;
+  z-index: 10000; /* High z-index to appear above sidebar (z-index: 101) and modals */
+  overflow: hidden;
+}
+
+.session-menu-bot-picker {
+  max-height: 150px;
+  padding: var(--space-1) var(--space-3);
+  overflow-y: auto;
+}
+
+.session-menu-bot-empty {
+  color: var(--text-secondary);
+  font-size: 0.85em;
+}
+
+.session-menu-dropdown button.session-menu-bot-option {
+  display: block;
+  padding: var(--space-1) 0;
+  min-height: 0;
+  text-align: left;
+}
+
+.session-menu-bot-channel {
+  margin-right: var(--space-2);
+  color: var(--text-secondary);
+  font-size: 0.8em;
+}
+
+.session-menu-bot-bound {
+  margin-left: var(--space-2);
+  color: var(--text-muted);
+  font-size: 0.75em;
+}
+
+.session-menu-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  min-height: 40px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-fast);
+}
+
+.session-menu-dropdown button:hover {
+  background: var(--bg-hover);
+}
+
+.session-menu-dropdown button svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.session-menu-dropdown button.terminate-button {
+  color: var(--color-error);
+}
+
+.session-menu-dropdown button.terminate-button svg {
+  color: var(--color-error);
+}
+
+.session-menu-dropdown button.terminate-button:hover {
+  background: var(--error-bg-subtle, rgba(239, 68, 68, 0.1));
+}
+
+.session-menu-dropdown button.terminate-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.session-menu-dropdown button.session-menu-delete-button {
+  color: var(--color-error);
+}
+
+.session-menu-dropdown button.session-menu-delete-button svg {
+  color: var(--color-error);
+}
+
+.session-menu-dropdown button.session-menu-delete-button:hover {
+  background: var(--error-bg-subtle, rgba(239, 68, 68, 0.1));
+}
+
+/* Star button special styling */
+
+/* Star indicator in session list */
+.star-indicator {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-warning);
+  margin-right: var(--space-1);
+  vertical-align: middle;
+}
+
+/* Archived badge */
+.archived-badge {
+  font-size: var(--text-xs);
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  margin-left: var(--space-1);
+  white-space: nowrap;
+}
+
+/* Rename modal */
+
+.rename-input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-code);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  font-family: inherit;
+  resize: vertical;
+}
+
+.rename-input:focus {
+  outline: none;
+  border-color: var(--color-focus);
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s;
+}
+
+.btn-primary {
+  background: var(--color-brand-hover);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-brand);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Filter bar */
+.filter-bar {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-search {
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+  padding: var(--space-2) var(--space-3);
+  min-height: var(--touch-target);
+  background: var(--bg-code);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  transition: border-color var(--duration-fast) var(--ease-default);
+}
+
+.filter-search:focus {
+  outline: none;
+  border-color: var(--color-focus);
+}
+
+.filter-search::placeholder {
+  color: var(--text-dimmed);
+}
+
+.filter-search-form {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+}
+
+.filter-search-form .filter-search {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
+}
+
+.filter-search-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-3);
+  min-height: var(--touch-target);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-left: none;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--duration-fast) var(--ease-default), color
+    var(--duration-fast) var(--ease-default);
+}
+
+.filter-search-button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.filter-clear-button {
+  padding: var(--space-2) var(--space-3);
+  min-height: var(--touch-target);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--duration-fast) var(--ease-default), color
+    var(--duration-fast) var(--ease-default), border-color var(--duration-fast)
+    var(--ease-default);
+}
+
+.filter-clear-button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.filter-dropdowns {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Session list header with select-all */
+.session-list-header {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-default);
+  margin-bottom: var(--space-2);
+}
+
+.session-list-header__select-all {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.session-list-header__select-all input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Bulk action bar */
+.bulk-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  padding-bottom: max(var(--space-3), env(safe-area-inset-bottom, 0px));
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-default);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  animation: slide-up 0.2s ease-out;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.bulk-action-bar__info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.bulk-action-bar__count {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.bulk-action-bar__clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.bulk-action-bar__clear:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.bulk-action-bar__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.bulk-action-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.bulk-action-button:hover:not(:disabled) {
+  background: var(--bg-surface);
+  border-color: var(--text-muted);
+}
+
+.bulk-action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bulk-action-button--primary {
+  background: var(--color-brand);
+  color: var(--bg-primary);
+  border-color: var(--color-brand);
+  font-weight: 600;
+}
+
+.bulk-action-button--primary:hover:not(:disabled) {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  opacity: 0.9;
+}
+
+.bulk-action-button--danger {
+  color: var(--color-error, #e53e3e);
+  border-color: var(--color-error, #e53e3e);
+}
+
+.bulk-action-button--danger:hover:not(:disabled) {
+  background: var(--color-error, #e53e3e);
+  color: white;
+  border-color: var(--color-error, #e53e3e);
+}
+
+/* Stack icon and text vertically on mobile */
+@media (max-width: 767px) {
+  .bulk-action-bar__actions {
+    gap: var(--space-1);
+  }
+
+  .bulk-action-button {
+    flex-direction: column;
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-1);
+  }
+
+  .bulk-action-button span {
+    font-size: var(--text-xs);
+  }
+
+  .bulk-action-button svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .session-list-header {
+    display: none;
+  }
+
+  /* Show header when in selection mode */
+  .session-list--selection-mode + .session-list-header {
+    display: flex;
+  }
+}
+
+/* Archived session in list */
+.session-list li.archived > a {
+  opacity: 0.6;
+}
+
+.session-list li.archived > a strong {
+  color: var(--text-muted);
+}
+
+/* Read sessions - slightly dimmer, unread uses bold + primary for distinction */
+.session-list li > a strong {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.sidebar-session-list li > a {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* Unread session - Gmail-style bold/bright instead of badge */
+.session-list li.unread > a strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.sidebar-session-list li.unread > a {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Context Usage Indicator - Pie chart showing context window usage
+   ========================================================================== */
+
+.context-usage-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: var(--space-2);
+  cursor: default;
+}
+
+.context-usage-pie {
+  flex-shrink: 0;
+}
+
+.context-usage-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Mobile adjustments for session metadata UI */
+@media (max-width: 767px) {
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-search {
+    max-width: none;
+  }
+}

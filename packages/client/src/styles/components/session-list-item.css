@@ -1,0 +1,274 @@
+/* ==========================================================================
+   SessionListItem Component
+   ========================================================================== */
+
+.session-list-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Card mode: larger padding, block style */
+.session-list-item--card .session-list-item__link {
+  display: block;
+  flex: 1;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--duration-smooth) var(--ease-default);
+}
+
+.session-list-item--card .session-list-item__link:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-sm);
+}
+
+.session-list-item--card .session-list-item__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  font-size: var(--text-base);
+}
+
+.session-list-item--card .session-list-item__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
+
+/* Project name in card mode meta line */
+.session-list-item__project {
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.session-list-item__project::after {
+  content: "\00B7"; /* middle dot separator */
+  margin-left: var(--space-2);
+}
+
+/* Compact mode: sidebar style, single line */
+.session-list-item--compact {
+  padding: 0;
+}
+
+.session-list-item--compact .session-list-item__link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  padding-left: calc(var(--space-3) + 4px);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-secondary);
+  overflow: hidden;
+  transition: all var(--duration-smooth) var(--ease-default);
+}
+
+.session-list-item--compact .session-list-item__link:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.session-list-item--compact .session-list-item__title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.session-list-item--compact .session-list-item__title-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--text-sm);
+}
+
+/* Project name in compact mode */
+.session-list-item__project-compact {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+  flex-shrink: 0;
+}
+
+.session-list-item--compact.current .session-list-item__link {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Star icon */
+.session-star-icon {
+  flex-shrink: 0;
+  color: var(--color-warning);
+}
+
+/* Draft badge */
+.session-draft-badge {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-warning) 20%, transparent);
+  color: var(--color-warning);
+  flex-shrink: 0;
+}
+
+/* Archived badge */
+.session-archived-badge {
+  font-size: var(--text-xs);
+  padding: 2px 6px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  margin-left: var(--space-2);
+}
+
+/* Session badges (Ext, Appr, Q) */
+.session-badge {
+  font-size: var(--text-xs);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.session-badge-external {
+  background: var(--status-badge-external-bg);
+  color: var(--status-badge-external-text);
+}
+
+.session-badge-needs-input {
+  background: var(--status-badge-input-bg);
+  color: var(--status-badge-input-text);
+}
+
+.session-badge-bot {
+  background: color-mix(in srgb, var(--color-brand) 16%, transparent);
+  color: var(--color-brand);
+}
+
+.session-badge-executor {
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Rename input */
+.session-rename-input {
+  flex: 1;
+  padding: var(--space-2);
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  color: inherit;
+  font-size: var(--text-sm);
+}
+
+.session-rename-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+}
+
+/* Session menu positioning - overlay on right side of text */
+.session-list-item__menu {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  /* Gradient fade to blend with background */
+  padding-left: 1rem;
+  padding-right: var(--space-2);
+  background: linear-gradient(to right, transparent, var(--bg-secondary) 60%);
+}
+
+.session-list-item__menu .session-menu-trigger {
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  opacity: 1;
+  aspect-ratio: 1;
+}
+
+.session-list-item__menu .session-menu-trigger:hover {
+  background: rgba(0, 0, 0, 0.95);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: white;
+}
+
+.session-list-item:hover .session-list-item__menu,
+.session-list-item:focus-within .session-list-item__menu,
+.session-list-item__menu.is-open {
+  opacity: 1;
+}
+
+/* Adjust gradient for hover state */
+.session-list-item:hover .session-list-item__menu {
+  background: linear-gradient(to right, transparent, var(--bg-hover) 60%);
+}
+
+/* Checkbox for multi-select */
+.session-list-item__checkbox {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--color-brand);
+}
+
+/* Read state: slightly dimmer than unread */
+.session-list-item .session-list-item__title-text,
+.session-list-item .session-list-item__title {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* Unread indicator: bright text and bold */
+.session-list-item.unread .session-list-item__title-text,
+.session-list-item.unread .session-list-item__title {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.session-list-item--compact.unread::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  background: var(--color-brand);
+  border-radius: 50%;
+}

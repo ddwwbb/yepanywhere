@@ -16,10 +16,10 @@ export function FilePage() {
     return (
       <div className="file-page file-page-error">
         <div className="file-page-error-content">
-          <h1>{t("fileInvalidUrl" as never)}</h1>
-          <p>{t("fileMissingProjectId" as never)}</p>
+          <h1>{t("fileInvalidUrl")}</h1>
+          <p>{t("fileMissingProjectId")}</p>
           <Link to="/projects" className="file-page-back-link">
-            {t("fileGoToProjects" as never)}
+            {t("fileGoToProjects")}
           </Link>
         </div>
       </div>
@@ -30,10 +30,10 @@ export function FilePage() {
     return (
       <div className="file-page file-page-error">
         <div className="file-page-error-content">
-          <h1>{t("fileInvalidUrl" as never)}</h1>
-          <p>{t("fileMissingPath" as never)}</p>
+          <h1>{t("fileInvalidUrl")}</h1>
+          <p>{t("fileMissingPath")}</p>
           <Link to={`/projects/${projectId}`} className="file-page-back-link">
-            {t("fileGoToProject" as never)}
+            {t("fileGoToProject")}
           </Link>
         </div>
       </div>
@@ -46,10 +46,10 @@ export function FilePage() {
         <Link
           to={`/projects/${projectId}`}
           className="file-page-back-link"
-          title={t("fileBackToProject" as never)}
+          title={t("fileBackToProject")}
         >
           <BackIcon />
-          <span>{t("fileBackToProject" as never)}</span>
+          <span>{t("fileBackToProject")}</span>
         </Link>
       </div>
       <div className="file-page-content">

@@ -1,3 +1,4 @@
+import { TrustedHtml } from "../../TrustedHtml";
 import type {
   ExitPlanModeInput,
   ExitPlanModeResult,
@@ -20,15 +21,13 @@ function PlanContent({
   renderedHtml,
 }: { plan?: string; renderedHtml?: string }) {
   if (renderedHtml) {
-    // Server-rendered HTML with shiki syntax highlighting
-    // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered markdown is safe
-    return <div dangerouslySetInnerHTML={{ __html: renderedHtml }} />;
+    return (
+      <TrustedHtml html={renderedHtml} source="server-rendered-markdown" />
+    );
   }
 
   // Fallback to plain text when server-rendered HTML is not available
-  return (
-    <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit" }}>{plan}</pre>
-  );
+  return <pre className="renderer-plain-text">{plan}</pre>;
 }
 
 export const exitPlanModeRenderer: ToolRenderer<

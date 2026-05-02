@@ -10,10 +10,17 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { YepAnywhereLogo } from "../components/YepAnywhereLogo";
 import { useRemoteConnection } from "../contexts/RemoteConnectionContext";
-import { useI18n } from "../i18n";
+import { type MessageKey, useI18n } from "../i18n";
 import { type SavedHost, loadSavedHosts, removeHost } from "../lib/hostStorage";
 
 type HostStatus = "online" | "offline" | "checking" | "unknown";
+
+const HOST_STATUS_KEYS: Record<HostStatus, MessageKey> = {
+  online: "hostPickerStatusOnline",
+  offline: "hostPickerStatusOffline",
+  checking: "hostPickerStatusChecking",
+  unknown: "hostPickerStatusUnknown",
+};
 
 interface HostStatusMap {
   [hostId: string]: HostStatus;
@@ -239,9 +246,7 @@ export function HostPickerPage() {
                     <div className="host-picker-item-main">
                       <span
                         className={`host-picker-status host-picker-status-${status}`}
-                        title={t(
-                          `hostPickerStatus${status.charAt(0).toUpperCase()}${status.slice(1)}` as never,
-                        )}
+                        title={t(HOST_STATUS_KEYS[status])}
                       />
                       <span className="host-picker-name">
                         {host.displayName}

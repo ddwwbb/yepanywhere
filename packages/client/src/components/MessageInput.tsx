@@ -2,6 +2,7 @@ import type { SlashCommand, UploadedFile } from "@yep-anywhere/shared";
 import {
   type ClipboardEvent,
   type KeyboardEvent,
+  type MouseEvent,
   useCallback,
   useEffect,
   useRef,
@@ -335,35 +336,26 @@ export function MessageInput({
     textareaRef.current?.focus();
   }, []);
 
+  const handleCollapseToggle = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      setUserCollapsed((current) => {
+        const next = !current;
+        if (!next) {
+          requestAnimationFrame(() => textareaRef.current?.focus());
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
   return (
-    <div className="message-input-wrapper">
-      {/* Floating toggle button - only show when user can control collapse (not externally collapsed) */}
-      {!externalCollapsed && (
-        <button
-          type="button"
-          className="message-input-toggle"
-          onClick={() => setUserCollapsed(!userCollapsed)}
-          aria-label={
-            userCollapsed ? t("messageInputExpand") : t("messageInputCollapse")
-          }
-          aria-expanded={!userCollapsed}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={userCollapsed ? "chevron-up" : "chevron-down"}
-            aria-hidden="true"
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-      )}
+    <div
+      className={`message-input-wrapper ${collapsed ? "message-input-wrapper-collapsed" : ""}`}
+    >
       <div
         className={`message-input ${collapsed ? "message-input-collapsed" : ""} ${interimTranscript ? "voice-recording" : ""}`}
       >
@@ -390,6 +382,39 @@ export function MessageInput({
           </div>
         )}
 
+        {/* Inline collapse button - only show when user can control collapse (not externally collapsed) */}
+        {!externalCollapsed && (
+          <button
+            type="button"
+            className="message-input-collapse-btn"
+            onClick={handleCollapseToggle}
+            aria-label={
+              userCollapsed
+                ? t("messageInputExpand")
+                : t("messageInputCollapse")
+            }
+            aria-expanded={!userCollapsed}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              {userCollapsed ? (
+                <path d="M4 10L8 6L12 10" />
+              ) : (
+                <path d="M4 6L8 10L12 6" />
+              )}
+            </svg>
+          </button>
+        )}
+
         <textarea
           ref={textareaRef}
           value={displayText}
@@ -406,6 +431,7 @@ export function MessageInput({
           }
           disabled={disabled}
           rows={collapsed ? 1 : 3}
+          className={!externalCollapsed ? "textarea-with-collapse" : undefined}
         />
 
         {/* Attachment chips - show below textarea when not collapsed */}

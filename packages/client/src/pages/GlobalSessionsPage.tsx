@@ -1,59 +1,27 @@
 import { ALL_PROVIDERS, type ProviderName } from "@yep-anywhere/shared";
-import { GitBranch, Plus } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { type GlobalSessionItem, type ServerSettings, api } from "../api/client";
+import { api } from "../api/client";
 import { BulkActionBar } from "../components/BulkActionBar";
-import {
-  FilterDropdown,
-  type FilterOption,
-} from "../components/FilterDropdown";
+import type { FilterOption } from "../components/FilterDropdown";
 import { PageHeader } from "../components/PageHeader";
-import { SessionListItem } from "../components/SessionListItem";
 import { useDrafts } from "../hooks/useDrafts";
 import { useGlobalSessions } from "../hooks/useGlobalSessions";
 import { useRemoteBasePath } from "../hooks/useRemoteBasePath";
 import { useServerSettings } from "../hooks/useServerSettings";
 import { useI18n } from "../i18n";
 import { useNavigationLayout } from "../layouts";
-import { getSessionDisplayTitle, toUrlProjectId } from "../utils";
-
-// Long-press threshold for entering selection mode on mobile
-const LONG_PRESS_MS = 500;
-
-// Status filter options
-type StatusFilter = "all" | "unread" | "starred" | "archived";
-
-// Age filter options (days)
-type AgeFilter = "3" | "7" | "14" | "30";
-
-// Provider colors for filter dropdown (matching ProviderBadge)
-const PROVIDER_COLORS: Record<ProviderName, string> = {
-  claude: "var(--color-brand)",
-  "claude-ollama": "var(--color-brand)",
-  codex: "var(--provider-codex)",
-  "codex-oss": "var(--provider-codex-oss)",
-  gemini: "var(--provider-gemini)",
-  "gemini-acp": "var(--provider-gemini)",
-  opencode: "var(--provider-opencode)",
-};
-
-type RemoteChannels = ServerSettings["remoteChannels"];
-
-function getBotBoundSessionIds(remoteChannels: RemoteChannels): Set<string> {
-  const ids = new Set<string>();
-  for (const channel of [
-    remoteChannels?.feishu,
-    remoteChannels?.telegram,
-    remoteChannels?.qq,
-    remoteChannels?.weixin,
-  ]) {
-    for (const bot of channel?.bots ?? []) {
-      if (bot.boundSessionId) ids.add(bot.boundSessionId);
-    }
-  }
-  return ids;
-}
+import { GlobalSessionsEmptyState } from "./global-sessions/GlobalSessionsEmptyState";
+import { GlobalSessionsFilterBar } from "./global-sessions/GlobalSessionsFilterBar";
+import { GlobalSessionsList } from "./global-sessions/GlobalSessionsList";
+import { GlobalSessionsProjectActions } from "./global-sessions/GlobalSessionsProjectActions";
+import {
+  type AgeFilter,
+  LONG_PRESS_MS,
+  PROVIDER_COLORS,
+  type StatusFilter,
+  getBotBoundSessionIds,
+} from "./global-sessions/sessionFilters";
 
 /**
  * Global sessions page showing all sessions across all projects.
@@ -300,7 +268,6 @@ export function GlobalSessionsPage() {
   // Age filter options
   const ageOptions = useMemo((): FilterOption<AgeFilter>[] => {
     return [
-      { value: "3", label: "Older than 3 days" },
       { value: "3", label: t("globalSessionsAge3Days") },
       { value: "7", label: t("globalSessionsAge7Days") },
       { value: "14", label: t("globalSessionsAge14Days") },
@@ -629,13 +596,14 @@ export function GlobalSessionsPage() {
   };
 
   const isEmpty = filteredSessions.length === 0;
-  const hasFilters =
+  const hasFilters = Boolean(
     searchQuery ||
-    projectFilter ||
-    statusFilters.length > 0 ||
-    providerFilters.length > 0 ||
-    executorFilters.length > 0 ||
-    ageFilter;
+      projectFilter ||
+      statusFilters.length > 0 ||
+      providerFilters.length > 0 ||
+      executorFilters.length > 0 ||
+      ageFilter,
+  );
 
   return (
     <div
@@ -658,112 +626,39 @@ export function GlobalSessionsPage() {
 
         <main className="page-scroll-container">
           <div className="page-content-inner">
-            {/* Project action buttons */}
             {projectFilter && (
-              <div className="project-card__actions" style={{ marginBottom: "var(--space-3)" }}>
-                <button
-                  type="button"
-                  className="project-card__action-btn project-card__action-btn--git"
-                  onClick={() => navigate(`${basePath}/git-status?projectId=${projectFilter}`)}
-                  title={t("sidebarSourceControl" as never)}
-                >
-                  <GitBranch size={15} strokeWidth={2} aria-hidden="true" />
-                  <span className="project-card__new-session-label">Git</span>
-                </button>
-                <button
-                  type="button"
-                  className="project-card__action-btn project-card__action-btn--new"
-                  onClick={() => navigate(`${basePath}/new-session?projectId=${projectFilter}`)}
-                  title={t("newSessionTitle" as never)}
-                >
-                  <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
-                  <span className="project-card__new-session-label">{t("projectCardNewSession" as never)}</span>
-                </button>
-              </div>
+              <GlobalSessionsProjectActions
+                onOpenGitStatus={() =>
+                  navigate(`${basePath}/git-status?projectId=${projectFilter}`)
+                }
+                onStartNewSession={() =>
+                  navigate(`${basePath}/new-session?projectId=${projectFilter}`)
+                }
+              />
             )}
 
-            {/* Filter bar */}
-            <div className="filter-bar">
-              <form onSubmit={handleSearch} className="filter-search-form">
-                <input
-                  type="text"
-                  className="filter-search"
-                  placeholder={t("globalSessionsSearchPlaceholder")}
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                />
-                <button type="submit" className="filter-search-button">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                  </svg>
-                </button>
-              </form>
-              <div className="filter-dropdowns">
-                {projectOptions.length > 0 && (
-                  <FilterDropdown
-                    label={t("inboxFilterProject")}
-                    options={projectOptions}
-                    selected={projectFilter ? [projectFilter] : []}
-                    onChange={handleProjectFilter}
-                    multiSelect={false}
-                    placeholder={t("globalSessionsFilterProjectPlaceholder")}
-                  />
-                )}
-                <FilterDropdown
-                  label={t("globalSessionsFilterStatus")}
-                  options={statusOptions}
-                  selected={statusFilters}
-                  onChange={setStatusFilters}
-                  placeholder={t("globalSessionsStatusAll")}
-                />
-                {providerOptions.length > 1 && (
-                  <FilterDropdown
-                    label={t("globalSessionsFilterProvider")}
-                    options={providerOptions}
-                    selected={providerFilters}
-                    onChange={setProviderFilters}
-                    placeholder={t("globalSessionsStatusAll")}
-                  />
-                )}
-                {executorOptions.length > 1 && (
-                  <FilterDropdown
-                    label={t("globalSessionsFilterExecutor")}
-                    options={executorOptions}
-                    selected={executorFilters}
-                    onChange={setExecutorFilters}
-                    placeholder={t("globalSessionsFilterMachinePlaceholder")}
-                  />
-                )}
-                <FilterDropdown
-                  label={t("globalSessionsFilterAge")}
-                  options={ageOptions}
-                  selected={ageFilter ? [ageFilter] : []}
-                  onChange={setAgeFilter}
-                  multiSelect={false}
-                  placeholder={t("globalSessionsFilterAgePlaceholder")}
-                />
-              </div>
-              {hasFilters && (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="filter-clear-button"
-                >
-                  {t("globalSessionsClearFilters")}
-                </button>
-              )}
-            </div>
+            <GlobalSessionsFilterBar
+              searchInput={searchInput}
+              onSearchInputChange={setSearchInput}
+              onSearchSubmit={handleSearch}
+              projectOptions={projectOptions}
+              projectFilter={projectFilter}
+              onProjectFilterChange={handleProjectFilter}
+              statusOptions={statusOptions}
+              statusFilters={statusFilters}
+              onStatusFiltersChange={setStatusFilters}
+              providerOptions={providerOptions}
+              providerFilters={providerFilters}
+              onProviderFiltersChange={setProviderFilters}
+              executorOptions={executorOptions}
+              executorFilters={executorFilters}
+              onExecutorFiltersChange={setExecutorFilters}
+              ageOptions={ageOptions}
+              ageFilter={ageFilter}
+              onAgeFilterChange={setAgeFilter}
+              hasFilters={hasFilters}
+              onClearFilters={clearFilters}
+            />
 
             {loading && sessions.length === 0 && (
               <p className="loading">{t("sidebarLoadingSessions")}</p>
@@ -776,138 +671,31 @@ export function GlobalSessionsPage() {
             )}
 
             {!loading && !error && isEmpty && (
-              <div className="inbox-empty">
-                <svg
-                  width="48"
-                  height="48"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
-                <h3>{t("globalSessionsNoResultsTitle")}</h3>
-                <p>
-                  {hasFilters
-                    ? t("globalSessionsNoResultsFiltered")
-                    : t("globalSessionsNoResultsEmpty")}
-                </p>
-              </div>
+              <GlobalSessionsEmptyState hasFilters={hasFilters} />
             )}
 
             {!error && !isEmpty && (
-              <>
-                {/* Select all header (desktop or when in selection mode) */}
-                {(isWideScreen || isSelectionMode) &&
-                  filteredSessions.length > 0 && (
-                    <div className="session-list-header">
-                      <label className="session-list-header__select-all">
-                        <input
-                          type="checkbox"
-                          checked={
-                            selectedIds.size === filteredSessions.length &&
-                            filteredSessions.length > 0
-                          }
-                          onChange={(e) =>
-                            e.target.checked
-                              ? handleSelectAll()
-                              : handleClearSelection()
-                          }
-                        />
-                        <span>
-                          {selectedIds.size > 0
-                            ? t("bulkSelectedCount", {
-                                count: selectedIds.size,
-                              })
-                            : t("globalSessionsSelectAll")}
-                        </span>
-                      </label>
-                    </div>
-                  )}
-
-                <ul
-                  className={`session-list ${isSelectionMode ? "session-list--selection-mode" : ""}`}
-                >
-                  {filteredSessions.map((session) => (
-                    <div
-                      key={session.id}
-                      onTouchStart={(e) => handleLongPressStart(session.id, e)}
-                      onTouchMove={handleTouchMove}
-                      onTouchEnd={handleLongPressEnd}
-                      onTouchCancel={handleLongPressEnd}
-                      onMouseDown={(e) =>
-                        !isWideScreen && handleLongPressStart(session.id, e)
-                      }
-                      onMouseUp={handleLongPressEnd}
-                      onMouseLeave={handleLongPressEnd}
-                      onContextMenu={handleContextMenu}
-                    >
-                      <SessionListItem
-                        sessionId={session.id}
-                        projectId={session.projectId}
-                        title={getSessionDisplayTitle(session)}
-                        fullTitle={getSessionDisplayTitle(session)}
-                        updatedAt={session.updatedAt}
-                        hasUnread={session.hasUnread}
-                        activity={session.activity}
-                        pendingInputType={session.pendingInputType}
-                        status={session.ownership}
-                        provider={session.provider}
-                        executor={session.executor}
-                        isStarred={session.isStarred}
-                        isArchived={session.isArchived}
-                        mode="card"
-                        showContextUsage={false}
-                        isSelected={selectedIds.has(session.id)}
-                        isSelectionMode={isSelectionMode && !isWideScreen}
-                        onNavigate={() => {
-                          // In selection mode on mobile, tap toggles selection
-                          if (isSelectionMode && !isWideScreen) {
-                            handleSelect(
-                              session.id,
-                              !selectedIds.has(session.id),
-                            );
-                          }
-                        }}
-                        onSelect={
-                          isWideScreen || isSelectionMode
-                            ? handleSelect
-                            : undefined
-                        }
-                        showProjectName={!projectFilter}
-                        projectName={session.projectName}
-                        basePath={basePath}
-                        messageCount={session.messageCount}
-                        hasDraft={drafts.has(session.id)}
-                        hasBotBinding={botBoundSessionIds.has(session.id)}
-                        onDelete={handleDeleteSession(
-                          session.id,
-                          session.projectId,
-                        )}
-                      />
-                    </div>
-                  ))}
-                </ul>
-
-                {hasMore && (
-                  <div className="global-sessions-load-more">
-                    <button
-                      type="button"
-                      onClick={loadMore}
-                      className="global-sessions-load-more-button"
-                      disabled={loading}
-                    >
-                      {loading
-                        ? t("gitStatusLoading")
-                        : t("globalSessionsLoadMore")}
-                    </button>
-                  </div>
-                )}
-              </>
+              <GlobalSessionsList
+                sessions={filteredSessions}
+                isWideScreen={isWideScreen}
+                isSelectionMode={isSelectionMode}
+                selectedIds={selectedIds}
+                onSelectAll={handleSelectAll}
+                onClearSelection={handleClearSelection}
+                onSelect={handleSelect}
+                onLongPressStart={handleLongPressStart}
+                onTouchMove={handleTouchMove}
+                onLongPressEnd={handleLongPressEnd}
+                onContextMenu={handleContextMenu}
+                showProjectName={!projectFilter}
+                basePath={basePath}
+                draftSessionIds={drafts}
+                botBoundSessionIds={botBoundSessionIds}
+                onDeleteSession={handleDeleteSession}
+                hasMore={hasMore}
+                loading={loading}
+                onLoadMore={loadMore}
+              />
             )}
 
             {/* Bulk action bar */}

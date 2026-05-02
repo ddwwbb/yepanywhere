@@ -30,12 +30,7 @@ function ViewImageModalContent({ path, alt }: { path: string; alt: string }) {
 
   return (
     <div className="read-image-result">
-      <img
-        className="read-image"
-        src={url}
-        alt={alt}
-        style={{ maxWidth: "100%" }}
-      />
+      <img className="read-image" src={url} alt={alt} />
     </div>
   );
 }

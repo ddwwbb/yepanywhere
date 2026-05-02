@@ -23,7 +23,7 @@ describe("ContextUsageIndicator", () => {
 
     const indicator = container.querySelector(".context-usage-indicator");
     expect(indicator?.getAttribute("title")).toBe(
-      "Context: 19.38% (50.0K / 258.0K tokens)",
+      "上下文：19.38%（50.0K / 258.0K tokens）",
     );
   });
 
@@ -38,7 +38,7 @@ describe("ContextUsageIndicator", () => {
 
     const indicator = container.querySelector(".context-usage-indicator");
     expect(indicator?.getAttribute("title")).toBe(
-      "Context: 25% (50.0K tokens)",
+      "上下文：25%（50.0K tokens）",
     );
   });
 });

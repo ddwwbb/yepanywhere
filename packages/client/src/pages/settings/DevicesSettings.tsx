@@ -1,16 +1,13 @@
 import { useBrowserProfiles } from "../../hooks/useBrowserProfiles";
 import { useConnectedDevices } from "../../hooks/useConnectedDevices";
 import { usePushNotifications } from "../../hooks/usePushNotifications";
-import { useI18n } from "../../i18n";
+import { type Translate, useI18n } from "../../i18n";
 import { parseUserAgent } from "../../lib/deviceDetection";
 
 /**
  * Format a date for display with relative time.
  */
-function formatDate(
-  isoDate: string,
-  t: (key: never, vars?: Record<string, string | number>) => string,
-): string {
+function formatDate(isoDate: string, t: Translate): string {
   const date = new Date(isoDate);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -19,22 +16,22 @@ function formatDate(
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffMinutes < 1) {
-    return t("devicesJustNow" as never);
+    return t("devicesJustNow");
   }
   if (diffMinutes < 60) {
-    return t("devicesMinutesAgo" as never, {
+    return t("devicesMinutesAgo", {
       count: diffMinutes,
       suffix: diffMinutes === 1 ? "" : "s",
     });
   }
   if (diffHours < 24) {
-    return t("devicesHoursAgo" as never, {
+    return t("devicesHoursAgo", {
       count: diffHours,
       suffix: diffHours === 1 ? "" : "s",
     });
   }
   if (diffDays === 1) {
-    return t("devicesYesterday" as never);
+    return t("devicesYesterday");
   }
   if (diffDays < 7) {
     return `${diffDays} days ago`;

@@ -1,0 +1,248 @@
+/* Status */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-dot.status-idle {
+  background: var(--text-muted);
+}
+
+.status-dot.status-owned {
+  background: var(--color-success);
+}
+
+.status-dot.status-owned.process-running {
+  background: var(--color-thinking);
+  animation: thinking-pulse 1.5s ease-in-out infinite;
+}
+
+.status-dot.status-owned.process-waiting-input {
+  background: var(--color-warning);
+}
+
+.status-dot.status-external {
+  background: var(--color-warning);
+}
+
+.status-dot.disconnected {
+  background: var(--color-error);
+  animation: thinking-pulse 1s ease-in-out infinite;
+}
+
+/* External session warning banner */
+.external-session-warning {
+  background: var(--status-badge-external-bg);
+  border: 1px solid var(--color-warning);
+  color: var(--status-badge-external-text);
+  padding: 0.75rem 1rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Pending tool warning - slightly different styling for informational message */
+.external-session-warning.pending-tool-warning {
+  background: var(--status-badge-input-bg);
+  border-color: var(--color-primary);
+  color: var(--status-badge-input-text);
+}
+
+/* Status badges for session list */
+.status-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  margin-left: 0.5rem;
+}
+
+.status-badge.status-idle {
+  background: var(--status-badge-idle-bg);
+  color: var(--status-badge-idle-text);
+}
+
+.status-badge.status-owned {
+  background: var(--status-badge-owned-bg);
+  color: var(--status-badge-owned-text);
+}
+
+.status-badge.status-external {
+  background: var(--status-badge-external-bg);
+  color: var(--status-badge-external-text);
+}
+
+.status-badge.status-bot {
+  background: color-mix(in srgb, var(--color-brand) 16%, transparent);
+  color: var(--color-brand);
+}
+
+/* Notification badges - higher priority than status badges */
+.status-badge.notification-needs-input {
+  background: var(--status-badge-input-bg);
+  color: var(--status-badge-input-text);
+  animation: pulse-blue 2s ease-in-out infinite;
+}
+
+@keyframes pulse-blue {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(102, 170, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(102, 170, 255, 0);
+  }
+}
+
+/* Processing Indicator - shown at bottom of message list */
+.processing-indicator {
+  position: relative;
+  padding-top: 2px; /* Match text-block padding */
+  padding-left: 24px; /* Align with assistant turn padding */
+  margin: 4px 0; /* Match timeline-item margin */
+}
+
+.processing-dot-container {
+  position: absolute;
+  left: 12px; /* Align center with timeline dots: 6px dots at left:-11px from 24px = 13px, center at 16px. 8px dot center at 16px = left edge at 12px */
+  top: 0; /* Align dot center with text */
+  width: 8px;
+  height: 8px;
+}
+
+.processing-text {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.processing-cursor {
+  animation: blink 0.7s step-start infinite;
+  margin-left: 1px;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   Load Older Messages - Auto pagination status for long sessions
+   ========================================================================== */
+
+.load-older-messages {
+  display: flex;
+  justify-content: center;
+  padding: 12px 16px 4px;
+}
+
+.load-older-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: var(--bg-tertiary, #2a2a2a);
+  border: 1px solid var(--border-color, #333);
+  border-radius: 16px;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+/* ==========================================================================
+   System Messages - Context compaction notifications
+   ========================================================================== */
+
+.system-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  margin: 8px 0;
+  background: var(--bg-tertiary, #2a2a2a);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent-secondary, #6b7280);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.system-message-icon {
+  font-size: 1.1em;
+  opacity: 0.7;
+}
+
+.system-message-text {
+  font-style: italic;
+}
+
+/* Compacting state - animated indicator */
+.system-message-compacting {
+  border-left-color: var(--accent-primary, #3b82f6);
+  background: linear-gradient(
+    90deg,
+    var(--bg-tertiary, #2a2a2a) 0%,
+    color-mix(
+        in srgb,
+        var(--accent-primary, #3b82f6) 10%,
+        var(--bg-tertiary, #2a2a2a)
+      )
+      50%,
+    var(--bg-tertiary, #2a2a2a) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.system-message-error {
+  border-left-color: var(--error-color, #ef4444);
+  background: color-mix(
+    in srgb,
+    var(--error-color, #ef4444) 10%,
+    var(--bg-tertiary, #2a2a2a)
+  );
+  color: var(--text-primary);
+}
+
+.system-message-error .system-message-text {
+  font-style: normal;
+}
+
+.system-message-error .system-message-icon {
+  opacity: 1;
+  font-weight: 700;
+}
+
+.system-message-icon.spinning {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    background-position: 100% 0;
+  }
+  50% {
+    background-position: 0 0;
+  }
+}

@@ -367,8 +367,11 @@ export function SessionMenu({
         </svg>
         {isArchived ? t("sessionMenuUnarchive") : t("sessionMenuArchive")}
       </button>
-      {/* 远程频道绑定 */}
-      <button type="button" onClick={boundBotId ? handleUnbindBot : handleShowBotPicker} disabled={isBindingBot}>
+      <button
+        type="button"
+        onClick={boundBotId ? handleUnbindBot : handleShowBotPicker}
+        disabled={isBindingBot}
+      >
         <svg
           width="14"
           height="14"
@@ -382,21 +385,32 @@ export function SessionMenu({
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
         {boundBotId
-          ? (isBindingBot ? t("sessionMenuUnbinding") : t("sessionMenuUnbindChannel"))
-          : (isBindingBot ? t("sessionMenuLoadingBots") : t("sessionMenuBindChannel"))}
+          ? isBindingBot
+            ? t("sessionMenuUnbinding")
+            : t("sessionMenuUnbindChannel")
+          : isBindingBot
+            ? t("sessionMenuLoadingBots")
+            : t("sessionMenuBindChannel")}
       </button>
       {showBotPicker && availableBots && (
-        <div style={{ padding: "var(--space-1) var(--space-3)", maxHeight: 150, overflowY: "auto" }}>
+        <div className="session-menu-bot-picker">
           {availableBots.length === 0 && (
-            <span style={{ fontSize: "0.85em", color: "var(--color-text-secondary)" }}>{t("sessionMenuNoBotsAvailable")}</span>
+            <span className="session-menu-bot-empty">
+              {t("sessionMenuNoBotsAvailable")}
+            </span>
           )}
           {availableBots.map((bot) => (
-            <button key={bot.botId} type="button" style={{ display: "block", width: "100%", textAlign: "left", padding: "var(--space-1) 0" }}
-              onClick={() => void handleBindBot(bot.botId)} disabled={isBindingBot}>
-              <span style={{ fontSize: "0.8em", color: "var(--color-text-secondary)", marginRight: "var(--space-2)" }}>[{bot.channel}]</span>
+            <button
+              key={bot.botId}
+              type="button"
+              className="session-menu-bot-option"
+              onClick={() => void handleBindBot(bot.botId)}
+              disabled={isBindingBot}
+            >
+              <span className="session-menu-bot-channel">[{bot.channel}]</span>
               {bot.name || bot.botId.slice(-6)}
               {bot.boundSessionId && (
-                <span style={{ fontSize: "0.75em", color: "var(--color-text-tertiary)", marginLeft: "var(--space-2)" }}>
+                <span className="session-menu-bot-bound">
                   {t("sessionMenuBotBoundReplace")}
                 </span>
               )}

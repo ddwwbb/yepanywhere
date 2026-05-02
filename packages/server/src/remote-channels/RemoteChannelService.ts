@@ -6,15 +6,15 @@ import { RemoteChannelAuditLog } from "./AuditLog.js";
 import { RemoteChannelDedupStore } from "./DedupStore.js";
 import { RemoteChannelDispatcher } from "./Dispatcher.js";
 import { FeishuAppAdapter } from "./FeishuAppAdapter.js";
-import { FeishuBridgeAdapter } from "./feishu/FeishuBridgeAdapter.js";
-import { sendPostMessage } from "./feishu/outbound.js";
-import { normalizeRemoteChannelEvent } from "./normalizer.js";
 import { QqBotAdapter } from "./QqBotAdapter.js";
 import { QqBridgeAdapter } from "./QqBridgeAdapter.js";
 import { TelegramBotAdapter } from "./TelegramBotAdapter.js";
 import { TelegramBridgeAdapter } from "./TelegramBridgeAdapter.js";
 import { WeixinBotAdapter } from "./WeixinBotAdapter.js";
 import { WeixinBridgeAdapter } from "./WeixinBridgeAdapter.js";
+import { FeishuBridgeAdapter } from "./feishu/FeishuBridgeAdapter.js";
+import { sendPostMessage } from "./feishu/outbound.js";
+import { normalizeRemoteChannelEvent } from "./normalizer.js";
 import type { RemoteChannelAdapter } from "./types.js";
 
 export interface RemoteChannelServiceOptions {
@@ -55,6 +55,12 @@ export class RemoteChannelService {
 
   dispose(): void {
     this.stop();
+  }
+
+  async reload(): Promise<void> {
+    if (!this.running) return;
+    await this.stop();
+    await this.start();
   }
 
   /**
@@ -112,7 +118,9 @@ export class RemoteChannelService {
     console.log("[remote-channel] Bridge stopped");
   }
 
-  async sendTestNotification(botId?: string): Promise<{ ok: boolean; error?: string }> {
+  async sendTestNotification(
+    botId?: string,
+  ): Promise<{ ok: boolean; error?: string }> {
     const event: RemoteChannelEvent = {
       id: `remote-channel-test:${Date.now()}`,
       type: "summary.available",
@@ -143,7 +151,10 @@ export class RemoteChannelService {
     const results = await dispatcher.dispatch(event);
     const failed = results.find((result) => !result.ok);
     if (failed) {
-      return { ok: false, error: failed.error ?? "Remote channel delivery failed" };
+      return {
+        ok: false,
+        error: failed.error ?? "Remote channel delivery failed",
+      };
     }
 
     return { ok: results.length > 0 };
@@ -152,7 +163,9 @@ export class RemoteChannelService {
   private async handleBusEvent(event: BusEvent): Promise<void> {
     if (!this.running) return;
 
-    const remoteEvent = normalizeRemoteChannelEvent(event, { yepUrl: this.yepUrl });
+    const remoteEvent = normalizeRemoteChannelEvent(event, {
+      yepUrl: this.yepUrl,
+    });
     if (!remoteEvent) return;
 
     // 1. 分发给单向通知 adapters（原有逻辑）
@@ -215,10 +228,7 @@ export class RemoteChannelService {
   }
 
   private async deliverToTextBridge(
-    bridge:
-      | TelegramBridgeAdapter
-      | QqBridgeAdapter
-      | WeixinBridgeAdapter,
+    bridge: TelegramBridgeAdapter | QqBridgeAdapter | WeixinBridgeAdapter,
     remoteEvent: RemoteChannelEvent,
   ): Promise<void> {
     if (remoteEvent.type === "session.completed") return;
@@ -250,7 +260,10 @@ export class RemoteChannelService {
         this.feishuBridges.push(bridge);
         started = true;
       } catch (err) {
-        console.error(`[remote-channel] Failed to start feishu bridge for bot ${bot.id}:`, err);
+        console.error(
+          `[remote-channel] Failed to start feishu bridge for bot ${bot.id}:`,
+          err,
+        );
       }
     }
 
@@ -263,7 +276,10 @@ export class RemoteChannelService {
       try {
         await bridge.stop();
       } catch (err) {
-        console.warn(`[remote-channel] Error stopping feishu bridge ${bridge.botId}:`, err);
+        console.warn(
+          `[remote-channel] Error stopping feishu bridge ${bridge.botId}:`,
+          err,
+        );
       }
     }
     this.feishuBridges = [];
@@ -291,7 +307,10 @@ export class RemoteChannelService {
         this.telegramBridges.push(bridge);
         started = true;
       } catch (err) {
-        console.error(`[remote-channel] Failed to start telegram bridge for bot ${bot.id}:`, err);
+        console.error(
+          `[remote-channel] Failed to start telegram bridge for bot ${bot.id}:`,
+          err,
+        );
       }
     }
 
@@ -303,7 +322,10 @@ export class RemoteChannelService {
       try {
         await bridge.stop();
       } catch (err) {
-        console.warn(`[remote-channel] Error stopping telegram bridge ${bridge.botId}:`, err);
+        console.warn(
+          `[remote-channel] Error stopping telegram bridge ${bridge.botId}:`,
+          err,
+        );
       }
     }
     this.telegramBridges = [];
@@ -331,7 +353,10 @@ export class RemoteChannelService {
         this.qqBridges.push(bridge);
         started = true;
       } catch (err) {
-        console.error(`[remote-channel] Failed to start qq bridge for bot ${bot.id}:`, err);
+        console.error(
+          `[remote-channel] Failed to start qq bridge for bot ${bot.id}:`,
+          err,
+        );
       }
     }
 
@@ -343,7 +368,10 @@ export class RemoteChannelService {
       try {
         await bridge.stop();
       } catch (err) {
-        console.warn(`[remote-channel] Error stopping qq bridge ${bridge.botId}:`, err);
+        console.warn(
+          `[remote-channel] Error stopping qq bridge ${bridge.botId}:`,
+          err,
+        );
       }
     }
     this.qqBridges = [];
@@ -371,7 +399,10 @@ export class RemoteChannelService {
         this.weixinBridges.push(bridge);
         started = true;
       } catch (err) {
-        console.error(`[remote-channel] Failed to start weixin bridge for bot ${bot.id}:`, err);
+        console.error(
+          `[remote-channel] Failed to start weixin bridge for bot ${bot.id}:`,
+          err,
+        );
       }
     }
 
@@ -383,13 +414,25 @@ export class RemoteChannelService {
       try {
         await bridge.stop();
       } catch (err) {
-        console.warn(`[remote-channel] Error stopping weixin bridge ${bridge.botId}:`, err);
+        console.warn(
+          `[remote-channel] Error stopping weixin bridge ${bridge.botId}:`,
+          err,
+        );
       }
     }
     this.weixinBridges = [];
   }
 
-  getStatus(): { running: boolean; startedAt: string | null; adapters: Array<{ channelType: string; running: boolean; lastMessageAt: string | null; error: string | null }> } {
+  getStatus(): {
+    running: boolean;
+    startedAt: string | null;
+    adapters: Array<{
+      channelType: string;
+      running: boolean;
+      lastMessageAt: string | null;
+      error: string | null;
+    }>;
+  } {
     const adapters = this.createAdapters();
     const allAdapters = [
       ...adapters.map((a) => ({

@@ -83,9 +83,7 @@ export function SettingsLayout() {
   const capabilities = versionInfo?.capabilities ?? [];
 
   // Build the list of categories, conditionally including emulator and dev
-  const categories: SettingsCategory[] = [
-    ...getSettingsCategories((key) => t(key as never)),
-  ];
+  const categories: SettingsCategory[] = [...getSettingsCategories(t)];
   if (
     capabilities.includes("deviceBridge") ||
     capabilities.includes("deviceBridge-download") ||
@@ -96,11 +94,11 @@ export function SettingsLayout() {
     categories.splice(
       aboutIndex >= 0 ? aboutIndex : categories.length,
       0,
-      getEmulatorCategory((key) => t(key as never)),
+      getEmulatorCategory(t),
     );
   }
   if (isManualReloadMode) {
-    categories.push(getDevelopmentCategory((key) => t(key as never)));
+    categories.push(getDevelopmentCategory(t));
   }
 
   // On wide screen, default to first category if none selected

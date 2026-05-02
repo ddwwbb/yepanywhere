@@ -17,7 +17,7 @@ export function AgentsNavItem({ onClick, basePath }: AgentsNavItemProps) {
     <SidebarNavItem
       to="/agents"
       icon={SidebarIcons.agents}
-      label={t("agentsTitle" as never)}
+      label={t("agentsTitle")}
       onClick={onClick}
       hasActivityIndicator={activeAgentsCount > 0}
       basePath={basePath}

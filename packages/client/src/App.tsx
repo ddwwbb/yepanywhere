@@ -1,17 +1,12 @@
 import { type ReactNode, useEffect } from "react";
-import { ConnectionBar } from "./components/ConnectionBar";
-import { FloatingActionButton } from "./components/FloatingActionButton";
-import { ReloadBanner } from "./components/ReloadBanner";
+import { AppProviders } from "./app/AppProviders";
+import { AppShellContent } from "./app/AppShellContent";
 import { OnboardingWizard } from "./components/onboarding";
 import { AuthProvider } from "./contexts/AuthContext";
-import { InboxProvider } from "./contexts/InboxContext";
-import { SchemaValidationProvider } from "./contexts/SchemaValidationContext";
-import { ToastProvider } from "./contexts/ToastContext";
 import { useActivityBusConnection } from "./hooks/useActivityBusConnection";
 import { useNeedsAttentionBadge } from "./hooks/useNeedsAttentionBadge";
 import { useSyncNotifyInAppSetting } from "./hooks/useNotifyInApp";
 import { useOnboarding } from "./hooks/useOnboarding";
-import { useReloadNotifications } from "./hooks/useReloadNotifications";
 import { I18nProvider } from "./i18n";
 import { initClientLogCollection } from "./lib/diagnostics";
 
@@ -35,39 +30,7 @@ function AppContent({ children }: Props) {
   // Update tab title with needs-attention badge count (uses InboxContext)
   useNeedsAttentionBadge();
 
-  const {
-    isManualReloadMode,
-    pendingReloads,
-    reloadBackend,
-    reloadFrontend,
-    dismiss,
-    unsafeToRestart,
-    workerActivity,
-  } = useReloadNotifications();
-
-  return (
-    <>
-      <ConnectionBar />
-      {isManualReloadMode && pendingReloads.backend && (
-        <ReloadBanner
-          target="backend"
-          onReload={reloadBackend}
-          onDismiss={() => dismiss("backend")}
-          unsafeToRestart={unsafeToRestart}
-          activeWorkers={workerActivity.activeWorkers}
-        />
-      )}
-      {isManualReloadMode && pendingReloads.frontend && (
-        <ReloadBanner
-          target="frontend"
-          onReload={reloadFrontend}
-          onDismiss={() => dismiss("frontend")}
-        />
-      )}
-      {children}
-      <FloatingActionButton />
-    </>
-  );
+  return <AppShellContent>{children}</AppShellContent>;
 }
 
 /**
@@ -79,18 +42,12 @@ export function App({ children }: Props) {
 
   return (
     <I18nProvider>
-      <ToastProvider>
-        <AuthProvider>
-          <InboxProvider>
-            <SchemaValidationProvider>
-              <AppContent>{children}</AppContent>
-              {!isLoading && showWizard && (
-                <OnboardingWizard onComplete={completeOnboarding} />
-              )}
-            </SchemaValidationProvider>
-          </InboxProvider>
-        </AuthProvider>
-      </ToastProvider>
+      <AppProviders AccessProvider={AuthProvider}>
+        <AppContent>{children}</AppContent>
+        {!isLoading && showWizard && (
+          <OnboardingWizard onComplete={completeOnboarding} />
+        )}
+      </AppProviders>
     </I18nProvider>
   );
 }

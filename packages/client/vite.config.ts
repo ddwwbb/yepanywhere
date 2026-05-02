@@ -1,7 +1,9 @@
 import { execSync } from "node:child_process";
-import { DEFAULT_PORT, DEFAULT_VITE_PORT } from "@yep-anywhere/shared";
+import { resolve } from "node:path";
 import react from "@vitejs/plugin-react";
+import { DEFAULT_PORT, DEFAULT_VITE_PORT } from "@yep-anywhere/shared";
 import { defineConfig } from "vite";
+import { manualChunks } from "./vite-build-options";
 import { cspPlugin } from "./vite-plugin-csp";
 import { reloadNotify } from "./vite-plugin-reload-notify";
 
@@ -42,7 +44,17 @@ export default defineConfig({
     cspPlugin({ isRemote: false }),
   ],
   resolve: {
+    alias: {
+      crypto: resolve(__dirname, "src/lib/browserCryptoShim.ts"),
+    },
     conditions: ["source"],
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks,
+      },
+    },
   },
   server: {
     port: vitePort,

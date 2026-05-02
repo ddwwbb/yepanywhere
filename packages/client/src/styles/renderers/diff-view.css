@@ -1,0 +1,152 @@
+/* ==========================================================================
+   Diff View
+   ========================================================================== */
+
+.diff-view {
+  font-family: "SF Mono", Monaco, monospace;
+  font-size: var(--text-base);
+}
+
+.diff-hunk {
+  margin: 0.5rem 0;
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.diff-hunk:first-child {
+  margin-top: 0;
+}
+
+.diff-content {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-code);
+  overflow-x: auto;
+  tab-size: var(--tab-size);
+}
+
+.diff-content > div {
+  padding: 0 0.5rem;
+  line-height: 1.5;
+}
+
+.diff-removed {
+  background: var(--bg-diff-removed, rgba(207, 34, 46, 0.15));
+  color: var(--text-diff-removed, var(--color-error));
+}
+
+.diff-added {
+  background: var(--bg-diff-added, rgba(26, 127, 55, 0.15));
+  color: var(--text-diff-added, var(--color-success));
+}
+
+.diff-context {
+  color: var(--text-muted);
+}
+
+/* Highlighted diff from shiki */
+.highlighted-diff {
+  font-family: "SF Mono", Monaco, monospace;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  tab-size: var(--tab-size);
+}
+
+.highlighted-diff pre.shiki {
+  margin: 0;
+  padding: 0.5rem;
+  background: var(--bg-code) !important;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.highlighted-diff code {
+  background: transparent;
+  /* Remove whitespace between line spans */
+  display: flex;
+  flex-direction: column;
+  /* Collapse whitespace text nodes (from \n between spans) */
+  font-size: 0;
+  /* Expand to fit content so all lines get same width */
+  width: max-content;
+  min-width: 100%;
+}
+
+.highlighted-diff .line {
+  padding: 0 0.5rem;
+  /* Restore font size collapsed above */
+  font-size: var(--text-base);
+}
+
+/* Override any token background colors from Shiki syntax tokens */
+.highlighted-diff .line span[style] {
+  background-color: transparent !important;
+}
+
+/* Diff line background colors */
+.highlighted-diff .line-deleted {
+  background: var(--bg-diff-deleted, rgba(248, 81, 73, 0.15)) !important;
+}
+
+.highlighted-diff .line-inserted {
+  background: var(--bg-diff-inserted, rgba(63, 185, 80, 0.15)) !important;
+}
+
+/* Word-level diff highlighting - subtle emphasis within lines */
+
+/* When nested inside already-highlighted lines, slightly more prominent */
+
+/* Diff view container with truncation */
+.diff-view-container {
+  position: relative;
+}
+
+.diff-view-container.truncated {
+  max-height: 18rem; /* ~12 lines */
+  overflow: hidden;
+}
+
+/* Fade overlay for truncated diffs */
+.diff-fade-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  background: linear-gradient(to bottom, transparent, var(--bg-surface));
+  pointer-events: none;
+}
+
+/* Expand button (appears on hover) */
+.diff-expand-button {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #fff);
+  border: none;
+  border-radius: 4px;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.diff-view-container:hover .diff-expand-button {
+  opacity: 1;
+}
+
+.diff-expand-button:hover {
+  background: var(--vscode-button-hoverBackground, #1177bb);
+}
+
+/* Always show expand button on mobile (no hover on touch devices) */
+@media (max-width: 767px) {
+  .diff-expand-button {
+    opacity: 1;
+  }
+}

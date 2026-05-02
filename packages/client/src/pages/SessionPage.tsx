@@ -1,35 +1,18 @@
-import type {
-  ProviderName,
-  SlashCommand,
-  UploadedFile,
-} from "@yep-anywhere/shared";
+import type { ProviderName, SlashCommand } from "@yep-anywhere/shared";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
-import { MessageInput, type UploadProgress } from "../components/MessageInput";
-import { MessageInputToolbar } from "../components/MessageInputToolbar";
-import { MessageList } from "../components/MessageList";
 import { ModelSwitchModal } from "../components/ModelSwitchModal";
 import { ProcessInfoModal } from "../components/ProcessInfoModal";
-import { ProviderBadge } from "../components/ProviderBadge";
-import { QuestionAnswerPanel } from "../components/QuestionAnswerPanel";
-import { RecentSessionsDropdown } from "../components/RecentSessionsDropdown";
-import { SessionMenu } from "../components/SessionMenu";
-import { ToolApprovalPanel } from "../components/ToolApprovalPanel";
-import { AgentContentProvider } from "../contexts/AgentContentContext";
-import { SessionMetadataProvider } from "../contexts/SessionMetadataContext";
 import {
   StreamingMarkdownProvider,
   useStreamingMarkdownContext,
 } from "../contexts/StreamingMarkdownContext";
 import { useToastContext } from "../contexts/ToastContext";
 import { useActivityBusState } from "../hooks/useActivityBusState";
-import { useConnection } from "../hooks/useConnection";
 import { useDeveloperMode } from "../hooks/useDeveloperMode";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
-import type { DraftControls } from "../hooks/useDraftPersistence";
 import { useEngagementTracking } from "../hooks/useEngagementTracking";
-import { getModelSetting, getThinkingSetting } from "../hooks/useModelSettings";
 import { useProject } from "../hooks/useProjects";
 import { useProviders } from "../hooks/useProviders";
 import { recordSessionVisit } from "../hooks/useRecentSessions";
@@ -41,8 +24,14 @@ import {
 import { useI18n } from "../i18n";
 import { useNavigationLayout } from "../layouts";
 import { preprocessMessages } from "../lib/preprocessMessages";
-import { generateUUID } from "../lib/uuid";
 import { getSessionDisplayTitle } from "../utils";
+import { DeferredQueueBanner } from "./session/DeferredQueueBanner";
+import { SessionErrorState } from "./session/SessionErrorState";
+import { SessionHeader } from "./session/SessionHeader";
+import { SessionInputArea } from "./session/SessionInputArea";
+import { SessionMessages } from "./session/SessionMessages";
+import { SessionWarnings } from "./session/SessionWarnings";
+import { useSessionSubmission } from "./session/useSessionSubmission";
 
 export function SessionPage() {
   const { projectId, sessionId } = useParams<{
@@ -161,7 +150,6 @@ function SessionPageContent({
     streamingMarkdownCallbacks,
   );
 
-  // Developer mode settings
   const { holdModeEnabled, showConnectionBars } = useDeveloperMode();
 
   // Session connection bar state for active session update streams
@@ -182,9 +170,8 @@ function SessionPageContent({
   const effectiveModel = session?.model ?? initialModel;
 
   const [scrollTrigger, setScrollTrigger] = useState(0);
-  const draftControlsRef = useRef<DraftControls | null>(null);
-  const handleDraftControlsReady = useCallback((controls: DraftControls) => {
-    draftControlsRef.current = controls;
+  const handleScrollToBottom = useCallback(() => {
+    setScrollTrigger((prev) => prev + 1);
   }, []);
   const { showToast } = useToastContext();
 
@@ -196,9 +183,6 @@ function SessionPageContent({
       .then((res) => setSharingConfigured(res.configured))
       .catch(() => {});
   }, []);
-
-  // Connection for uploads (uses WebSocket when enabled)
-  const connection = useConnection();
 
   const allSlashCommands = useMemo<SlashCommand[]>(
     () => (status.owner === "self" ? slashCommands : []),
@@ -217,14 +201,12 @@ function SessionPageContent({
   const supportsThinkingToggle =
     currentProviderInfo?.supportsThinkingToggle ?? true;
 
-  // Inline title editing state
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
   const renameInputRef = useRef<HTMLInputElement>(null);
   const isSavingTitleRef = useRef(false);
 
-  // Recent sessions dropdown state
   const [showRecentSessions, setShowRecentSessions] = useState(false);
   const titleButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -279,14 +261,6 @@ function SessionPageContent({
     basePath,
   ]);
 
-  // File attachment state
-  const [attachments, setAttachments] = useState<UploadedFile[]>([]);
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([]);
-  // Track in-flight upload promises so handleSend can wait for them
-  const pendingUploadsRef = useRef<Map<string, Promise<UploadedFile | null>>>(
-    new Map(),
-  );
-
   // Approval panel collapsed state (separate from message input collapse)
   const [approvalCollapsed, setApprovalCollapsed] = useState(false);
 
@@ -326,168 +300,30 @@ function SessionPageContent({
     enabled: status.owner !== "external",
   });
 
-  const handleSend = async (text: string) => {
-    // Add to pending queue and get tempId to pass to server
-    const tempId = addPendingMessage(text);
-    setProcessState("in-turn"); // Optimistic: show processing indicator immediately
-    setScrollTrigger((prev) => prev + 1); // Force scroll to bottom
-
-    // Capture already-completed attachments
-    const currentAttachments = [...attachments];
-
-    // Wait for any in-flight uploads to complete before sending
-    const pendingAtSendTime = [...pendingUploadsRef.current.values()];
-    if (pendingAtSendTime.length > 0) {
-      updatePendingMessage(tempId, { status: t("sessionUploading") });
-      setAttachments([]); // Clear input area immediately
-      const results = await Promise.all(pendingAtSendTime);
-      for (const result of results) {
-        if (result) currentAttachments.push(result);
-      }
-      // Remove uploaded files that handleAttach added to state during the wait
-      // (they're already captured in currentAttachments). Preserve any new uploads
-      // started after send was clicked.
-      const sentIds = new Set(currentAttachments.map((a) => a.id));
-      setAttachments((prev) => prev.filter((a) => !sentIds.has(a.id)));
-      updatePendingMessage(tempId, { status: undefined });
-    } else {
-      setAttachments([]);
-    }
-
-    try {
-      if (status.owner === "none") {
-        // Resume the session with current permission mode and model settings
-        // Use session's existing model if available (important for non-Claude providers),
-        // otherwise fall back to user's model preference for new Claude sessions
-        const model = session?.model ?? getModelSetting();
-        const thinking = getThinkingSetting();
-        // Use effectiveProvider to ensure correct provider even if session data hasn't loaded
-        // effectiveProvider = session?.provider ?? initialProvider (from navigation state)
-        const result = await api.resumeSession(
-          projectId,
-          sessionId,
-          text,
-          {
-            mode: permissionMode,
-            model,
-            thinking,
-            provider: effectiveProvider,
-            executor: session?.executor,
-          },
-          currentAttachments.length > 0 ? currentAttachments : undefined,
-          tempId,
-        );
-        // Update status to trigger SSE connection
-        setStatus({ owner: "self", processId: result.processId });
-      } else {
-        // Queue to existing process with current permission mode and thinking setting
-        const thinking = getThinkingSetting();
-        const result = await api.queueMessage(
-          sessionId,
-          text,
-          permissionMode,
-          currentAttachments.length > 0 ? currentAttachments : undefined,
-          tempId,
-          thinking,
-        );
-        // If process was restarted due to thinking mode change, reconnect stream
-        if (result.restarted && result.processId) {
-          setStatus({ owner: "self", processId: result.processId });
-          reconnectStream();
-        }
-      }
-      // Success - clear the draft from localStorage
-      draftControlsRef.current?.clearDraft();
-    } catch (err) {
-      console.error("Failed to send:", err);
-
-      // Check if process is dead (404) - auto-retry with resumeSession
-      const is404 =
-        err instanceof Error &&
-        (err.message.includes("404") ||
-          err.message.includes("No active process"));
-      if (is404) {
-        try {
-          const model = session?.model ?? getModelSetting();
-          const thinking = getThinkingSetting();
-          const result = await api.resumeSession(
-            projectId,
-            sessionId,
-            text,
-            {
-              mode: permissionMode,
-              model,
-              thinking,
-              provider: effectiveProvider,
-              executor: session?.executor,
-            },
-            currentAttachments.length > 0 ? currentAttachments : undefined,
-            tempId,
-          );
-          setStatus({ owner: "self", processId: result.processId });
-          draftControlsRef.current?.clearDraft();
-          return;
-        } catch (retryErr) {
-          console.error("Failed to resume session:", retryErr);
-          // Fall through to error handling below
-        }
-      }
-
-      // Remove from pending queue and restore draft on error
-      removePendingMessage(tempId);
-      draftControlsRef.current?.restoreFromStorage();
-      setAttachments(currentAttachments); // Restore attachments on error
-      setProcessState("idle");
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      showToast(t("sessionSendFailed", { message: errorMsg }), "error");
-    }
-  };
-
-  const handleQueue = async (text: string) => {
-    const tempId = addPendingMessage(text);
-    setScrollTrigger((prev) => prev + 1);
-
-    // Capture already-completed attachments
-    const currentAttachments = [...attachments];
-
-    // Wait for any in-flight uploads to complete before queuing
-    const pendingAtSendTime = [...pendingUploadsRef.current.values()];
-    if (pendingAtSendTime.length > 0) {
-      updatePendingMessage(tempId, { status: t("sessionUploading") });
-      setAttachments([]);
-      const results = await Promise.all(pendingAtSendTime);
-      for (const result of results) {
-        if (result) currentAttachments.push(result);
-      }
-      const sentIds = new Set(currentAttachments.map((a) => a.id));
-      setAttachments((prev) => prev.filter((a) => !sentIds.has(a.id)));
-      updatePendingMessage(tempId, { status: undefined });
-    } else {
-      setAttachments([]);
-    }
-
-    try {
-      const thinking = getThinkingSetting();
-      await api.queueMessage(
-        sessionId,
-        text,
-        permissionMode,
-        currentAttachments.length > 0 ? currentAttachments : undefined,
-        tempId,
-        thinking,
-        true,
-      );
-      removePendingMessage(tempId);
-      draftControlsRef.current?.clearDraft();
-    } catch (err) {
-      console.error("Failed to queue deferred message:", err);
-      removePendingMessage(tempId);
-      draftControlsRef.current?.restoreFromStorage();
-      setAttachments(currentAttachments);
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      showToast(t("sessionQueueFailed", { message: errorMsg }), "error");
-    }
-  };
+  const {
+    attachments,
+    uploadProgress,
+    handleSend,
+    handleQueue,
+    handleAttach,
+    handleRemoveAttachment,
+    handleDraftControlsReady,
+  } = useSessionSubmission({
+    projectId,
+    sessionId,
+    status,
+    processState,
+    permissionMode,
+    session,
+    effectiveProvider,
+    addPendingMessage,
+    removePendingMessage,
+    updatePendingMessage,
+    setStatus,
+    setProcessState,
+    reconnectStream,
+    onScrollToBottom: handleScrollToBottom,
+  });
 
   const handleModelChanged = useCallback(
     (model: string) => {
@@ -605,79 +441,6 @@ function SessionPageContent({
     },
     [sessionId, pendingInputRequest, showToast, t],
   );
-
-  // Handle file attachment uploads
-  // Each file uploads independently (parallel) and its promise is tracked
-  // so handleSend can wait for in-flight uploads before sending
-  const handleAttach = useCallback(
-    (files: File[]) => {
-      for (const file of files) {
-        const tempId = generateUUID();
-
-        // Add to progress tracking
-        setUploadProgress((prev) => [
-          ...prev,
-          {
-            fileId: tempId,
-            fileName: file.name,
-            bytesUploaded: 0,
-            totalBytes: file.size,
-            percent: 0,
-          },
-        ]);
-
-        // Start upload and track promise for handleSend to await
-        const uploadPromise = connection
-          .upload(projectId, sessionId, file, {
-            onProgress: (bytesUploaded) => {
-              setUploadProgress((prev) =>
-                prev.map((p) =>
-                  p.fileId === tempId
-                    ? {
-                        ...p,
-                        bytesUploaded,
-                        percent: Math.round((bytesUploaded / file.size) * 100),
-                      }
-                    : p,
-                ),
-              );
-            },
-          })
-          .then(
-            (uploaded) => {
-              setAttachments((prev) => [...prev, uploaded]);
-              return uploaded;
-            },
-            (err) => {
-              console.error("Upload failed:", err);
-              const errorMsg =
-                err instanceof Error ? err.message : t("sessionShareFailed");
-              showToast(
-                t("sessionUploadFailed", {
-                  file: file.name,
-                  message: errorMsg,
-                }),
-                "error",
-              );
-              return null as UploadedFile | null;
-            },
-          )
-          .finally(() => {
-            setUploadProgress((prev) =>
-              prev.filter((p) => p.fileId !== tempId),
-            );
-            pendingUploadsRef.current.delete(tempId);
-          });
-
-        pendingUploadsRef.current.set(tempId, uploadPromise);
-      }
-    },
-    [projectId, sessionId, showToast, connection, t],
-  );
-
-  const handleRemoveAttachment = useCallback((id: string) => {
-    setAttachments((prev) => prev.filter((a) => a.id !== id));
-  }, []);
 
   // Check if pending request is an AskUserQuestion
   const isAskUserQuestion = pendingInputRequest?.toolName === "AskUserQuestion";
@@ -859,30 +622,7 @@ function SessionPageContent({
     }
   }, [displayTitle, showToast, t]);
 
-  if (error)
-    return (
-      <div className="error">
-        {t("sessionErrorPrefix")} {error.message}
-      </div>
-    );
-
-  // Sidebar icon component
-  const SidebarIcon = () => (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <line x1="9" y1="3" x2="9" y2="21" />
-    </svg>
-  );
+  if (error) return <SessionErrorState message={error.message} />;
 
   return (
     <div
@@ -895,150 +635,51 @@ function SessionPageContent({
             : "main-content-mobile-inner"
         }
       >
-        <header className="session-header">
-          <div className="session-header-inner">
-            <div className="session-header-left">
-              {/* 移动端侧边栏切换按钮，桌面端由 NavigationLayout 提供 */}
-              {!isWideScreen && (
-                <button
-                  type="button"
-                  className="sidebar-toggle"
-                  onClick={openSidebar}
-                  title={t("sessionOpenSidebar")}
-                  aria-label={t("sessionOpenSidebar")}
-                >
-                  <SidebarIcon />
-                </button>
-              )}
-              {/* Project breadcrumb */}
-              {project?.name && (
-                <Link
-                  to={`${basePath}/sessions?project=${projectId}`}
-                  className="project-breadcrumb"
-                  title={project.name}
-                >
-                  {project.name.length > 12
-                    ? `${project.name.slice(0, 12)}...`
-                    : project.name}
-                </Link>
-              )}
-              <div className="session-title-row">
-                {isStarred && (
-                  <svg
-                    className="star-indicator-inline"
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    role="img"
-                    aria-label={t("sessionStarredLabel")}
-                  >
-                    <title>{t("sessionStarredLabel")}</title>
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                  </svg>
-                )}
-                {loading ? (
-                  <span className="session-title-skeleton" />
-                ) : isEditingTitle ? (
-                  <input
-                    ref={renameInputRef}
-                    type="text"
-                    className="session-title-input"
-                    value={renameValue}
-                    onChange={(e) => setRenameValue(e.target.value)}
-                    onKeyDown={handleTitleKeyDown}
-                    onBlur={handleTitleBlur}
-                    disabled={isRenaming}
-                  />
-                ) : (
-                  <>
-                    <button
-                      ref={titleButtonRef}
-                      type="button"
-                      className="session-title session-title-dropdown-trigger"
-                      onClick={() => setShowRecentSessions(!showRecentSessions)}
-                      title={session?.fullTitle ?? displayTitle}
-                    >
-                      <span className="session-title-text">{displayTitle}</span>
-                      <svg
-                        className="session-title-chevron"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <polyline points="6 9 12 15 18 9" />
-                      </svg>
-                    </button>
-                    <RecentSessionsDropdown
-                      currentSessionId={sessionId}
-                      isOpen={showRecentSessions}
-                      onClose={() => setShowRecentSessions(false)}
-                      onNavigate={() => setShowRecentSessions(false)}
-                      triggerRef={titleButtonRef}
-                      basePath={basePath}
-                    />
-                  </>
-                )}
-                {!loading && isArchived && (
-                  <span className="archived-badge">
-                    {t("sessionArchivedBadge")}
-                  </span>
-                )}
-                {!loading && (
-                  <SessionMenu
-                    sessionId={sessionId}
-                    projectId={projectId}
-                    isStarred={isStarred}
-                    isArchived={isArchived}
-                    hasUnread={hasUnread}
-                    provider={session?.provider}
-                    processId={
-                      status.owner === "self" ? status.processId : undefined
-                    }
-                    onToggleStar={handleToggleStar}
-                    onToggleArchive={handleToggleArchive}
-                    onToggleRead={handleToggleRead}
-                    onRename={handleStartEditingTitle}
-                    onClone={(newSessionId) => {
-                      navigate(
-                        `${basePath}/projects/${projectId}/sessions/${newSessionId}`,
-                      );
-                    }}
-                    onTerminate={handleTerminate}
-                    sharingConfigured={sharingConfigured}
-                    onShare={handleShare}
-                    useFixedPositioning
-                    useEllipsisIcon
-                  />
-                )}
-              </div>
-            </div>
-            <div className="session-header-right">
-              {!loading && effectiveProvider && (
-                <button
-                  type="button"
-                  className="provider-badge-button"
-                  onClick={() => setShowProcessInfoModal(true)}
-                  title={t("sessionViewInfo")}
-                >
-                  <ProviderBadge
-                    provider={effectiveProvider}
-                    model={effectiveModel}
-                    isThinking={processState === "in-turn"}
-                  />
-                </button>
-              )}
-            </div>
-          </div>
-        </header>
+        <SessionHeader
+          isWideScreen={isWideScreen}
+          onOpenSidebar={openSidebar}
+          basePath={basePath}
+          projectId={projectId}
+          projectName={project?.name}
+          sessionId={sessionId}
+          displayTitle={displayTitle}
+          fullTitle={session?.fullTitle}
+          isStarred={isStarred}
+          isArchived={isArchived}
+          hasUnread={hasUnread}
+          loading={loading}
+          isEditingTitle={isEditingTitle}
+          renameInputRef={renameInputRef}
+          renameValue={renameValue}
+          onRenameValueChange={setRenameValue}
+          onTitleKeyDown={handleTitleKeyDown}
+          onTitleBlur={handleTitleBlur}
+          isRenaming={isRenaming}
+          titleButtonRef={titleButtonRef}
+          showRecentSessions={showRecentSessions}
+          onToggleRecentSessions={() =>
+            setShowRecentSessions(!showRecentSessions)
+          }
+          onCloseRecentSessions={() => setShowRecentSessions(false)}
+          effectiveProvider={effectiveProvider}
+          effectiveModel={effectiveModel}
+          isThinking={processState === "in-turn"}
+          onOpenProcessInfo={() => setShowProcessInfoModal(true)}
+          sessionProvider={session?.provider}
+          processId={status.owner === "self" ? status.processId : undefined}
+          onToggleStar={handleToggleStar}
+          onToggleArchive={handleToggleArchive}
+          onToggleRead={handleToggleRead}
+          onRename={handleStartEditingTitle}
+          onClone={(newSessionId) => {
+            navigate(
+              `${basePath}/projects/${projectId}/sessions/${newSessionId}`,
+            );
+          }}
+          onTerminate={handleTerminate}
+          sharingConfigured={sharingConfigured}
+          onShare={handleShare}
+        />
 
         {/* Process Info Modal */}
         {showProcessInfoModal && session && (
@@ -1063,230 +704,95 @@ function SessionPageContent({
 
         {/* Model Switch Modal */}
         {showModelSwitchModal && (
-            <ModelSwitchModal
-              processId={status.owner === "self" ? status.processId : undefined}
-              currentModel={session?.model}
-              onModelChanged={handleModelChanged}
-              onClose={() => setShowModelSwitchModal(false)}
-            />
-          )}
-
-        {status.owner === "external" && (
-          <div className="external-session-warning">
-            {t("sessionExternalWarning")}
-          </div>
-        )}
-
-        {hasPendingToolCalls ? (
-          <div className="external-session-warning pending-tool-warning">
-            {t("sessionPendingElsewhereWarning")}
-          </div>
-        ) : null}
-
-        <main className="session-messages">
-          {loading ? (
-            <div className="loading">{t("sessionLoading")}</div>
-          ) : (
-            <SessionMetadataProvider
-              projectId={projectId}
-              projectPath={project?.path ?? null}
-              sessionId={sessionId}
-            >
-              <AgentContentProvider
-                agentContent={agentContent}
-                setAgentContent={setAgentContent}
-                toolUseToAgent={toolUseToAgent}
-                projectId={projectId}
-                sessionId={sessionId}
-              >
-                <MessageList
-                  messages={messages}
-                  provider={session?.provider}
-                  isProcessing={
-                    status.owner === "self" && processState === "in-turn"
-                  }
-                  isCompacting={isCompacting}
-                  scrollTrigger={scrollTrigger}
-                  pendingMessages={pendingMessages}
-                  markdownAugments={markdownAugments}
-                  activeToolApproval={activeToolApproval}
-                  hasOlderMessages={pagination?.hasOlderMessages}
-                  loadingOlder={loadingOlder}
-                  onLoadOlderMessages={loadOlderMessages}
-                />
-              </AgentContentProvider>
-            </SessionMetadataProvider>
-          )}
-        </main>
-
-        {/* Queued message banner - shown above input when messages are waiting */}
-        {deferredMessages.length > 0 && (
-          <div className="deferred-queue-banner">
-            {deferredMessages.map((qm, i) => (
-              <div
-                key={qm.tempId ?? `deferred-${i}`}
-                className="deferred-queue-item"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 256 256"
-                  className="deferred-queue-icon"
-                  aria-hidden="true"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24Zm0 192a88 88 0 1 1 88-88a88.1 88.1 0 0 1-88 88Zm64-88a8 8 0 0 1-8 8H128a8 8 0 0 1-8-8V72a8 8 0 0 1 16 0v48h56a8 8 0 0 1 0 16Z"
-                  />
-                </svg>
-                <span className="deferred-queue-text">
-                  {qm.content.length > 80
-                    ? `${qm.content.slice(0, 77)}...`
-                    : qm.content}
-                </span>
-                {qm.tempId && (
-                  <button
-                    type="button"
-                    className="deferred-queue-cancel"
-                    onClick={() =>
-                      api.cancelDeferredMessage(sessionId, qm.tempId as string)
-                    }
-                    aria-label={t("toolbarQueueTitle")}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-        <footer className="session-input">
-          <div
-            className={`session-connection-bar session-connection-${sessionConnectionStatus}`}
+          <ModelSwitchModal
+            processId={status.owner === "self" ? status.processId : undefined}
+            currentModel={session?.model}
+            onModelChanged={handleModelChanged}
+            onClose={() => setShowModelSwitchModal(false)}
           />
-          <div className="session-input-inner">
-            {/* User question panel */}
-            {pendingInputRequest &&
-              pendingInputRequest.sessionId === actualSessionId &&
-              isAskUserQuestion && (
-                <QuestionAnswerPanel
-                  request={pendingInputRequest}
-                  sessionId={actualSessionId}
-                  onSubmit={handleQuestionSubmit}
-                  onDeny={handleDeny}
-                />
-              )}
+        )}
 
-            {/* Tool approval: show panel + always-visible toolbar */}
-            {pendingInputRequest &&
-              pendingInputRequest.sessionId === actualSessionId &&
-              !isAskUserQuestion && (
-                <>
-                  <ToolApprovalPanel
-                    request={pendingInputRequest}
-                    sessionId={actualSessionId}
-                    onApprove={handleApprove}
-                    onDeny={handleDeny}
-                    onApproveAcceptEdits={handleApproveAcceptEdits}
-                    onDenyWithFeedback={handleDenyWithFeedback}
-                    collapsed={approvalCollapsed}
-                    onCollapsedChange={setApprovalCollapsed}
-                  />
-                  <MessageInputToolbar
-                    mode={permissionMode}
-                    onModeChange={setPermissionMode}
-                    isHeld={holdModeEnabled ? isHeld : undefined}
-                    onHoldChange={holdModeEnabled ? setHold : undefined}
-                    supportsPermissionMode={supportsPermissionMode}
-                    supportsThinkingToggle={supportsThinkingToggle}
-                    contextUsage={session?.contextUsage}
-                    isRunning={status.owner === "self"}
-                    isThinking={processState === "in-turn"}
-                    onStop={handleAbort}
-                    onOpenModelSwitch={handleOpenModelSwitch}
-                    processId={activeProcessId}
-                    mcpServers={mcpServers}
-                    pendingApproval={
-                      approvalCollapsed
-                        ? {
-                            type: "tool-approval",
-                            onExpand: () => setApprovalCollapsed(false),
-                          }
-                        : undefined
-                    }
-                  />
-                </>
-              )}
+        <SessionWarnings
+          isExternal={status.owner === "external"}
+          hasPendingToolCalls={hasPendingToolCalls}
+        />
 
-            {/* No pending approval: show full message input */}
-            {!(
-              pendingInputRequest &&
-              pendingInputRequest.sessionId === actualSessionId &&
-              !isAskUserQuestion
-            ) && (
-              <MessageInput
-                onSend={handleSend}
-                onQueue={
-                  status.owner !== "none" && processState !== "idle"
-                    ? handleQueue
-                    : undefined
-                }
-                placeholder={
-                  status.owner === "external"
-                    ? t("sessionPlaceholderExternal")
-                    : processState === "idle"
-                      ? t("sessionPlaceholderResume")
-                      : t("sessionPlaceholderQueue")
-                }
-                mode={permissionMode}
-                onModeChange={setPermissionMode}
-                isHeld={holdModeEnabled ? isHeld : undefined}
-                onHoldChange={holdModeEnabled ? setHold : undefined}
-                supportsPermissionMode={supportsPermissionMode}
-                supportsThinkingToggle={supportsThinkingToggle}
-                isRunning={status.owner === "self"}
-                isThinking={processState === "in-turn"}
-                onStop={handleAbort}
-                draftKey={`draft-message-${sessionId}`}
-                onDraftControlsReady={handleDraftControlsReady}
-                collapsed={
-                  !!(
-                    pendingInputRequest &&
-                    pendingInputRequest.sessionId === actualSessionId
-                  )
-                }
-                contextUsage={session?.contextUsage}
-                projectId={projectId}
-                sessionId={sessionId}
-                attachments={attachments}
-                onAttach={handleAttach}
-                onRemoveAttachment={handleRemoveAttachment}
-                uploadProgress={uploadProgress}
-                slashCommands={allSlashCommands}
-                onOpenModelSwitch={
-                  activeProcessId ? handleOpenModelSwitch : undefined
-                }
-                processId={activeProcessId}
-                mcpServers={mcpServers}
-              />
-            )}
-          </div>
-        </footer>
+        <SessionMessages
+          loading={loading}
+          loadingLabel={t("sessionLoading")}
+          projectId={projectId}
+          projectPath={project?.path ?? null}
+          sessionId={sessionId}
+          agentContent={agentContent}
+          setAgentContent={setAgentContent}
+          toolUseToAgent={toolUseToAgent}
+          messages={messages}
+          provider={session?.provider}
+          isProcessing={status.owner === "self" && processState === "in-turn"}
+          isCompacting={isCompacting}
+          scrollTrigger={scrollTrigger}
+          pendingMessages={pendingMessages}
+          markdownAugments={markdownAugments}
+          activeToolApproval={activeToolApproval}
+          hasOlderMessages={pagination?.hasOlderMessages}
+          loadingOlder={loadingOlder}
+          onLoadOlderMessages={loadOlderMessages}
+        />
+
+        <DeferredQueueBanner
+          messages={deferredMessages}
+          onCancel={(tempId) => api.cancelDeferredMessage(sessionId, tempId)}
+        />
+        <SessionInputArea
+          sessionConnectionStatus={sessionConnectionStatus}
+          pendingInputRequest={pendingInputRequest}
+          actualSessionId={actualSessionId}
+          isAskUserQuestion={isAskUserQuestion}
+          onQuestionSubmit={handleQuestionSubmit}
+          onApprove={handleApprove}
+          onApproveAcceptEdits={handleApproveAcceptEdits}
+          onDeny={handleDeny}
+          onDenyWithFeedback={handleDenyWithFeedback}
+          approvalCollapsed={approvalCollapsed}
+          onApprovalCollapsedChange={setApprovalCollapsed}
+          permissionMode={permissionMode}
+          onPermissionModeChange={setPermissionMode}
+          isHeld={holdModeEnabled ? isHeld : undefined}
+          onHoldChange={holdModeEnabled ? setHold : undefined}
+          supportsPermissionMode={supportsPermissionMode}
+          supportsThinkingToggle={supportsThinkingToggle}
+          contextUsage={session?.contextUsage}
+          isRunning={status.owner === "self"}
+          isThinking={processState === "in-turn"}
+          onStop={handleAbort}
+          onOpenModelSwitch={
+            activeProcessId ? handleOpenModelSwitch : undefined
+          }
+          processId={activeProcessId}
+          mcpServers={mcpServers}
+          onSend={handleSend}
+          onQueue={
+            status.owner !== "none" && processState !== "idle"
+              ? handleQueue
+              : undefined
+          }
+          placeholder={
+            status.owner === "external"
+              ? t("sessionPlaceholderExternal")
+              : processState === "idle"
+                ? t("sessionPlaceholderResume")
+                : t("sessionPlaceholderQueue")
+          }
+          draftKey={`draft-message-${sessionId}`}
+          onDraftControlsReady={handleDraftControlsReady}
+          projectId={projectId}
+          sessionId={sessionId}
+          attachments={attachments}
+          onAttach={handleAttach}
+          onRemoveAttachment={handleRemoveAttachment}
+          uploadProgress={uploadProgress}
+          slashCommands={allSlashCommands}
+        />
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import { TrustedHtml } from "../../TrustedHtml";
 import type { ContentBlock, ContentRenderer, RenderContext } from "../types";
 
 interface TextBlock extends ContentBlock {
@@ -14,10 +15,10 @@ function TextRendererComponent({ block }: { block: TextBlock }) {
   // Prefer server-rendered HTML if available
   if (block._renderedHtml) {
     return (
-      <div
+      <TrustedHtml
         className="text-block"
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered markdown
-        dangerouslySetInnerHTML={{ __html: block._renderedHtml }}
+        html={block._renderedHtml}
+        source="server-rendered-markdown"
       />
     );
   }
@@ -25,9 +26,7 @@ function TextRendererComponent({ block }: { block: TextBlock }) {
   // Fallback to plain text when server-rendered HTML is not available
   return (
     <div className="text-block">
-      <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit" }}>
-        {block.text}
-      </pre>
+      <pre className="renderer-plain-text">{block.text}</pre>
     </div>
   );
 }

@@ -154,6 +154,7 @@ export function useSpeechRecognition(
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const isStoppingRef = useRef(false);
+  const fatalErrorRef = useRef(false);
   // Track time of last result to detect stale connections
   const lastResultTimeRef = useRef<number>(0);
   // Timer to transition from "receiving" back to "listening" after silence
@@ -223,6 +224,7 @@ export function useSpeechRecognition(
     setInterimTranscript("");
     setStatus("starting");
     isStoppingRef.current = false;
+    fatalErrorRef.current = false;
     lastFinalTranscriptRef.current = "";
     lastResultTimeRef.current = 0;
 
@@ -338,6 +340,9 @@ export function useSpeechRecognition(
           errorMessage = `Error: ${event.error}`;
       }
 
+      fatalErrorRef.current = true;
+      isStoppingRef.current = true;
+      recognitionRef.current = null;
       setError(errorMessage);
       setStatus("error");
       onErrorRef.current?.(errorMessage);
@@ -349,6 +354,13 @@ export function useSpeechRecognition(
       if (receivingTimeoutRef.current) {
         clearTimeout(receivingTimeoutRef.current);
         receivingTimeoutRef.current = null;
+      }
+
+      if (fatalErrorRef.current) {
+        setIsListening(false);
+        setInterimTranscript("");
+        onEndRef.current?.();
+        return;
       }
 
       // Auto-restart if not manually stopped (handles Chrome's ~60s timeout)
@@ -377,6 +389,10 @@ export function useSpeechRecognition(
     try {
       recognition.start();
     } catch (err) {
+      fatalErrorRef.current = true;
+      isStoppingRef.current = true;
+      recognitionRef.current = null;
+      setIsListening(false);
       setError("Failed to start speech recognition");
       setStatus("error");
       onErrorRef.current?.("Failed to start speech recognition");
@@ -385,6 +401,7 @@ export function useSpeechRecognition(
 
   const stopListening = useCallback(() => {
     isStoppingRef.current = true;
+    fatalErrorRef.current = false;
     if (receivingTimeoutRef.current) {
       clearTimeout(receivingTimeoutRef.current);
       receivingTimeoutRef.current = null;

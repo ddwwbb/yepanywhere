@@ -1,0 +1,63 @@
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  /* Leave space for activity drawer (36px closed, 300px open) */
+  padding-bottom: 320px;
+}
+
+.loading {
+  padding: 2rem;
+  text-align: center;
+  animation: delayed-fade-in 0.2s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes delayed-fade-in {
+  0%,
+  99% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.error {
+  padding: 2rem;
+  text-align: center;
+}
+
+.breadcrumb {
+  font-size: var(--text-lg);
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.breadcrumb a {
+  color: var(--color-link);
+}
+
+h1 {
+  margin: 0 0 1.5rem;
+}
+h2 {
+  margin: 2rem 0 1rem;
+}
+
+/* Page header with title and actions */
+
+.settings-link {
+  color: var(--text-muted);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  transition: color 0.15s, background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-link:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}

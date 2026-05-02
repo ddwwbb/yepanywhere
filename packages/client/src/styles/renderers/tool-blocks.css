@@ -1,0 +1,57 @@
+/* ==========================================================================
+   Tool Blocks
+   ========================================================================== */
+
+.tool-block {
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  margin: 0.5rem 0;
+  overflow: hidden;
+}
+
+.tool-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-default);
+  font-size: var(--text-sm);
+}
+
+.tool-icon {
+  font-family: monospace;
+  color: var(--text-muted);
+}
+
+.tool-name {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.tool-content {
+  padding: 0.75rem;
+}
+
+.tool-block.tool-error {
+  border-color: var(--color-error);
+}
+
+.tool-block.tool-error .tool-header {
+  background: var(--bg-error, rgba(207, 34, 46, 0.1));
+  color: var(--color-error);
+}
+
+.tool-fallback {
+  margin: 0;
+  padding: 0.5rem;
+  background: var(--bg-code);
+  border-radius: 4px;
+  font-size: var(--text-base);
+  overflow-x: auto;
+}
+
+.tool-fallback-error {
+  background: var(--bg-error, rgba(207, 34, 46, 0.1));
+  border: 1px solid var(--color-error);
+}

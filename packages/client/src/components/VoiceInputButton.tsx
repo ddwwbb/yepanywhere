@@ -165,16 +165,10 @@ export const VoiceInputButton = forwardRef(function VoiceInputButton(
       onClick={handleClick}
       disabled={disabled}
       title={
-        error
-          ? error
-          : isListening
-            ? t("voiceInputStop" as never)
-            : t("voiceInputStart" as never)
+        error ? error : isListening ? t("voiceInputStop") : t("voiceInputStart")
       }
       aria-label={
-        isListening
-          ? t("voiceInputStopLabel" as never)
-          : t("voiceInputStartLabel" as never)
+        isListening ? t("voiceInputStopLabel") : t("voiceInputStartLabel")
       }
       aria-pressed={isListening}
     >

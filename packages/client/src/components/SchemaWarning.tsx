@@ -113,7 +113,7 @@ export function SchemaWarning({ toolName, errors }: SchemaWarningProps) {
         className="schema-warning"
         onClick={handleClick}
         onKeyDown={handleKeyDown}
-        title={t("schemaWarningTooltip" as never, { tool: toolName })}
+        title={t("schemaWarningTooltip", { tool: toolName })}
       >
         <span className="schema-warning-icon" aria-hidden="true">
           !
@@ -124,7 +124,7 @@ export function SchemaWarning({ toolName, errors }: SchemaWarningProps) {
           title={
             <span className="schema-warning-modal-title">
               Schema validation failed: {toolName}
-              {t("schemaWarningTitle" as never, { tool: toolName })}
+              {t("schemaWarningTitle", { tool: toolName })}
             </span>
           }
           onClose={handleClose}
@@ -133,7 +133,7 @@ export function SchemaWarning({ toolName, errors }: SchemaWarningProps) {
             {missing.length > 0 && (
               <div className="schema-warning-section">
                 <div className="schema-warning-section-title">
-                  {t("schemaWarningMissing" as never)}
+                  {t("schemaWarningMissing")}
                 </div>
                 <ul className="schema-warning-list">
                   {missing.map((field) => (
@@ -147,7 +147,7 @@ export function SchemaWarning({ toolName, errors }: SchemaWarningProps) {
             {invalid.length > 0 && (
               <div className="schema-warning-section">
                 <div className="schema-warning-section-title">
-                  {t("schemaWarningInvalid" as never)}
+                  {t("schemaWarningInvalid")}
                 </div>
                 <ul className="schema-warning-list">
                   {invalid.map(({ path, message }) => (
@@ -167,7 +167,7 @@ export function SchemaWarning({ toolName, errors }: SchemaWarningProps) {
                 className="schema-warning-report-link"
                 onClick={(e) => e.stopPropagation()}
               >
-                {t("schemaWarningReport" as never)}
+                {t("schemaWarningReport")}
               </a>
             </div>
           </div>

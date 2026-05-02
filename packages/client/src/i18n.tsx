@@ -7,37 +7,29 @@ import {
   useState,
 } from "react";
 import enMessages from "./i18n/en.json";
+import zhCnMessages from "./i18n/zh-CN.json";
 import { UI_KEYS } from "./lib/storageKeys";
 
-export const SUPPORTED_LOCALES = [
-  "en",
-  "zh-CN",
-  "es",
-  "fr",
-  "de",
-  "ja",
-] as const;
+export const SUPPORTED_LOCALES = ["en", "zh-CN"] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
-const DEFAULT_LOCALE: Locale = "en";
+const DEFAULT_LOCALE: Locale = "zh-CN";
 
-const defaultMessages = enMessages;
+const defaultMessages = zhCnMessages;
 type Messages = typeof defaultMessages;
-type MessageKey = keyof Messages;
+export type MessageKey = keyof Messages;
+export type TranslationVars = Record<string, string | number>;
+export type Translate = (key: MessageKey, vars?: TranslationVars) => string;
 
 const localeLoaders: Record<Locale, () => Promise<Messages>> = {
-  en: async () => defaultMessages,
-  "zh-CN": async () => (await import("./i18n/zh-CN.json")).default,
-  es: async () => (await import("./i18n/es.json")).default,
-  fr: async () => (await import("./i18n/fr.json")).default,
-  de: async () => (await import("./i18n/de.json")).default,
-  ja: async () => (await import("./i18n/ja.json")).default,
+  en: async () => enMessages,
+  "zh-CN": async () => zhCnMessages,
 };
 
 interface I18nContextValue {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: MessageKey, vars?: Record<string, string | number>) => string;
+  t: Translate;
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -54,17 +46,14 @@ function detectLocale(): Locale {
       : null;
   if (isLocale(stored)) return stored;
   if (navigator.language.toLowerCase().startsWith("zh")) return "zh-CN";
-  if (navigator.language.toLowerCase().startsWith("es")) return "es";
-  if (navigator.language.toLowerCase().startsWith("fr")) return "fr";
-  if (navigator.language.toLowerCase().startsWith("de")) return "de";
-  if (navigator.language.toLowerCase().startsWith("ja")) return "ja";
   return DEFAULT_LOCALE;
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(detectLocale);
   const [messages, setMessages] = useState<Partial<Record<Locale, Messages>>>({
-    en: defaultMessages,
+    en: enMessages,
+    "zh-CN": zhCnMessages,
   });
 
   useEffect(() => {

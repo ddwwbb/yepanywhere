@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { YepAnywhereLogo } from "../components/YepAnywhereLogo";
 import { useRemoteConnection } from "../contexts/RemoteConnectionContext";
-import { useI18n } from "../i18n";
+import { type Translate, useI18n } from "../i18n";
 import {
   createRelayHost,
   getHostByRelayUsername,
@@ -326,32 +326,32 @@ export function RelayLoginPage() {
 
 function getStatusMessage(
   status: ConnectionStatus,
-  t: (key: never) => string,
+  t: Translate,
 ): string | null {
   switch (status) {
     case "connecting_relay":
-      return t("relayLoginStatusConnectingRelay" as never);
+      return t("relayLoginStatusConnectingRelay");
     case "waiting_server":
-      return t("relayLoginStatusWaitingServer" as never);
+      return t("relayLoginStatusWaitingServer");
     case "authenticating":
-      return t("relayLoginStatusAuthenticating" as never);
+      return t("relayLoginStatusAuthenticating");
     default:
       return null;
   }
 }
 
-function formatRelayError(message: string, t: (key: never) => string): string {
+function formatRelayError(message: string, t: Translate): string {
   if (message.includes("server_offline")) {
-    return t("relayLoginErrorServerOffline" as never);
+    return t("relayLoginErrorServerOffline");
   }
   if (message.includes("unknown_username")) {
-    return t("relayLoginErrorUnknownUsername" as never);
+    return t("relayLoginErrorUnknownUsername");
   }
   if (
     message.includes("Authentication failed") ||
     message.includes("invalid_identity")
   ) {
-    return t("relayLoginErrorInvalidCredentials" as never);
+    return t("relayLoginErrorInvalidCredentials");
   }
   return message;
 }

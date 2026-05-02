@@ -11,12 +11,6 @@
  */
 
 import {
-  type RelayClientConnected,
-  type RelayClientError,
-  isRelayClientConnected,
-  isRelayClientError,
-} from "@yep-anywhere/shared";
-import {
   type ReactNode,
   createContext,
   useCallback,
@@ -42,6 +36,16 @@ import {
   updateHostSession,
   upsertRelayHost,
 } from "../lib/hostStorage";
+import {
+  type AutoResumeError,
+  categorizeAutoResumeError,
+} from "./remote-connection/autoResumeErrors";
+import { connectRelaySocket } from "./remote-connection/relaySocket";
+
+export type {
+  AutoResumeError,
+  AutoResumeErrorReason,
+} from "./remote-connection/autoResumeErrors";
 
 /** Stored credentials for auto-reconnect */
 interface StoredCredentials {
@@ -62,29 +66,6 @@ export type RelayConnectionStatus =
   | "waiting_server"
   | "authenticating"
   | "error";
-
-/** Categorized auto-resume failure reason */
-export type AutoResumeErrorReason =
-  | "server_offline" // Server not connected to relay
-  | "unknown_username" // No server with that username on relay
-  | "relay_timeout" // Timeout waiting for relay or server
-  | "relay_unreachable" // Can't connect to relay server
-  | "direct_unreachable" // Can't reach server via direct WebSocket
-  | "resume_incompatible" // Server is too old for two-phase session resume
-  | "auth_failed" // Session expired or auth error
-  | "other"; // Unexpected error
-
-/** Structured error from auto-resume failure */
-export interface AutoResumeError {
-  reason: AutoResumeErrorReason;
-  mode: "relay" | "direct";
-  /** Relay username (relay mode only) */
-  relayUsername?: string;
-  /** Server URL (direct mode) or relay URL (relay mode) */
-  serverUrl?: string;
-  /** Original error message */
-  message: string;
-}
 
 /** Options for connecting via relay */
 export interface ConnectViaRelayOptions {
@@ -191,63 +172,6 @@ function clearStoredCredentials(): void {
   } catch {
     // Ignore storage errors
   }
-}
-
-/** Categorize an error message into a structured AutoResumeErrorReason */
-function categorizeError(message: string): AutoResumeErrorReason {
-  const lowerMessage = message.toLowerCase();
-
-  if (
-    lowerMessage.includes("resume_incompatible") ||
-    lowerMessage.includes("session resume unsupported")
-  ) {
-    return "resume_incompatible";
-  }
-
-  // Relay-specific errors
-  if (lowerMessage.includes("server_offline")) {
-    return "server_offline";
-  }
-  if (lowerMessage.includes("unknown_username")) {
-    return "unknown_username";
-  }
-  if (
-    lowerMessage.includes("waiting for server timed out") ||
-    lowerMessage.includes("relay connection timeout")
-  ) {
-    return "relay_timeout";
-  }
-  if (
-    lowerMessage.includes("failed to connect to relay") ||
-    lowerMessage.includes("relay connection closed") ||
-    lowerMessage.includes("relay connection error")
-  ) {
-    return "relay_unreachable";
-  }
-
-  // Direct connection errors
-  if (
-    lowerMessage.includes("websocket") ||
-    lowerMessage.includes("econnrefused") ||
-    lowerMessage.includes("connection refused") ||
-    lowerMessage.includes("failed to connect") ||
-    lowerMessage.includes("connection failed") ||
-    lowerMessage.includes("network error")
-  ) {
-    return "direct_unreachable";
-  }
-
-  // Auth errors
-  if (
-    lowerMessage.includes("authentication") ||
-    lowerMessage.includes("session") ||
-    lowerMessage.includes("invalid_identity") ||
-    lowerMessage.includes("unauthorized")
-  ) {
-    return "auth_failed";
-  }
-
-  return "other";
 }
 
 interface Props {
@@ -419,72 +343,8 @@ export function RemoteConnectionProvider({ children }: Props) {
       onStatusChange?.("connecting_relay");
 
       try {
-        // 1. Connect to relay server
-        const ws = new WebSocket(relayUrl);
-        ws.binaryType = "arraybuffer";
-
-        // Wait for WebSocket to open
-        await new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            ws.close();
-            reject(new Error("Relay connection timeout"));
-          }, 15000);
-
-          ws.onopen = () => {
-            clearTimeout(timeout);
-            resolve();
-          };
-
-          ws.onerror = () => {
-            clearTimeout(timeout);
-            reject(new Error("Failed to connect to relay server"));
-          };
-        });
-
-        // 2. Send client_connect message
-        onStatusChange?.("waiting_server");
-        ws.send(
-          JSON.stringify({ type: "client_connect", username: relayUsername }),
-        );
-
-        // 3. Wait for client_connected or error
-        await new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            ws.close();
-            reject(new Error("Waiting for server timed out"));
-          }, 30000);
-
-          ws.onmessage = (event) => {
-            clearTimeout(timeout);
-            try {
-              const msg = JSON.parse(event.data as string);
-              if (isRelayClientConnected(msg)) {
-                // Successfully paired with server
-                resolve();
-              } else if (isRelayClientError(msg)) {
-                ws.close();
-                reject(new Error(msg.reason));
-              } else {
-                // Unexpected message - might be server sending first message
-                // This shouldn't happen, but treat as success
-                resolve();
-              }
-            } catch {
-              // JSON parse error - unexpected message format
-              ws.close();
-              reject(new Error("Invalid relay response"));
-            }
-          };
-
-          ws.onclose = () => {
-            clearTimeout(timeout);
-            reject(new Error("Relay connection closed"));
-          };
-
-          ws.onerror = () => {
-            clearTimeout(timeout);
-            reject(new Error("Relay connection error"));
-          };
+        const ws = await connectRelaySocket(relayUrl, relayUsername, () => {
+          onStatusChange?.("waiting_server");
         });
 
         // 4. Now we have a direct pipe to yepanywhere server - do SRP auth
@@ -612,67 +472,7 @@ export function RemoteConnectionProvider({ children }: Props) {
             throw new Error("Missing relay credentials for auto-resume");
           }
 
-          // 1. Connect to relay server
-          const ws = new WebSocket(relayUrl);
-          ws.binaryType = "arraybuffer";
-
-          await new Promise<void>((resolve, reject) => {
-            const timeout = setTimeout(() => {
-              ws.close();
-              reject(new Error("Relay connection timeout"));
-            }, 15000);
-
-            ws.onopen = () => {
-              clearTimeout(timeout);
-              resolve();
-            };
-
-            ws.onerror = () => {
-              clearTimeout(timeout);
-              reject(new Error("Failed to connect to relay server"));
-            };
-          });
-
-          // 2. Send client_connect message
-          ws.send(
-            JSON.stringify({ type: "client_connect", username: relayUsername }),
-          );
-
-          // 3. Wait for client_connected or error
-          await new Promise<void>((resolve, reject) => {
-            const timeout = setTimeout(() => {
-              ws.close();
-              reject(new Error("Waiting for server timed out"));
-            }, 30000);
-
-            ws.onmessage = (event) => {
-              clearTimeout(timeout);
-              try {
-                const msg = JSON.parse(event.data as string);
-                if (isRelayClientConnected(msg)) {
-                  resolve();
-                } else if (isRelayClientError(msg)) {
-                  ws.close();
-                  reject(new Error(msg.reason));
-                } else {
-                  resolve();
-                }
-              } catch {
-                ws.close();
-                reject(new Error("Invalid relay response"));
-              }
-            };
-
-            ws.onclose = () => {
-              clearTimeout(timeout);
-              reject(new Error("Relay connection closed"));
-            };
-
-            ws.onerror = () => {
-              clearTimeout(timeout);
-              reject(new Error("Relay connection error"));
-            };
-          });
+          const ws = await connectRelaySocket(relayUrl, relayUsername);
 
           // 4. Create SecureConnection for resume using the existing socket
           conn = await SecureConnection.forResumeOnlyWithSocket(
@@ -720,7 +520,7 @@ export function RemoteConnectionProvider({ children }: Props) {
         );
 
         // Create structured error for the modal
-        const reason = categorizeError(message);
+        const reason = categorizeAutoResumeError(message);
         const isRelay = currentStored.mode === "relay";
 
         // Only show the modal for connection failures, not auth failures
@@ -775,7 +575,7 @@ export function RemoteConnectionProvider({ children }: Props) {
         error.message,
       );
       setConnection(null);
-      const reason = categorizeError(error.message);
+      const reason = categorizeAutoResumeError(error.message);
       const currentStored = storedRef.current;
       const isRelay = currentStored?.mode === "relay";
       if (reason !== "auth_failed" && reason !== "other") {
@@ -820,26 +620,52 @@ export function RemoteConnectionProvider({ children }: Props) {
     [currentHostId],
   );
 
-  const value: RemoteConnectionState = {
-    connection,
-    isConnecting,
-    isAutoResuming,
-    error,
-    autoResumeError,
-    currentHostId,
-    currentRelayUsername,
-    setCurrentHostId,
-    isIntentionalDisconnect,
-    connect,
-    connectViaRelay,
-    disconnect,
-    clearAutoResumeError,
-    retryAutoResume,
-    storedUrl: storedRef.current?.wsUrl ?? null,
-    storedUsername: storedRef.current?.username ?? null,
-    hasStoredSession: !!storedRef.current?.session,
-    resumeSession,
-  };
+  const storedUrl = storedRef.current?.wsUrl ?? null;
+  const storedUsername = storedRef.current?.username ?? null;
+  const hasStoredSession = !!storedRef.current?.session;
+
+  const value = useMemo<RemoteConnectionState>(
+    () => ({
+      connection,
+      isConnecting,
+      isAutoResuming,
+      error,
+      autoResumeError,
+      currentHostId,
+      currentRelayUsername,
+      setCurrentHostId,
+      isIntentionalDisconnect,
+      connect,
+      connectViaRelay,
+      disconnect,
+      clearAutoResumeError,
+      retryAutoResume,
+      storedUrl,
+      storedUsername,
+      hasStoredSession,
+      resumeSession,
+    }),
+    [
+      connection,
+      isConnecting,
+      isAutoResuming,
+      error,
+      autoResumeError,
+      currentHostId,
+      currentRelayUsername,
+      setCurrentHostId,
+      isIntentionalDisconnect,
+      connect,
+      connectViaRelay,
+      disconnect,
+      clearAutoResumeError,
+      retryAutoResume,
+      storedUrl,
+      storedUsername,
+      hasStoredSession,
+      resumeSession,
+    ],
+  );
 
   return (
     <RemoteConnectionContext.Provider value={value}>

@@ -1,0 +1,100 @@
+/* ==========================================================================
+   Schema Warning Badge
+   ========================================================================== */
+
+.schema-warning {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-left: var(--space-2);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.schema-warning-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--color-warning);
+  color: var(--bg-surface);
+  border-radius: 50%;
+  user-select: none;
+}
+
+.schema-warning:hover .schema-warning-icon {
+  filter: brightness(1.2);
+}
+
+/* Modal styles for schema warning */
+.schema-warning-modal-title {
+  color: var(--color-warning);
+}
+
+.schema-warning-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.schema-warning-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.schema-warning-section-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.schema-warning-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.schema-warning-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  background: var(--bg-code);
+  border-radius: var(--radius-sm);
+}
+
+.schema-warning-item code {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-warning);
+}
+
+.schema-warning-message {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.schema-warning-footer {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.schema-warning-report-link {
+  font-size: var(--text-sm);
+  color: var(--color-link);
+  text-decoration: none;
+}
+
+.schema-warning-report-link:hover {
+  text-decoration: underline;
+}

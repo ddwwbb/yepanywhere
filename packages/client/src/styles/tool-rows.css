@@ -154,7 +154,7 @@
 }
 
 .spinner {
-  color: var(--app-spinner-foreground);
+  color: var(--color-thinking);
   animation: spin 1s linear infinite;
 }
 

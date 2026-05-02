@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useI18n } from "../i18n";
+import { type MessageKey, useI18n } from "../i18n";
 import type { PermissionMode } from "../types";
 
 const MODE_ORDER: PermissionMode[] = [
@@ -10,7 +10,7 @@ const MODE_ORDER: PermissionMode[] = [
   "bypassPermissions",
 ];
 
-const MODE_LABEL_KEYS: Record<PermissionMode, string> = {
+const MODE_LABEL_KEYS: Record<PermissionMode, MessageKey> = {
   default: "modeDefaultLabel",
   acceptEdits: "modeAcceptEditsLabel",
   plan: "modePlanLabel",
@@ -147,14 +147,14 @@ export function ModeSelector({
   };
 
   const modeLabels: Record<PermissionMode, string> = {
-    default: t(MODE_LABEL_KEYS.default as never),
-    acceptEdits: t(MODE_LABEL_KEYS.acceptEdits as never),
-    plan: t(MODE_LABEL_KEYS.plan as never),
-    bypassPermissions: t(MODE_LABEL_KEYS.bypassPermissions as never),
+    default: t(MODE_LABEL_KEYS.default),
+    acceptEdits: t(MODE_LABEL_KEYS.acceptEdits),
+    plan: t(MODE_LABEL_KEYS.plan),
+    bypassPermissions: t(MODE_LABEL_KEYS.bypassPermissions),
   };
 
   // Display text: show "Hold" when held, otherwise show mode label
-  const displayLabel = isHeld ? t("modeHold" as never) : modeLabels[mode];
+  const displayLabel = isHeld ? t("modeHold") : modeLabels[mode];
   const displayDotClass = isHeld ? "mode-hold" : `mode-${mode}`;
 
   // Shared options content used by both mobile sheet and desktop dropdown
@@ -170,12 +170,10 @@ export function ModeSelector({
         >
           <span className="mode-dot mode-hold" />
           <span className="mode-selector-label">
-            {isHeld ? t("modeResume" as never) : t("modeHold" as never)}
+            {isHeld ? t("modeResume") : t("modeHold")}
           </span>
           <span className="mode-selector-description">
-            {isHeld
-              ? t("modeContinueExecution" as never)
-              : t("modePauseExecution" as never)}
+            {isHeld ? t("modeContinueExecution") : t("modePauseExecution")}
           </span>
           {isHeld && (
             <span className="mode-selector-check" aria-hidden="true">
@@ -247,11 +245,11 @@ export function ModeSelector({
               ref={sheetRef}
               className="mode-selector-sheet"
               tabIndex={-1}
-              aria-label={t("modeSelectLabel" as never)}
+              aria-label={t("modeSelectLabel")}
             >
               <div className="mode-selector-header">
                 <span className="mode-selector-title">
-                  {t("modeSessionTitle" as never)}
+                  {t("modeSessionTitle")}
                 </span>
               </div>
               <div className="mode-selector-options">{optionsContent}</div>
@@ -268,7 +266,7 @@ export function ModeSelector({
         ref={sheetRef}
         className="mode-selector-dropdown"
         tabIndex={-1}
-        aria-label={t("modeSelectLabel" as never)}
+        aria-label={t("modeSelectLabel")}
       >
         <div className="mode-selector-options">{optionsContent}</div>
       </div>
@@ -282,7 +280,7 @@ export function ModeSelector({
         className={`mode-button ${isHeld ? "mode-button-held" : ""}`}
         onClick={handleButtonClick}
         disabled={disabled}
-        title={t("modeClickToSelect" as never)}
+        title={t("modeClickToSelect")}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >

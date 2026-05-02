@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useState } from "react";
 import { useStreamingMarkdownContext } from "../../contexts/StreamingMarkdownContext";
 import { useStreamingMarkdown } from "../../hooks/useStreamingMarkdown";
 import { LocalMediaModal, useLocalMediaClick } from "../LocalMediaModal";
+import { TrustedHtml } from "../TrustedHtml";
 
 interface Props {
   text: string;
@@ -102,8 +103,7 @@ export const TextBlock = memo(function TextBlock({
       {/* Show fallback content when not actively streaming */}
       {!showStreamingContent &&
         (augmentHtml ? (
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered HTML
-          <div dangerouslySetInnerHTML={{ __html: augmentHtml }} />
+          <TrustedHtml html={augmentHtml} source="streaming-markdown-augment" />
         ) : (
           // Plain text fallback (no server augment available)
           <p>{text}</p>

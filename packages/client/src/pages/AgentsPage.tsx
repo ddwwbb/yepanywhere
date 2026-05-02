@@ -3,7 +3,7 @@ import { ContextUsageIndicator } from "../components/ContextUsageIndicator";
 import { PageHeader } from "../components/PageHeader";
 import { ThinkingIndicator } from "../components/ThinkingIndicator";
 import { type ProcessInfo, useProcesses } from "../hooks/useProcesses";
-import { useI18n } from "../i18n";
+import { type Translate, useI18n } from "../i18n";
 import { useNavigationLayout } from "../layouts";
 
 /**
@@ -34,16 +34,16 @@ function formatUptime(startedAt: string): string {
 /**
  * Get a display label for the process state.
  */
-function getStateLabel(state: string, t: (key: never) => string): string {
+function getStateLabel(state: string, t: Translate): string {
   switch (state) {
     case "running":
-      return t("agentsRunning" as never);
+      return t("agentsRunning");
     case "waiting-input":
-      return t("agentsNeedsInput" as never);
+      return t("agentsNeedsInput");
     case "idle":
-      return t("agentsIdle" as never);
+      return t("agentsIdle");
     case "terminated":
-      return t("agentsStopped" as never);
+      return t("agentsStopped");
     default:
       return state;
   }
@@ -70,10 +70,7 @@ function getStateBadgeClass(state: string): string {
 /**
  * Get display name for provider.
  */
-function getProviderLabel(
-  provider: string | undefined,
-  t: (key: never) => string,
-): string {
+function getProviderLabel(provider: string | undefined, t: Translate): string {
   switch (provider) {
     case "claude":
       return "Claude";
@@ -82,7 +79,7 @@ function getProviderLabel(
     case "gemini":
       return "Gemini";
     case "local":
-      return t("agentsProviderLocal" as never);
+      return t("agentsProviderLocal");
     default:
       return provider ?? "Claude";
   }
@@ -119,7 +116,7 @@ function ProcessCard({ process, isTerminated = false }: ProcessCardProps) {
       <div className="agent-card-header">
         <div className="agent-card-title">
           <span className="agent-card-session-title">
-            {process.sessionTitle || t("agentsUntitled" as never)}
+            {process.sessionTitle || t("agentsUntitled")}
           </span>
           <span
             className={`agent-provider-badge ${getProviderBadgeClass(process.provider)}`}
@@ -127,10 +124,7 @@ function ProcessCard({ process, isTerminated = false }: ProcessCardProps) {
             {getProviderLabel(process.provider, t)}
           </span>
           {process.state === "in-turn" ? (
-            <ThinkingIndicator
-              variant="pill"
-              label={t("agentsRunning" as never)}
-            />
+            <ThinkingIndicator variant="pill" label={t("agentsRunning")} />
           ) : (
             <span
               className={`agent-state-badge ${getStateBadgeClass(process.state)}`}
@@ -159,7 +153,7 @@ function ProcessCard({ process, isTerminated = false }: ProcessCardProps) {
           {process.permissionMode && (
             <div className="agent-detail-row">
               <span className="agent-detail-label">
-                {t("agentsPermissionMode" as never)}
+                {t("agentsPermissionMode")}
               </span>
               <span className="agent-detail-value">
                 {process.permissionMode}
@@ -169,7 +163,7 @@ function ProcessCard({ process, isTerminated = false }: ProcessCardProps) {
           {process.queueDepth > 0 && (
             <div className="agent-detail-row">
               <span className="agent-detail-label">
-                {t("agentsMessagesQueued" as never)}
+                {t("agentsMessagesQueued")}
               </span>
               <span className="agent-detail-value">{process.queueDepth}</span>
             </div>
@@ -177,7 +171,7 @@ function ProcessCard({ process, isTerminated = false }: ProcessCardProps) {
           {process.terminationReason && (
             <div className="agent-detail-row">
               <span className="agent-detail-label">
-                {t("agentsStopReason" as never)}
+                {t("agentsStopReason")}
               </span>
               <span className="agent-detail-value">
                 {process.terminationReason}
@@ -194,7 +188,8 @@ export function AgentsPage() {
   const { t } = useI18n();
   const { processes, terminatedProcesses, loading, error } = useProcesses();
 
-  const { openSidebar, isWideScreen, toggleSidebar, isSidebarCollapsed } = useNavigationLayout();
+  const { openSidebar, isWideScreen, toggleSidebar, isSidebarCollapsed } =
+    useNavigationLayout();
 
   // Split processes into active (in-turn/waiting-input) and idle
   const activeProcesses = processes.filter(
@@ -214,7 +209,7 @@ export function AgentsPage() {
         }
       >
         <PageHeader
-          title={t("agentsTitle" as never)}
+          title={t("agentsTitle")}
           onOpenSidebar={openSidebar}
           onToggleSidebar={toggleSidebar}
           isWideScreen={isWideScreen}
@@ -223,24 +218,20 @@ export function AgentsPage() {
 
         <main className="page-scroll-container">
           <div className="page-content-inner">
-            {loading && (
-              <p className="loading">{t("agentsLoading" as never)}</p>
-            )}
+            {loading && <p className="loading">{t("agentsLoading")}</p>}
 
             {error && (
               <p className="error">
-                {t("agentsError" as never, { message: error.message })}
+                {t("agentsError", { message: error.message })}
               </p>
             )}
 
             {!loading && !error && (
               <>
                 <section className="agents-section">
-                  <h2>{t("agentsSectionActive" as never)}</h2>
+                  <h2>{t("agentsSectionActive")}</h2>
                   {activeProcesses.length === 0 ? (
-                    <p className="agents-empty">
-                      {t("agentsEmptyActive" as never)}
-                    </p>
+                    <p className="agents-empty">{t("agentsEmptyActive")}</p>
                   ) : (
                     <div className="agents-list">
                       {activeProcesses.map((process) => (
@@ -251,11 +242,9 @@ export function AgentsPage() {
                 </section>
 
                 <section className="agents-section">
-                  <h2>{t("agentsSectionIdle" as never)}</h2>
+                  <h2>{t("agentsSectionIdle")}</h2>
                   {idleProcesses.length === 0 ? (
-                    <p className="agents-empty">
-                      {t("agentsEmptyIdle" as never)}
-                    </p>
+                    <p className="agents-empty">{t("agentsEmptyIdle")}</p>
                   ) : (
                     <div className="agents-list">
                       {idleProcesses.map((process) => (
@@ -266,11 +255,9 @@ export function AgentsPage() {
                 </section>
 
                 <section className="agents-section">
-                  <h2>{t("agentsSectionStopped" as never)}</h2>
+                  <h2>{t("agentsSectionStopped")}</h2>
                   {terminatedProcesses.length === 0 ? (
-                    <p className="agents-empty">
-                      {t("agentsEmptyStopped" as never)}
-                    </p>
+                    <p className="agents-empty">{t("agentsEmptyStopped")}</p>
                   ) : (
                     <div className="agents-list">
                       {terminatedProcesses.map((process) => (

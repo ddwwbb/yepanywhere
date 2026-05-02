@@ -1,0 +1,99 @@
+/* ==========================================================================
+   Reload Banner - Dev mode manual reload notifications
+   ========================================================================== */
+
+.reload-banner {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: var(--color-warning);
+  color: #000;
+  padding: var(--space-2) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+/* Offset for second banner when both are shown */
+.reload-banner + .reload-banner {
+  top: 40px;
+}
+
+.reload-banner-message {
+  flex-shrink: 0;
+}
+
+.reload-banner-button {
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.2);
+  color: #000;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.reload-banner-button:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.reload-banner-button-primary {
+  background: #000;
+  color: var(--color-warning);
+  border-color: transparent;
+}
+
+.reload-banner-button-primary:hover {
+  background: #222;
+}
+
+.reload-banner-shortcut {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 0.125rem 0.375rem;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-sm);
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Warning state for unsafe restart */
+.reload-banner-warning {
+  background: var(--color-error);
+}
+
+.reload-banner-warning .reload-banner-button-primary {
+  color: var(--color-error);
+}
+
+.reload-banner-warning-text {
+  font-weight: 600;
+}
+
+.reload-banner-button-danger {
+  background: #000;
+  border-color: transparent;
+}
+
+.reload-banner-button-danger:hover {
+  background: #222;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+  .reload-banner {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: var(--space-2);
+  }
+
+  .reload-banner-shortcut {
+    display: none;
+  }
+}

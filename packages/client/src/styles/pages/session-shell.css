@@ -1,0 +1,105 @@
+/* Session page layout */
+.session-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height - accounts for mobile browser chrome */
+  overflow: hidden; /* Prevent body scroll */
+  background: var(--bg-surface);
+}
+
+.session-header {
+  flex-shrink: 0; /* Never shrink the header */
+  background: var(--bg-glass, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: relative;
+  z-index: 10;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.session-header-inner {
+  padding: var(--space-2) var(--space-5) var(--space-2) var(--space-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 56px; /* Slightly taller for breathing room and a premium feel */
+}
+
+.session-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 24px;
+  background: linear-gradient(to bottom, var(--bg-surface), transparent);
+  pointer-events: none;
+}
+
+.session-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0; /* Allow text truncation */
+  flex: 1;
+}
+
+.session-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+/* Sidebar Toggle Button (replaces back button) */
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  width: var(--touch-target);
+  height: var(--touch-target);
+  padding: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--duration-smooth) var(--ease-default), background
+    var(--duration-smooth) var(--ease-default), transform var(--duration-fast)
+    var(--ease-default);
+}
+
+.sidebar-toggle:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  transform: scale(1.05);
+}
+
+.sidebar-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Project breadcrumb in session header */
+.project-breadcrumb {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  text-decoration: none;
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px; /* pill shape */
+  border: 1px solid var(--border-subtle);
+  transition: all var(--duration-smooth) var(--ease-default);
+}
+
+.project-breadcrumb:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border-color: var(--border-default);
+}

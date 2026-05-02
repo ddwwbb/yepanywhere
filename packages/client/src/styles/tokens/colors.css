@@ -258,7 +258,7 @@
    Theme: Auto (默认 verydark，跟随系统偏好)
    ========================================================================== */
 [data-theme="auto"] {
-  color-scheme: light dark;
+  color-scheme: dark;
 
   --bg-surface:   #09090b;
   --bg-secondary: #18181b;
@@ -322,4 +322,73 @@
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-color-scheme: light) {
+  [data-theme="auto"] {
+    color-scheme: light;
+
+    --bg-surface:   #ffffff;
+    --bg-secondary: #f4f4f5;
+    --bg-tertiary:  #e4e4e7;
+    --bg-hover:     #e4e4e7;
+    --bg-code:      #f8fafc;
+    --bg-input:     #ffffff;
+    --bg-overlay:   rgba(255, 255, 255, 0.8);
+    --bg-glass:     rgba(255, 255, 255, 0.75);
+    --bg-user-message: #f4f4f5;
+
+    --text-primary:   #09090b;
+    --text-secondary: #3f3f46;
+    --text-muted:     #71717a;
+    --text-dimmed:    #a1a1aa;
+
+    --border-default: #e4e4e7;
+    --border-subtle:  #f4f4f5;
+    --border-input:   #d4d4d8;
+
+    --color-link:       #2563eb;
+    --color-error:      #dc2626;
+    --color-success:    #059669;
+    --color-warning:    #d97706;
+    --color-info:       #2563eb;
+    --color-focus:      var(--color-brand);
+    --color-warning-badge-bg: #fef3c7;
+
+    --timeline-dot-default: #a1a1aa;
+    --timeline-dot-tool:    #059669;
+    --timeline-dot-error:   #dc2626;
+    --timeline-dot-warning: #d97706;
+    --timeline-dot-working: #ea580c;
+    --timeline-line-color:  #e4e4e7;
+
+    --status-badge-idle-bg:     #f4f4f5;
+    --status-badge-idle-text:   #52525b;
+    --status-badge-owned-bg:    #d1fae5;
+    --status-badge-owned-text:  #047857;
+    --status-badge-external-bg: #fef3c7;
+    --status-badge-external-text: #b45309;
+    --status-badge-running-bg:  #ffedd5;
+    --status-badge-running-text: #c2410c;
+    --status-badge-input-bg:    #dbeafe;
+    --status-badge-input-text:  #1d4ed8;
+
+    --shiki-foreground:            #24292e;
+    --shiki-background:            transparent;
+    --shiki-token-constant:        #005cc5;
+    --shiki-token-string:          #032f62;
+    --shiki-token-comment:         #6a737d;
+    --shiki-token-keyword:         #d73a49;
+    --shiki-token-parameter:       #e36209;
+    --shiki-token-function:        #6f42c1;
+    --shiki-token-string-expression: #22863a;
+    --shiki-token-punctuation:     #24292e;
+    --shiki-token-link:            #005cc5;
+    --shiki-token-deleted:         #d73a49;
+    --shiki-token-inserted:        #22863a;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
 }

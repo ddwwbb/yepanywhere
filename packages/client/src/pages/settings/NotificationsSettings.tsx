@@ -8,7 +8,7 @@ import {
   type SubscribedDevice,
   useSubscribedDevices,
 } from "../../hooks/useSubscribedDevices";
-import { useI18n } from "../../i18n";
+import { type Translate, useI18n } from "../../i18n";
 
 /**
  * Unified device that merges subscribed device info with connection status.
@@ -63,10 +63,7 @@ function formatDeviceName(
 /**
  * Format a date string to a relative or absolute format.
  */
-function formatDate(
-  dateString: string,
-  t: (key: never, vars?: Record<string, string | number>) => string,
-): string {
+function formatDate(dateString: string, t: Translate): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -79,7 +76,7 @@ function formatDate(
     return new Date(Date.now() - 86400000).toLocaleDateString();
   }
   if (diffDays < 7) {
-    return t("hostPickerLastConnectedDays" as never, { count: diffDays });
+    return t("hostPickerLastConnectedDays", { count: diffDays });
   }
   return date.toLocaleDateString();
 }

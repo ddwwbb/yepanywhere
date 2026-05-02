@@ -1,0 +1,702 @@
+/* Messages */
+.message {
+  margin-bottom: 1rem;
+}
+
+/* User prompts - compact bubble that shrinks to fit content */
+.message-user-prompt {
+  background: var(--bg-user-message);
+  border-radius: var(--radius-lg);
+  margin-left: 0;
+  width: fit-content;
+  max-width: 80%;
+  padding: 0.375rem 0.625rem;
+  font-size: var(--text-base);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Pending messages - waiting for server confirmation */
+.pending-message {
+  margin-bottom: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.pending-message-bubble {
+  opacity: 0.82;
+  border: 1px solid color-mix(in srgb, var(--color-brand) 24%, transparent);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.pending-message-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-brand) 10%, transparent);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+.pending-message-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-brand);
+  animation: pulse-indicator 1.5s ease-in-out infinite;
+}
+
+/* User prompt metadata (opened files, etc.) */
+.user-prompt-metadata {
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-3);
+  padding-left: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-dimmed);
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.opened-file {
+  cursor: default;
+}
+
+.uploaded-file {
+  cursor: default;
+  color: var(--text-secondary);
+}
+
+.uploaded-file-clickable {
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--text-link);
+}
+
+.uploaded-file-clickable:hover {
+  text-decoration: underline;
+}
+
+.uploaded-image-modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-2);
+}
+
+.uploaded-image-modal img {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+/* Uploaded files inside message bubble */
+.message-content .user-prompt-metadata {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+/* Collapsible text for long user prompts */
+.collapsible-text {
+  position: relative;
+}
+
+.collapsible-text .truncated-content {
+  position: relative;
+  white-space: pre-wrap;
+}
+
+.collapsible-text .fade-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2.5em;
+  background: linear-gradient(to bottom, transparent, var(--bg-user-message));
+  pointer-events: none;
+}
+
+.show-more-btn {
+  display: block;
+  margin-left: auto;
+  margin-top: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  font-size: var(--text-sm);
+  color: var(--text-dimmed);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.show-more-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-dimmed);
+}
+
+.session-setup-block {
+  margin-bottom: var(--space-3);
+}
+
+.session-setup-block .collapsible__summary {
+  display: inline-flex;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-code);
+}
+
+.session-setup-block .collapsible__content {
+  margin-top: var(--space-2);
+}
+
+.session-setup-entry .message-user-prompt {
+  max-width: 100%;
+}
+
+/* All other messages (assistant responses, tool results) - indented, no background */
+
+/* Assistant turn container - wraps consecutive assistant items with timeline */
+.assistant-turn {
+  position: relative;
+  padding-left: 24px;
+}
+
+.message-content {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Message input wrapper */
+.message-input-wrapper {
+  position: relative;
+}
+
+/* Message input */
+.message-input {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transform: translateY(0);
+  transition: opacity var(--duration-smooth) var(--ease-default), transform
+    var(--duration-smooth) var(--ease-default), gap var(--duration-smooth)
+    var(--ease-default);
+}
+
+/* Inline collapse button - embedded in textarea corner */
+.message-input-collapse-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-dimmed);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-default), color
+    var(--duration-fast) var(--ease-default), opacity var(--duration-fast)
+    var(--ease-default);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 0.6;
+}
+
+.message-input-collapse-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+.message-input-collapse-btn:active {
+  transform: scale(0.9);
+}
+
+.message-input-collapse-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.message-input textarea {
+  flex: 1;
+  min-height: 5.75rem;
+  padding: 0.75rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-lg);
+  color: inherit;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  resize: none;
+  transition:
+    border-color var(--duration-fast), box-shadow var(--duration-fast),
+    min-height var(--duration-smooth) var(--ease-default), max-height
+    var(--duration-smooth) var(--ease-default), padding var(--duration-smooth)
+    var(--ease-default), font-size var(--duration-smooth) var(--ease-default);
+}
+
+/* Add right padding when collapse button is present */
+.message-input textarea.textarea-with-collapse {
+  padding-right: 2.25rem;
+}
+
+.message-input textarea:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-brand-alpha);
+}
+
+/* Collapsed state - when approval panel is showing above */
+.message-input-collapsed {
+  margin-top: var(--space-2);
+  gap: 0;
+  opacity: 0.76;
+  transform: translateY(2px);
+}
+
+.message-input-collapsed:focus-within {
+  opacity: 1;
+}
+
+.message-input-collapsed textarea {
+  min-height: 2.5rem;
+  max-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: var(--text-sm);
+  overflow: hidden;
+}
+
+.message-input-collapsed textarea.textarea-with-collapse {
+  padding-right: 2.25rem;
+}
+
+.message-input-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Pending approval indicator button in toolbar */
+.pending-approval-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  background: var(--status-badge-input-bg);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--status-badge-input-text);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pending-approval-indicator:hover {
+  background: color-mix(in srgb, var(--status-badge-input-bg) 80%, white 20%);
+}
+
+.pending-approval-indicator:active {
+  transform: scale(0.97);
+}
+
+.pending-approval-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-badge-input-text);
+  animation: pulse-indicator 1.5s ease-in-out infinite;
+}
+
+.pending-approval-text {
+  font-weight: 500;
+}
+
+.mode-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mode-button:focus {
+  outline: none;
+}
+
+.mode-button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--border-input);
+}
+
+.mode-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mode-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Mode-specific dot colors */
+.mode-dot.mode-default {
+  background: var(--timeline-dot-default);
+}
+
+.mode-dot.mode-acceptEdits {
+  background: var(--color-success);
+}
+
+.mode-dot.mode-plan {
+  background: var(--color-warning);
+}
+
+.mode-dot.mode-bypassPermissions {
+  background: var(--color-error);
+}
+
+.mode-dot.mode-hold {
+  background: var(--color-primary);
+}
+
+.mode-button-held {
+  border-color: var(--color-primary);
+}
+
+/* Mode Selector Bottom Sheet */
+.mode-selector-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10001;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.mode-selector-sheet {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.2s ease-out;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.mode-selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.mode-selector-title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mode-selector-options {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) 0;
+}
+
+.mode-selector-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.15s ease;
+}
+
+.mode-selector-option:hover {
+  background: var(--bg-hover);
+}
+
+.mode-selector-option.selected {
+  background: rgba(217, 119, 87, 0.08);
+}
+
+.mode-selector-label {
+  flex: 1;
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+.mode-selector-check {
+  color: var(--color-brand);
+  display: flex;
+  align-items: center;
+}
+
+.mode-selector-description {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-left: auto;
+  margin-right: var(--space-2);
+}
+
+.mode-selector-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: var(--space-2) var(--space-4);
+}
+
+/* Container for relative positioning of desktop dropdown */
+.mode-selector-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Desktop dropdown (positioned relative to button, no overlay) */
+.mode-selector-dropdown {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .mode-selector-dropdown {
+    display: block;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: var(--space-2);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    min-width: 220px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    animation: dropdownFadeIn 0.15s ease-out;
+  }
+
+  .mode-selector-dropdown .mode-selector-options {
+    padding: var(--space-1) 0;
+  }
+
+  .mode-selector-dropdown .mode-selector-option {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .mode-selector-dropdown .mode-selector-divider {
+    margin: var(--space-1) var(--space-3);
+  }
+
+  @keyframes dropdownFadeIn {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  /* Hide mobile overlay/sheet on desktop - it's handled via JS now but this is a fallback */
+  .mode-selector-overlay {
+    display: none;
+  }
+}
+
+/* Mobile-only: bottom sheet animation */
+@media (max-width: 767px) {
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+.message-input-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.send-button,
+.stop-button,
+.queue-button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.send-button {
+  background: var(--color-brand);
+  color: white;
+}
+
+.send-button:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.send-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.send-icon {
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.send-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: send-spin 0.8s linear infinite;
+}
+
+@keyframes send-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.stop-button {
+  background: var(--color-error);
+  color: white;
+}
+
+.stop-button:hover {
+  opacity: 0.85;
+}
+
+.stop-icon {
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 2px;
+}
+
+.queue-button {
+  background: var(--color-info);
+  color: white;
+}
+
+.queue-button:hover {
+  opacity: 0.85;
+}
+
+/* Deferred queue banner - shown above input when messages are waiting */
+.deferred-queue-banner {
+  padding: var(--space-2) var(--space-4) 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.deferred-queue-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: min(420px, 100%);
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-info) 28%, transparent);
+  background: color-mix(in srgb, var(--color-info) 12%, var(--bg-secondary));
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.deferred-queue-icon {
+  flex-shrink: 0;
+  color: var(--color-info);
+}
+
+.deferred-queue-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.deferred-queue-cancel {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: 999px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.deferred-queue-cancel:hover {
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+}

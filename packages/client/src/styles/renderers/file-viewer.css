@@ -1,0 +1,611 @@
+/* ==========================================================================
+   File Viewer
+   ========================================================================== */
+
+.file-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-surface);
+}
+
+.file-viewer-standalone {
+  min-height: 100%;
+}
+
+.file-viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.file-viewer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.file-viewer-path {
+  font-family: "SF Mono", Monaco, monospace;
+  font-size: var(--text-base);
+  color: var(--color-link);
+  word-break: break-all;
+}
+
+.file-viewer-meta {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.file-viewer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.file-viewer-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.file-viewer-action:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.file-viewer-action.copied {
+  color: var(--color-success);
+}
+
+.file-viewer-close {
+  margin-left: 0.5rem;
+}
+
+.file-viewer-body {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+}
+
+.file-viewer-loading,
+.file-viewer-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: var(--text-muted);
+}
+
+.file-viewer-error {
+  color: var(--color-error);
+}
+
+/* Code display with syntax highlighting */
+.file-viewer-code {
+  font-family: "SF Mono", Monaco, "Cascadia Code", "Consolas", monospace;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  background: var(--bg-code);
+  overflow-x: auto;
+}
+
+/* Syntax highlighter overrides */
+.file-viewer-code pre {
+  margin: 0 !important;
+}
+
+.file-viewer-code code {
+  font-family: inherit !important;
+}
+
+/* Remove line backgrounds from syntax highlighter themes (causes striped look) */
+.file-viewer-code code,
+.file-viewer-code code *,
+.file-viewer-code pre,
+.file-viewer-code pre * {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Server-rendered Shiki highlighting container */
+.file-viewer-code-highlighted .shiki-container {
+  padding: 0.75rem;
+}
+
+.file-viewer-code-highlighted .shiki-container pre.shiki {
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  overflow-x: auto;
+}
+
+.file-viewer-code-highlighted .shiki-container code {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.file-viewer-truncated {
+  padding: 0.5rem 0.75rem;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+}
+
+/* Modal code content containers */
+.file-content-modal,
+.diff-modal-content {
+  background: var(--bg-code);
+  border-radius: 4px;
+  overflow: auto;
+}
+
+/* Diff context expansion controls */
+.diff-context-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-default);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.diff-context-path {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.diff-context-toggle {
+  padding: 0.25rem 0.75rem;
+  font-size: var(--text-base);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.diff-context-toggle:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.diff-context-toggle:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.diff-context-error {
+  color: var(--text-error);
+  font-size: var(--text-sm);
+}
+
+/* Plain code display (fallback and large files) */
+.code-highlighter-plain {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 0.375rem;
+  margin: 0;
+  background: transparent;
+}
+
+.code-highlighter-plain .code-line-numbers {
+  text-align: right;
+  padding-right: 1em;
+  color: var(--text-dimmed);
+  user-select: none;
+  min-width: 2.5em;
+}
+
+.code-highlighter-plain .code-line-numbers > div {
+  line-height: 1.5;
+}
+
+.code-highlighter-plain .code-content {
+  margin: 0;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+
+.code-highlighter-plain .code-content code {
+  display: block;
+  white-space: pre;
+}
+
+/* Simple plain code without line numbers */
+pre.code-highlighter-plain {
+  display: block;
+  padding: 0.375rem;
+  margin: 0;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+
+pre.code-highlighter-plain code {
+  display: block;
+  white-space: pre;
+}
+
+/* Image display */
+.file-viewer-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  min-height: 200px;
+}
+
+.file-viewer-image img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+/* Binary file display */
+.file-viewer-binary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.file-viewer-download-btn {
+  padding: 0.5rem 1rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: var(--text-base);
+  cursor: pointer;
+}
+
+.file-viewer-download-btn:hover {
+  filter: brightness(1.1);
+}
+
+/* Fullscreen mode */
+.file-viewer-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: var(--bg-surface);
+  border-radius: 0;
+  max-height: none;
+  height: 100vh;
+  width: 100vw;
+}
+
+.file-viewer-fullscreen .file-viewer-header {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0;
+  flex-shrink: 0;
+}
+
+.file-viewer-fullscreen .file-viewer-body {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+}
+
+.file-viewer-fullscreen .file-viewer-code {
+  padding: 0.5rem;
+}
+
+.file-viewer-fullscreen .file-viewer-image {
+  padding: 0;
+}
+
+.file-viewer-fullscreen .file-viewer-image img {
+  max-height: calc(100vh - 50px);
+}
+
+/* ==========================================================================
+   File Path Link
+   ========================================================================== */
+
+.file-path-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: "SF Mono", Monaco, monospace;
+  font-size: inherit;
+  color: var(--vscode-textLink-foreground, #3794ff);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.15s;
+}
+
+.file-path-link:hover {
+  text-decoration-color: currentColor;
+}
+
+.file-path-link-name {
+  word-break: break-all;
+}
+
+.file-path-link-line {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+/* Server-rendered file links (from markdown augments) */
+.file-link {
+  color: var(--vscode-textLink-foreground, #3794ff);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.15s;
+}
+
+.file-link:hover {
+  text-decoration-color: currentColor;
+}
+
+/* ==========================================================================
+   File Viewer Modal - extends base modal styles
+   ========================================================================== */
+
+.file-viewer-modal .file-viewer {
+  height: 100%;
+}
+
+/* ==========================================================================
+   File Page (Standalone)
+   ========================================================================== */
+
+.file-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-surface);
+}
+
+.file-page-error {
+  align-items: center;
+  justify-content: center;
+}
+
+.file-page-error-content {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.file-page-error-content h1 {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.file-page-nav {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.file-page-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-link);
+  text-decoration: none;
+  font-size: var(--text-base);
+  padding: 0.25rem 0.5rem;
+  margin: -0.25rem -0.5rem;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.file-page-back-link:hover {
+  background: var(--bg-hover);
+}
+
+.file-page-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.file-page-content .file-viewer {
+  height: 100%;
+}
+
+.file-page-content .file-viewer-header {
+  border-radius: 0;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+  .file-viewer-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .file-viewer-actions {
+    align-self: flex-end;
+  }
+
+  .file-viewer-code {
+    font-size: var(--text-sm);
+  }
+}
+
+/* Markdown preview toggle */
+.markdown-view-toggle {
+  display: flex;
+  gap: 0;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+}
+
+.markdown-view-toggle .toggle-btn {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.markdown-view-toggle .toggle-btn:first-child {
+  border-radius: 4px 0 0 4px;
+  border-right: none;
+}
+
+.markdown-view-toggle .toggle-btn:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.markdown-view-toggle .toggle-btn:hover {
+  background: var(--bg-hover);
+}
+
+.markdown-view-toggle .toggle-btn.active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+/* Markdown preview container */
+.markdown-preview {
+  overflow: auto;
+}
+
+.markdown-preview .markdown-rendered {
+  padding: 1rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.markdown-preview .markdown-rendered h1,
+.markdown-preview .markdown-rendered h2,
+.markdown-preview .markdown-rendered h3,
+.markdown-preview .markdown-rendered h4,
+.markdown-preview .markdown-rendered h5,
+.markdown-preview .markdown-rendered h6 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.markdown-preview .markdown-rendered h1:first-child,
+.markdown-preview .markdown-rendered h2:first-child,
+.markdown-preview .markdown-rendered h3:first-child {
+  margin-top: 0;
+}
+
+.markdown-preview .markdown-rendered p {
+  margin: 0.75rem 0;
+}
+
+.markdown-preview .markdown-rendered ul,
+.markdown-preview .markdown-rendered ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+.markdown-preview .markdown-rendered li {
+  margin: 0.25rem 0;
+}
+
+.markdown-preview .markdown-rendered code {
+  background: var(--bg-code);
+  padding: 0.125rem 0.25rem;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.markdown-preview .markdown-rendered pre {
+  background: var(--bg-code);
+  padding: 0.75rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 0.75rem 0;
+}
+
+.markdown-preview .markdown-rendered pre code {
+  background: none;
+  padding: 0;
+}
+
+.markdown-preview .markdown-rendered blockquote {
+  border-left: 3px solid var(--border-default);
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  color: var(--text-muted);
+}
+
+.markdown-preview .markdown-rendered a {
+  color: var(--color-link);
+  text-decoration: none;
+}
+
+.markdown-preview .markdown-rendered a:hover {
+  text-decoration: underline;
+}
+
+.markdown-preview .markdown-rendered table {
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  width: 100%;
+}
+
+.markdown-preview .markdown-rendered th,
+.markdown-preview .markdown-rendered td {
+  border: 1px solid var(--border-default);
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.markdown-preview .markdown-rendered th {
+  background: var(--bg-secondary);
+}
+
+.markdown-preview .markdown-rendered img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Note: When "Show full context" is clicked in the diff modal, JS automatically
+   scrolls to the first .line-deleted or .line-inserted element. This uses
+   scrollIntoView({ block: "center" }) in EditRenderer.tsx. */

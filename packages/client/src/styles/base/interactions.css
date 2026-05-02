@@ -1,0 +1,47 @@
+/* ==========================================================================
+   Global Touch & Interaction Optimization
+   ========================================================================== */
+
+/* Minimum touch target size on touch devices (Apple HIG / Material: 44px)
+   Exclude compact inline buttons that would cause layout overlap in dense toolbars */
+@media (pointer: coarse) {
+  button:not(.fab-button):not(.send-button):not(.stop-button):not(
+      .queue-button
+    ):not(.toolbar-button):not(.session-menu-trigger):not(
+      .font-size-option
+    ):not(.message-input-collapse-btn):not(.attachment-remove):not(
+      .model-selector-trigger
+    ):not(.bulk-action-button),
+  [role="button"] {
+    min-height: 44px;
+  }
+}
+
+/* Unified press feedback for all interactive elements */
+button:active:not(:disabled),
+[role="button"]:active {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+/* Disable tap highlight on mobile — we provide our own :active styles */
+button,
+a,
+[role="button"],
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Unified focus-visible ring for keyboard navigation */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

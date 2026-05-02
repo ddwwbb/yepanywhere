@@ -11,6 +11,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -313,28 +314,39 @@ export function InboxProvider({
     inbox.unread8h.length +
     inbox.unread24h.length;
 
+  const value = useMemo<InboxContextValue>(
+    () => ({
+      needsAttention: inbox.needsAttention,
+      active: inbox.active,
+      recentActivity: inbox.recentActivity,
+      unread8h: inbox.unread8h,
+      unread24h: inbox.unread24h,
+      inbox,
+      loading,
+      error,
+      refresh,
+      refetch: fetchInbox,
+      totalNeedsAttention,
+      totalActive,
+      totalItems,
+      enabled,
+      setEnabled,
+    }),
+    [
+      inbox,
+      loading,
+      error,
+      refresh,
+      fetchInbox,
+      totalNeedsAttention,
+      totalActive,
+      totalItems,
+      enabled,
+    ],
+  );
+
   return (
-    <InboxContext.Provider
-      value={{
-        needsAttention: inbox.needsAttention,
-        active: inbox.active,
-        recentActivity: inbox.recentActivity,
-        unread8h: inbox.unread8h,
-        unread24h: inbox.unread24h,
-        inbox,
-        loading,
-        error,
-        refresh,
-        refetch: fetchInbox,
-        totalNeedsAttention,
-        totalActive,
-        totalItems,
-        enabled,
-        setEnabled,
-      }}
-    >
-      {children}
-    </InboxContext.Provider>
+    <InboxContext.Provider value={value}>{children}</InboxContext.Provider>
   );
 }
 

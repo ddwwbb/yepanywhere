@@ -10,6 +10,7 @@ import {
 } from "../../../lib/classifyToolError";
 import { validateToolResult } from "../../../lib/validateToolResult";
 import { SchemaWarning } from "../../SchemaWarning";
+import { TrustedHtml } from "../../TrustedHtml";
 import { Modal } from "../../ui/Modal";
 import type { EditInput, EditResult, PatchHunk, ToolRenderer } from "./types";
 
@@ -177,10 +178,10 @@ const HighlightedDiff = memo(function HighlightedDiff({
   }, [diffHtml, truncateLines]);
 
   return (
-    <div
+    <TrustedHtml
       className="highlighted-diff"
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: shiki output is safe
-      dangerouslySetInnerHTML={{ __html: htmlToRender }}
+      html={htmlToRender}
+      source="server-rendered-diff"
     />
   );
 });

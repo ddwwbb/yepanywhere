@@ -1,0 +1,65 @@
+/* ==========================================================================
+   Connection Bar
+   ========================================================================== */
+
+.connection-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 9999;
+  pointer-events: none;
+  transition: background-color 0.3s ease;
+}
+
+.connection-connected {
+  background-color: var(--color-success);
+}
+
+.connection-connecting {
+  background-color: var(--color-thinking);
+  animation: connection-pulse 1.5s ease-in-out infinite;
+}
+
+.connection-disconnected {
+  background-color: var(--color-error);
+}
+
+@keyframes connection-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ==========================================================================
+   Session Connection Bar
+   ========================================================================== */
+
+.session-connection-bar {
+  height: 1px;
+  margin-bottom: 2px;
+  pointer-events: none;
+  transition: background-color 0.3s ease;
+}
+
+.session-connection-connected {
+  background-color: var(--color-success);
+}
+
+.session-connection-connecting {
+  background-color: var(--color-thinking);
+  animation: connection-pulse 1.5s ease-in-out infinite;
+}
+
+.session-connection-disconnected {
+  background-color: var(--color-error);
+}
+
+.session-connection-idle {
+  background-color: var(--border-subtle);
+}

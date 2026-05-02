@@ -2,7 +2,7 @@ import { useState } from "react";
 import { type InboxItem, useInboxContext } from "../contexts/InboxContext";
 import { useDrafts } from "../hooks/useDrafts";
 import { useRemoteBasePath } from "../hooks/useRemoteBasePath";
-import { useI18n } from "../i18n";
+import { type MessageKey, useI18n } from "../i18n";
 import type { Project } from "../types";
 import { FilterDropdown, type FilterOption } from "./FilterDropdown";
 import { SessionListItem } from "./SessionListItem";
@@ -12,9 +12,11 @@ import { SessionListItem } from "./SessionListItem";
  */
 interface TierConfig {
   key: string;
-  titleKey: string;
+  titleKey: MessageKey;
   colorClass: string;
-  getBadge?: (item: InboxItem) => { label: string; className: string } | null;
+  getBadge?: (
+    item: InboxItem,
+  ) => { label: MessageKey; className: string } | null;
 }
 
 const TIER_CONFIGS: TierConfig[] = [
@@ -87,7 +89,7 @@ function InboxSection({
       className={`inbox-section ${config.colorClass} ${isEmpty ? "inbox-section-empty" : ""}`}
     >
       <h2 className="inbox-section-header">
-        {t(config.titleKey as never)}
+        {t(config.titleKey)}
         <span className="inbox-section-count">{items.length}</span>
       </h2>
       {isEmpty ? (
@@ -112,9 +114,7 @@ function InboxSection({
                 showTimestamp
                 showContextUsage={false}
                 showStatusBadge={false}
-                customBadge={
-                  badge ? { ...badge, label: t(badge.label as never) } : null
-                }
+                customBadge={badge ? { ...badge, label: t(badge.label) } : null}
                 basePath={basePath}
                 hasDraft={drafts.has(item.sessionId)}
               />

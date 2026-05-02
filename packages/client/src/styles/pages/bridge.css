@@ -1,0 +1,675 @@
+/* ===== Bridge Page ===== */
+
+.bridge-page-content {
+  padding: 0;
+}
+
+.bridge-description {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  margin: 0 0 var(--space-3) 0;
+  padding: 0 var(--space-4);
+}
+
+/* Bridge uses same two-column pattern as Settings */
+.bridge-layout {
+  display: flex;
+  gap: var(--space-4);
+  min-height: 0;
+  padding: var(--space-4);
+  max-width: calc(var(--sidebar-width) + var(--content-max) + var(--space-4));
+  margin: 0 auto;
+}
+
+.bridge-sidebar-nav {
+  flex-shrink: 0;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.bridge-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  min-height: var(--touch-target);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: var(--radius-lg);
+  text-align: left;
+  width: 100%;
+  transition: background var(--duration-smooth) var(--ease-default), color
+    var(--duration-smooth) var(--ease-default), box-shadow
+    var(--duration-smooth) var(--ease-default), transform var(--duration-fast)
+    var(--ease-default);
+}
+
+.bridge-nav-item:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.bridge-nav-item:active {
+  transform: scale(0.98);
+}
+
+.bridge-nav-item.active {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.bridge-nav-item svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: color var(--duration-fast) var(--ease-default);
+}
+
+.bridge-nav-item:hover svg {
+  color: var(--text-primary);
+}
+
+.bridge-nav-item.active svg {
+  color: var(--color-brand);
+}
+
+.bridge-content-panel {
+  flex: 1;
+  min-width: 0;
+  max-width: 830px;
+}
+
+.bridge-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.bridge-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  transition: border-color var(--duration-smooth) var(--ease-default);
+}
+
+.bridge-card:hover {
+  border-color: var(--border-default);
+}
+
+.bridge-card--highlight {
+  border-color: var(--color-brand);
+  background: color-mix(in srgb, var(--color-brand) 5%, var(--bg-secondary));
+}
+
+.bridge-card-header {
+  margin-bottom: var(--space-3);
+}
+
+.bridge-card-header h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.bridge-card-header--between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bridge-card-desc {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  margin: var(--space-1) 0 0 0;
+}
+
+/* Toggle switch — same dimensions as settings toggle-switch */
+.bridge-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.bridge-toggle-info strong {
+  display: block;
+  font-size: var(--text-lg);
+  margin-bottom: 2px;
+}
+
+.bridge-toggle-info p {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.bridge-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.bridge-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.bridge-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: var(--bg-hover);
+  border: 1px solid var(--border-default);
+  border-radius: 24px;
+  transition: all 0.25s ease;
+}
+
+.bridge-switch-slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: var(--text-muted);
+  border-radius: 50%;
+  transition: all 0.25s ease;
+}
+
+.bridge-switch input:checked + .bridge-switch-slider {
+  background-color: var(--color-brand);
+  border-color: var(--color-brand);
+}
+
+.bridge-switch input:checked + .bridge-switch-slider::before {
+  transform: translateX(20px);
+  background-color: #fff;
+}
+
+/* Channel toggles */
+.bridge-channel-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.bridge-channel-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.bridge-channel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-default);
+}
+
+.bridge-channel-dot--on {
+  background: var(--color-brand);
+}
+
+.bridge-channel-label {
+  flex: 1;
+}
+
+.bridge-channel-status {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.bridge-channel-status--on {
+  color: var(--color-brand);
+}
+
+.bridge-hint {
+  margin: var(--space-2) 0 0 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Status */
+.bridge-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.bridge-status-info h3 {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.bridge-status-detail {
+  margin: 2px 0 0 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.bridge-status-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.bridge-status-badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  background: var(--bg-hover);
+  color: var(--text-muted);
+}
+
+.bridge-status-badge--running {
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
+}
+
+.bridge-error {
+  margin: var(--space-2) 0 0 0;
+  color: var(--color-error);
+  font-size: var(--text-xs);
+}
+
+.bridge-status-msg {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+/* Adapter list */
+.bridge-adapter-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.bridge-adapter-item {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-3);
+  transition: border-color var(--duration-smooth) var(--ease-default);
+}
+
+.bridge-adapter-item:hover {
+  border-color: var(--border-default);
+}
+
+.bridge-adapter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bridge-adapter-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.bridge-adapter-badge {
+  padding: 2px 8px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  background: var(--bg-hover);
+  color: var(--text-muted);
+}
+
+.bridge-adapter-badge--running {
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
+}
+
+.bridge-adapter-detail {
+  margin: 2px 0 0 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.bridge-adapter-error {
+  margin: 2px 0 0 0;
+  font-size: var(--text-xs);
+  color: var(--color-error);
+}
+
+/* Buttons — same style as settings-button */
+.bridge-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--color-brand);
+  color: white;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-smooth) var(--ease-default);
+}
+
+.bridge-button:hover {
+  background: var(--color-brand-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.bridge-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bridge-button--outline {
+  background: var(--bg-secondary);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+.bridge-button--outline:hover {
+  background: var(--bg-hover);
+  border-color: var(--text-muted);
+  box-shadow: var(--shadow-sm);
+}
+
+.bridge-button--sm {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.bridge-button--danger-sm {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  background: transparent;
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.bridge-button--danger-sm:hover {
+  background: var(--color-error);
+  color: white;
+}
+
+/* Fields — same style as settings textarea/input */
+.bridge-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.bridge-field label {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.bridge-input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  box-sizing: border-box;
+  transition: border-color var(--duration-smooth) var(--ease-default),
+    box-shadow var(--duration-smooth) var(--ease-default);
+}
+
+.bridge-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-brand-alpha);
+}
+
+.bridge-field-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-end;
+}
+
+.bridge-field--flex {
+  flex: 1;
+}
+
+/* Actions row */
+.bridge-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* Select */
+.bridge-select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  box-sizing: border-box;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  transition: border-color var(--duration-smooth) var(--ease-default);
+}
+
+.bridge-select:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-brand-alpha);
+}
+
+/* Details / Collapsible */
+.bridge-details {
+  margin: 0;
+}
+
+.bridge-details-summary {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  transition: color var(--duration-fast);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.bridge-details-summary::-webkit-details-marker {
+  display: none;
+}
+
+.bridge-details-summary::before {
+  content: "▶";
+  font-size: 0.6rem;
+  transition: transform 0.15s;
+}
+
+.bridge-details[open] > .bridge-details-summary::before {
+  transform: rotate(90deg);
+}
+
+.bridge-details-summary:hover {
+  color: var(--text-primary);
+}
+
+.bridge-details-content {
+  margin-top: var(--space-3);
+}
+
+/* Section body */
+.bridge-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Bound row */
+.bridge-bound-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.bridge-bound-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.bridge-bound-label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.bridge-bound-value {
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+}
+
+/* Registering */
+.bridge-register-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.bridge-registering-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.bridge-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border-default);
+  border-top-color: var(--color-brand);
+  border-radius: 50%;
+  animation: bridge-spin 0.6s linear infinite;
+}
+
+@keyframes bridge-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Status Banner */
+.bridge-status-banner {
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-2);
+}
+
+.bridge-status-banner--success {
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
+}
+
+.bridge-status-banner--warning {
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  color: var(--color-warning);
+}
+
+.bridge-status-banner--error {
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  color: var(--color-error);
+}
+
+/* Field group (with bold label) */
+.bridge-field-group {
+  margin-bottom: var(--space-1);
+}
+
+.bridge-field-group-label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+
+/* Field hint */
+.bridge-field-hint {
+  margin: 4px 0 0 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Divider */
+.bridge-divider {
+  border-top: 1px solid var(--border-subtle);
+  margin: var(--space-2) 0;
+}
+
+/* Guide list */
+.bridge-guide-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .bridge-layout {
+    flex-direction: column;
+    padding: var(--space-3);
+  }
+
+  .bridge-sidebar-nav {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .bridge-nav-item {
+    flex: 0 0 auto;
+  }
+
+  .bridge-bound-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

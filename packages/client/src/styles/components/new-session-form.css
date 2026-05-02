@@ -1,0 +1,80 @@
+/* Shared new session form styles */
+.new-session-form-compact {
+  margin-bottom: 1.5rem;
+}
+
+.new-session-form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-lg);
+  color: inherit;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  resize: none;
+  box-sizing: border-box;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.new-session-form-textarea:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-brand-alpha);
+}
+
+.new-session-form-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.new-session-form-toolbar-left {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Toolbar button (attach, voice) */
+.toolbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-lg);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color var(--duration-fast), color var(--duration-fast),
+    background var(--duration-fast);
+}
+
+.toolbar-button:hover:not(:disabled) {
+  border-color: var(--text-muted);
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.toolbar-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toolbar-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.toolbar-button.active {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgb(59, 130, 246);
+  color: rgb(59, 130, 246);
+}
+
+.toolbar-button.active:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.25);
+}

@@ -1,0 +1,40 @@
+/* ==========================================================================
+   Global Sessions Page
+   ========================================================================== */
+
+.global-sessions-project-actions {
+  margin-bottom: var(--space-3);
+}
+
+.global-sessions-load-more {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.global-sessions-load-more-button {
+  padding: var(--space-2) var(--space-4);
+  min-height: var(--touch-target);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--duration-smooth) var(--ease-default),
+    border-color var(--duration-smooth) var(--ease-default), color
+    var(--duration-smooth) var(--ease-default);
+}
+
+.global-sessions-load-more-button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--text-muted);
+  box-shadow: var(--shadow-sm);
+}
+
+.global-sessions-load-more-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

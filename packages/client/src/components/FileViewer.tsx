@@ -2,6 +2,7 @@ import type { FileContentResponse } from "@yep-anywhere/shared";
 import { memo, useCallback, useEffect, useState } from "react";
 import { api } from "../api/client";
 import { useI18n } from "../i18n";
+import { TrustedHtml } from "./TrustedHtml";
 
 interface FileViewerProps {
   projectId: string;
@@ -124,7 +125,7 @@ export const FileViewer = memo(function FileViewer({
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err.message || t("fileViewerLoadFailed" as never));
+          setError(err.message || t("fileViewerLoadFailed"));
           setLoading(false);
         }
       });
@@ -188,7 +189,7 @@ export const FileViewer = memo(function FileViewer({
     return (
       <div className="file-viewer">
         <div className="file-viewer-loading">
-          {t("fileViewerLoading" as never, { name: fileName })}
+          {t("fileViewerLoading", { name: fileName })}
         </div>
       </div>
     );
@@ -199,7 +200,7 @@ export const FileViewer = memo(function FileViewer({
     return (
       <div className="file-viewer">
         <div className="file-viewer-error">
-          {error || t("fileViewerNotFound" as never)}
+          {error || t("fileViewerNotFound")}
         </div>
       </div>
     );
@@ -232,14 +233,14 @@ export const FileViewer = memo(function FileViewer({
             className={`toggle-btn ${!showPreview ? "active" : ""}`}
             onClick={() => setShowPreview(false)}
           >
-            {t("fileViewerSource" as never)}
+            {t("fileViewerSource")}
           </button>
           <button
             type="button"
             className={`toggle-btn ${showPreview ? "active" : ""}`}
             onClick={() => setShowPreview(true)}
           >
-            {t("fileViewerPreview" as never)}
+            {t("fileViewerPreview")}
           </button>
         </div>
       );
@@ -250,12 +251,10 @@ export const FileViewer = memo(function FileViewer({
           <>
             {toggleButton}
             <div className="markdown-preview">
-              <div
+              <TrustedHtml
                 className="markdown-rendered"
-                // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered HTML
-                dangerouslySetInnerHTML={{
-                  __html: fileData.renderedMarkdownHtml,
-                }}
+                html={fileData.renderedMarkdownHtml}
+                source="server-rendered-markdown"
               />
             </div>
           </>
@@ -271,14 +270,14 @@ export const FileViewer = memo(function FileViewer({
               className="file-viewer-code file-viewer-code-highlighted"
               data-language={fileData.highlightedLanguage ?? language}
             >
-              <div
+              <TrustedHtml
                 className="shiki-container"
-                // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered HTML
-                dangerouslySetInnerHTML={{ __html: fileData.highlightedHtml }}
+                html={fileData.highlightedHtml}
+                source="server-rendered-syntax-highlight"
               />
               {fileData.highlightedTruncated && (
                 <div className="file-viewer-truncated">
-                  {t("fileViewerHighlightTruncated" as never)}
+                  {t("fileViewerHighlightTruncated")}
                 </div>
               )}
             </div>
@@ -347,20 +346,19 @@ export const FileViewer = memo(function FileViewer({
     // Binary files or files too large
     return (
       <div className="file-viewer-binary">
-        <p>{t("fileViewerBinary" as never)}</p>
+        <p>{t("fileViewerBinary")}</p>
         <p>
-          <strong>{t("fileViewerType" as never)}</strong> {metadata.mimeType}
+          <strong>{t("fileViewerType")}</strong> {metadata.mimeType}
         </p>
         <p>
-          <strong>{t("fileViewerSize" as never)}</strong>{" "}
-          {formatFileSize(metadata.size)}
+          <strong>{t("fileViewerSize")}</strong> {formatFileSize(metadata.size)}
         </p>
         <button
           type="button"
           className="file-viewer-download-btn"
           onClick={handleDownload}
         >
-          {t("fileViewerDownloadFile" as never)}
+          {t("fileViewerDownloadFile")}
         </button>
       </div>
     );
@@ -377,7 +375,7 @@ export const FileViewer = memo(function FileViewer({
           {formatFileSize(metadata.size)}
           {metadata.isText &&
             content &&
-            ` \u2022 ${t("fileViewerLines" as never, {
+            ` \u2022 ${t("fileViewerLines", {
               count: content.split("\n").length,
             })}`}
         </span>
@@ -388,11 +386,7 @@ export const FileViewer = memo(function FileViewer({
             type="button"
             className={`file-viewer-action ${copied ? "copied" : ""}`}
             onClick={handleCopy}
-            title={
-              copied
-                ? t("fileViewerCopied" as never)
-                : t("fileViewerCopyContent" as never)
-            }
+            title={copied ? t("fileViewerCopied") : t("fileViewerCopyContent")}
           >
             {copied ? <CheckIcon /> : <CopyIcon />}
           </button>
@@ -402,7 +396,7 @@ export const FileViewer = memo(function FileViewer({
             type="button"
             className="file-viewer-action"
             onClick={handleOpenInNewTab}
-            title={t("fileViewerOpenNewTab" as never)}
+            title={t("fileViewerOpenNewTab")}
           >
             <ExternalLinkIcon />
           </button>
@@ -411,7 +405,7 @@ export const FileViewer = memo(function FileViewer({
           type="button"
           className="file-viewer-action"
           onClick={handleDownload}
-          title={t("fileViewerDownload" as never)}
+          title={t("fileViewerDownload")}
         >
           <DownloadIcon />
         </button>
@@ -421,8 +415,8 @@ export const FileViewer = memo(function FileViewer({
           onClick={() => setFullscreen(!fullscreen)}
           title={
             fullscreen
-              ? t("fileViewerExitFullscreen" as never)
-              : t("fileViewerFullscreen" as never)
+              ? t("fileViewerExitFullscreen")
+              : t("fileViewerFullscreen")
           }
         >
           {fullscreen ? <ExitFullscreenIcon /> : <FullscreenIcon />}

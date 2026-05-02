@@ -5,7 +5,7 @@ import {
   type FileType,
   useFileActivity,
 } from "../hooks/useFileActivity";
-import { useI18n } from "../i18n";
+import { type Translate, useI18n } from "../i18n";
 
 function formatTime(timestamp: string): string {
   return new Date(timestamp).toLocaleTimeString();
@@ -26,48 +26,38 @@ function getTypeIcon(type: FileChangeEvent["changeType"]): string {
   }
 }
 
-function getTypeColor(type: FileChangeEvent["changeType"]): string {
-  switch (type) {
-    case "create":
-      return "#4f4";
-    case "modify":
-      return "#ff4";
-    case "delete":
-      return "#f44";
-  }
+function getTypeClass(type: FileChangeEvent["changeType"]): string {
+  return `activity-event-type activity-event-type--${type}`;
 }
 
 function getTypeLabel(
   type: FileChangeEvent["changeType"],
-  t: (key: never) => string,
+  t: Translate,
 ): string {
   switch (type) {
     case "create":
-      return t("activityTypeCreated" as never);
+      return t("activityTypeCreated");
     case "modify":
-      return t("activityTypeModified" as never);
+      return t("activityTypeModified");
     case "delete":
-      return t("activityTypeDeleted" as never);
+      return t("activityTypeDeleted");
   }
 }
 
-function getFileTypeLabel(
-  fileType: FileType,
-  t: (key: never) => string,
-): string {
+function getFileTypeLabel(fileType: FileType, t: Translate): string {
   switch (fileType) {
     case "session":
-      return t("activityFileTypeSession" as never);
+      return t("activityFileTypeSession");
     case "agent-session":
-      return t("activityFileTypeAgentSession" as never);
+      return t("activityFileTypeAgentSession");
     case "settings":
-      return t("activityFileTypeSettings" as never);
+      return t("activityFileTypeSettings");
     case "credentials":
-      return t("activityFileTypeCredentials" as never);
+      return t("activityFileTypeCredentials");
     case "telemetry":
-      return t("activityFileTypeTelemetry" as never);
+      return t("activityFileTypeTelemetry");
     case "other":
-      return t("activityFileTypeOther" as never);
+      return t("activityFileTypeOther");
   }
 }
 
@@ -90,19 +80,21 @@ export function ActivityPage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isAtBottomRef = useRef(true);
 
-  // Apply filters
   let filteredEvents = events;
 
   if (pathFilter) {
     const regex = new RegExp(pathFilter, "i");
-    filteredEvents = filteredEvents.filter((e) => regex.test(e.relativePath));
+    filteredEvents = filteredEvents.filter((event) =>
+      regex.test(event.relativePath),
+    );
   }
 
   if (typeFilters.size > 0) {
-    filteredEvents = filteredEvents.filter((e) => typeFilters.has(e.fileType));
+    filteredEvents = filteredEvents.filter((event) =>
+      typeFilters.has(event.fileType),
+    );
   }
 
-  // Reverse for chronological order (oldest at top, newest at bottom)
   const displayedEvents = [...filteredEvents].reverse();
 
   const toggleTypeFilter = (type: FileType) => {
@@ -117,7 +109,6 @@ export function ActivityPage() {
     });
   };
 
-  // Track scroll position to know if we should auto-scroll
   const handleScroll = () => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -127,7 +118,6 @@ export function ActivityPage() {
       threshold;
   };
 
-  // Auto-scroll to bottom when new events arrive (if already at bottom)
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally trigger on events change
   useLayoutEffect(() => {
     const container = scrollContainerRef.current;
@@ -136,7 +126,6 @@ export function ActivityPage() {
     }
   }, [displayedEvents.length]);
 
-  // Group events by date
   const eventsByDate = displayedEvents.reduce(
     (acc, event) => {
       const date = formatDate(event.timestamp);
@@ -150,232 +139,114 @@ export function ActivityPage() {
   );
 
   return (
-    <div
-      className="page"
-      style={{
-        maxWidth: "1000px",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-      }}
-    >
+    <div className="page activity-page">
       <nav className="breadcrumb">
         <Link to="/projects">{t("pageTitleProjects")}</Link> /{" "}
-        {t("activityBreadcrumb" as never)}
+        {t("activityBreadcrumb")}
       </nav>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h1>{t("activityTitle" as never)}</h1>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+      <div className="activity-header">
+        <h1>{t("activityTitle")}</h1>
+        <div className="activity-connection">
           <span
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: "50%",
-              background: connected ? "#4f4" : "#f44",
-            }}
+            className={`activity-status-dot ${
+              connected
+                ? "activity-status-dot--connected"
+                : "activity-status-dot--disconnected"
+            }`}
           />
-          <span style={{ fontSize: "0.875rem", color: "#888" }}>
-            {connected
-              ? t("activityConnected" as never)
-              : t("activityDisconnected" as never)}
+          <span className="activity-connection-label">
+            {connected ? t("activityConnected") : t("activityDisconnected")}
           </span>
         </div>
       </div>
 
-      {/* Controls */}
-      <div
-        style={{
-          display: "flex",
-          gap: "1rem",
-          marginBottom: "1rem",
-          flexWrap: "wrap",
-        }}
-      >
+      <div className="activity-controls">
         <input
           type="text"
           value={pathFilter}
-          onChange={(e) => setPathFilter(e.target.value)}
-          placeholder={t("activityPathPlaceholder" as never)}
-          style={{
-            flex: 1,
-            minWidth: "200px",
-            padding: "0.75rem",
-            background: "#2a2a2a",
-            border: "1px solid #444",
-            borderRadius: "8px",
-            color: "inherit",
-            fontSize: "1rem",
-          }}
+          onChange={(event) => setPathFilter(event.target.value)}
+          placeholder={t("activityPathPlaceholder")}
+          className="activity-search"
         />
         <button
           type="button"
           onClick={togglePause}
-          style={{
-            background: paused ? "#a44" : "#444",
-          }}
+          className={`activity-button${paused ? " activity-button--paused" : ""}`}
         >
-          {paused ? t("activityResume" as never) : t("activityPause" as never)}
+          {paused ? t("activityResume") : t("activityPause")}
         </button>
-        <button
-          type="button"
-          onClick={clearEvents}
-          style={{ background: "#444" }}
-        >
-          {t("activityClear" as never)}
+        <button type="button" onClick={clearEvents} className="activity-button">
+          {t("activityClear")}
         </button>
       </div>
 
-      {/* Type filters */}
-      <div
-        style={{
-          display: "flex",
-          gap: "0.5rem",
-          marginBottom: "1rem",
-          flexWrap: "wrap",
-        }}
-      >
-        {FILE_TYPE_OPTIONS.map((type) => (
-          <button
-            type="button"
-            key={type}
-            onClick={() => toggleTypeFilter(type)}
-            style={{
-              padding: "0.5rem 0.75rem",
-              fontSize: "0.875rem",
-              background: typeFilters.has(type) ? "#4a4aff" : "#333",
-              border: typeFilters.has(type)
-                ? "1px solid #5a5aff"
-                : "1px solid #444",
-            }}
-          >
-            {getFileTypeLabel(type, t)}
-          </button>
-        ))}
+      <div className="activity-type-filters">
+        {FILE_TYPE_OPTIONS.map((type) => {
+          const selected = typeFilters.has(type);
+          return (
+            <button
+              type="button"
+              key={type}
+              onClick={() => toggleTypeFilter(type)}
+              className={`activity-filter-button${
+                selected ? " activity-filter-button--selected" : ""
+              }`}
+            >
+              {getFileTypeLabel(type, t)}
+            </button>
+          );
+        })}
         {typeFilters.size > 0 && (
           <button
             type="button"
             onClick={() => setTypeFilters(new Set())}
-            style={{
-              padding: "0.5rem 0.75rem",
-              fontSize: "0.875rem",
-              background: "#444",
-            }}
+            className="activity-filter-button"
           >
-            {t("activityClearFilters" as never)}
+            {t("activityClearFilters")}
           </button>
         )}
       </div>
 
-      {/* Stats */}
-      <div
-        style={{
-          display: "flex",
-          gap: "2rem",
-          marginBottom: "1rem",
-          fontSize: "0.875rem",
-          color: "#888",
-        }}
-      >
-        <span>{t("activityTotal" as never, { count: events.length })}</span>
-        <span>
-          {t("activityShowing" as never, { count: displayedEvents.length })}
-        </span>
+      <div className="activity-stats">
+        <span>{t("activityTotal", { count: events.length })}</span>
+        <span>{t("activityShowing", { count: displayedEvents.length })}</span>
       </div>
 
-      {/* Events - scrollable container */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        style={{
-          flex: 1,
-          overflow: "auto",
-          minHeight: 0,
-          background: "#1a1a1a",
-          borderRadius: "8px",
-          padding: "1rem",
-        }}
+        className="activity-events"
       >
         {Object.entries(eventsByDate).length === 0 ? (
-          <div style={{ textAlign: "center", padding: "3rem", color: "#888" }}>
+          <div className="activity-empty">
             {events.length === 0
-              ? t("activityWaiting" as never)
-              : t("activityNoMatches" as never)}
+              ? t("activityWaiting")
+              : t("activityNoMatches")}
           </div>
         ) : (
           Object.entries(eventsByDate).map(([date, dateEvents]) => (
-            <div key={date} style={{ marginBottom: "1.5rem" }}>
-              <h3
-                style={{
-                  color: "#888",
-                  fontSize: "0.875rem",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                {date}
-              </h3>
-              <div
-                style={{
-                  background: "#2a2a2a",
-                  borderRadius: "8px",
-                  overflow: "hidden",
-                }}
-              >
-                {dateEvents.map((event, i) => (
+            <div key={date} className="activity-date-group">
+              <h3 className="activity-date-heading">{date}</h3>
+              <div className="activity-date-events">
+                {dateEvents.map((event, index) => (
                   <div
-                    key={`${event.timestamp}-${event.path}-${i}`}
-                    style={{
-                      padding: "0.75rem 1rem",
-                      borderBottom:
-                        i < dateEvents.length - 1 ? "1px solid #333" : "none",
-                      display: "grid",
-                      gridTemplateColumns: "80px 24px 100px 1fr",
-                      gap: "0.75rem",
-                      alignItems: "center",
-                      fontFamily: "monospace",
-                      fontSize: "0.875rem",
-                    }}
+                    key={`${event.timestamp}-${event.path}-${index}`}
+                    className="activity-event-row"
                   >
-                    <span style={{ color: "#666" }}>
+                    <span className="activity-event-time">
                       {formatTime(event.timestamp)}
                     </span>
                     <span
-                      style={{
-                        color: getTypeColor(event.changeType),
-                        fontWeight: "bold",
-                        textAlign: "center",
-                      }}
+                      className={getTypeClass(event.changeType)}
                       title={getTypeLabel(event.changeType, t)}
                     >
                       {getTypeIcon(event.changeType)}
                     </span>
-                    <span
-                      style={{
-                        color: "#888",
-                        fontSize: "0.75rem",
-                        background: "#333",
-                        padding: "0.25rem 0.5rem",
-                        borderRadius: "4px",
-                        textAlign: "center",
-                      }}
-                    >
+                    <span className="activity-file-type">
                       {getFileTypeLabel(event.fileType, t)}
                     </span>
-                    <span
-                      style={{
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                      title={event.path}
-                    >
+                    <span className="activity-path" title={event.path}>
                       {event.relativePath}
                     </span>
                   </div>

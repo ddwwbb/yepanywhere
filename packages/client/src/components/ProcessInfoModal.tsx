@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import { useActivityBusState } from "../hooks/useActivityBusState";
 import type { ProcessState } from "../hooks/useSession";
-import { useI18n } from "../i18n";
+import { type Translate, useI18n } from "../i18n";
 import type { SessionStatus } from "../types";
 import { Modal } from "./ui/Modal";
 
@@ -55,7 +55,7 @@ interface ProcessInfoModalProps {
 function formatThinkingConfig(
   thinking?: { type: string },
   effort?: string,
-  t?: (key: string) => string,
+  t?: Translate,
 ): string {
   if (!thinking || thinking.type === "disabled") {
     return t ? t("processInfoThinkingDisabled") : "Disabled";
@@ -92,10 +92,7 @@ function formatTime(isoString: string): string {
   return date.toLocaleString();
 }
 
-function formatTimeAgo(
-  timestamp: number | null,
-  t: (key: string, vars?: Record<string, string | number>) => string,
-): string {
+function formatTimeAgo(timestamp: number | null, t: Translate): string {
   if (!timestamp) return t("processInfoNever");
   const seconds = Math.floor((Date.now() - timestamp) / 1000);
   if (seconds < 5) return t("processInfoJustNow");
@@ -108,7 +105,7 @@ function formatTimeAgo(
 
 function formatSandboxPolicy(
   policy: SessionSandboxPolicy | undefined,
-  t: (key: string) => string,
+  t: Translate,
 ): string | null {
   if (!policy) return null;
 
@@ -192,8 +189,6 @@ export function ProcessInfoModal({
   onClose,
 }: ProcessInfoModalProps) {
   const { t } = useI18n();
-  const tr = (key: string, vars?: Record<string, string | number>): string =>
-    t(key as never, vars);
   const [processInfo, setProcessInfo] = useState<ProcessInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -293,7 +288,7 @@ export function ProcessInfoModal({
           />
           <InfoRow
             label={t("processInfoLabelSandboxPolicy")}
-            value={formatSandboxPolicy(sandboxPolicy, tr)}
+            value={formatSandboxPolicy(sandboxPolicy, t)}
             mono
           />
         </Section>
@@ -329,7 +324,7 @@ export function ProcessInfoModal({
           {status.owner === "self" && lastSessionEventAt && (
             <InfoRow
               label={t("processInfoLabelLastSessionEvent")}
-              value={formatTimeAgo(new Date(lastSessionEventAt).getTime(), tr)}
+              value={formatTimeAgo(new Date(lastSessionEventAt).getTime(), t)}
             />
           )}
           {status.owner === "external" && (
@@ -406,7 +401,7 @@ export function ProcessInfoModal({
                     value={formatThinkingConfig(
                       processInfo.thinking,
                       processInfo.effort,
-                      tr,
+                      t,
                     )}
                   />
                   {processInfo.idleSince && (

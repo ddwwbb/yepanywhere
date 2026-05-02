@@ -1,0 +1,171 @@
+/* ==========================================================================
+   Read Tool
+   ========================================================================== */
+
+.read-tool-use {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.read-range {
+  color: var(--text-muted);
+  font-size: var(--text-base);
+}
+
+.read-text-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.file-link-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: transparent;
+  border: 1px solid var(--vscode-widget-border, #454545);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-family: "SF Mono", Monaco, monospace;
+  font-size: var(--text-base);
+  color: var(--vscode-textLink-foreground, #3794ff);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.file-link-button:hover {
+  background: var(--vscode-list-hoverBackground, #2a2d2e);
+  border-color: var(--vscode-focusBorder, #007fd4);
+}
+
+.file-link-button .file-range {
+  color: var(--text-muted);
+}
+
+.file-link-button .file-line-count {
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* Inline file link for interactive summary */
+.file-link-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: "SF Mono", Monaco, monospace;
+  font-size: inherit;
+  color: var(--vscode-textLink-foreground, #3794ff);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.15s;
+}
+
+.file-link-inline:hover {
+  text-decoration-color: currentColor;
+}
+
+.file-line-count-inline {
+  color: var(--text-muted);
+  font-size: 0.85em;
+  text-decoration: none;
+}
+
+/* Non-expandable tool row header */
+.tool-row-header.non-expandable {
+  cursor: default;
+}
+
+.tool-row.interactive .tool-summary {
+  flex: 1;
+}
+
+.file-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.file-path {
+  font-family: "SF Mono", Monaco, monospace;
+  font-size: var(--text-base);
+  color: var(--color-link);
+  word-break: break-all;
+}
+
+.file-range {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.file-content-with-lines {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  font-family: "SF Mono", Monaco, monospace;
+  font-size: var(--text-base);
+  background: var(--bg-code);
+  tab-size: var(--tab-size);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+}
+
+.line-numbers {
+  text-align: right;
+  padding: 0.75rem 0.5rem;
+  color: var(--text-muted);
+  user-select: none;
+  border-right: 1px solid var(--border-default);
+  background: var(--bg-secondary);
+}
+
+.line-numbers > div {
+  line-height: 1.5;
+}
+
+.line-content {
+  padding: 0.75rem;
+  margin: 0;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+
+.line-content code {
+  display: block;
+}
+
+.read-image-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.image-info {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.read-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.read-pdf-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.read-error {
+  color: var(--color-error);
+  padding: 0.5rem;
+  background: var(--bg-error, rgba(207, 34, 46, 0.1));
+  border-radius: 4px;
+}

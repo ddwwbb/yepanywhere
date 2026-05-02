@@ -3,6 +3,7 @@ import type { ZodError } from "zod";
 import { useSchemaValidationContext } from "../../../contexts/SchemaValidationContext";
 import { validateToolResult } from "../../../lib/validateToolResult";
 import { SchemaWarning } from "../../SchemaWarning";
+import { TrustedHtml } from "../../TrustedHtml";
 import { Modal } from "../../ui/Modal";
 import type {
   ImageFile,
@@ -120,10 +121,10 @@ function FileModalContent({
       <div className="file-content-modal">
         {toggleButton}
         <div className="markdown-preview">
-          <div
+          <TrustedHtml
             className="markdown-rendered"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered HTML
-            dangerouslySetInnerHTML={{ __html: renderedMarkdownHtml }}
+            html={renderedMarkdownHtml}
+            source="server-rendered-markdown"
           />
         </div>
       </div>
@@ -136,10 +137,10 @@ function FileModalContent({
       <div className="file-content-modal">
         {toggleButton}
         <div className="file-viewer-code file-viewer-code-highlighted">
-          <div
+          <TrustedHtml
             className="shiki-container"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered HTML
-            dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+            html={highlightedHtml}
+            source="server-rendered-syntax-highlight"
           />
           {highlightedTruncated && (
             <div className="file-viewer-truncated">
