@@ -1,4 +1,4 @@
-import type { SlashCommand } from "@yep-anywhere/shared";
+import type { McpServerStatus, SlashCommand } from "@yep-anywhere/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type PaginationInfo, api } from "../api/client";
 import {
@@ -36,6 +36,7 @@ export interface SessionLoadResult {
   status: SessionStatus;
   pendingInputRequest?: unknown;
   slashCommands?: SlashCommand[] | null;
+  mcpServers?: McpServerStatus[] | null;
 }
 
 /** Options for useSessionMessages */
@@ -336,6 +337,7 @@ export function useSessionMessages(
           status: data.ownership,
           pendingInputRequest: data.pendingInputRequest,
           slashCommands: data.slashCommands,
+          mcpServers: data.mcpServers,
         });
       })
       .catch((err) => {

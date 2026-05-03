@@ -19,12 +19,19 @@
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: 4px;
-  width: 90vw;
-  max-width: 1200px;
+  width: fit-content;
+  min-width: 320px;
+  max-width: 90vw;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Wide variant for code/file viewers that need maximum horizontal space */
+.modal--wide {
+  width: 90vw;
+  max-width: 1200px;
 }
 
 .modal-header {

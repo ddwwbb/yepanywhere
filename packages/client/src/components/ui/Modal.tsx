@@ -6,6 +6,11 @@ interface ModalProps {
   title: ReactNode;
   children: ReactNode;
   onClose: () => void;
+  /** Dialog 尺寸模式
+   * - 'auto' (默认): 宽度由内容决定，min 320px，max 90vw
+   * - 'wide': 固定宽 dialog，用于代码/文件查看
+   */
+  size?: "auto" | "wide";
 }
 
 /**
@@ -13,7 +18,7 @@ interface ModalProps {
  * Renders via portal to avoid event bubbling issues.
  * Closes on Escape key or clicking the overlay.
  */
-export function Modal({ title, children, onClose }: ModalProps) {
+export function Modal({ title, children, onClose, size = "auto" }: ModalProps) {
   const { t } = useI18n();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -66,7 +71,7 @@ export function Modal({ title, children, onClose }: ModalProps) {
     >
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: click only stops propagation, keyboard handled globally */}
       <div
-        className="modal"
+        className={`modal${size === "wide" ? " modal--wide" : ""}`}
         role="dialog"
         aria-modal="true"
         onClick={handleModalClick}

@@ -242,6 +242,7 @@ function TextFileResult({
         <Modal
           title={<FileModalTitle file={file} />}
           onClose={() => setShowModal(false)}
+          size="wide"
         >
           <FileModalContent
             file={file}
@@ -540,6 +541,7 @@ function ReadInteractiveSummary({
         <Modal
           title={<FileModalTitle file={file} />}
           onClose={() => setShowModal(false)}
+          size="wide"
         >
           <FileModalContent
             file={file}

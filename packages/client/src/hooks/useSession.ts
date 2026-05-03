@@ -1,5 +1,6 @@
 import {
   type MarkdownAugment,
+  type McpServerStatus,
   type ProviderName,
   type SlashCommand,
   getModelContextWindow,
@@ -177,8 +178,8 @@ export function useSession(
   const [slashCommands, setSlashCommands] = useState<SlashCommand[]>([]);
   // Tools available for this session (from init message)
   const [sessionTools, setSessionTools] = useState<string[]>([]);
-  // MCP servers available for this session (from init message)
-  const [mcpServers, setMcpServers] = useState<Array<{ name: string; status: string }>>([]);
+  // MCP servers available for this session (from init message or REST metadata)
+  const [mcpServers, setMcpServers] = useState<McpServerStatus[]>([]);
   const lastKnownModeVersionRef = useRef<number>(0);
 
   // Apply server mode update only if version is >= our last known version
@@ -229,10 +230,13 @@ export function useSession(
       if (result.pendingInputRequest) {
         setPendingInputRequest(result.pendingInputRequest as InputRequest);
       }
-      // Set slash commands from API response so the "/" button appears reliably
+      // Set slash commands from API response so the skills button appears reliably
       // (the SSE init message that normally carries these is discarded after ~30s)
       if (result.slashCommands?.length) {
         setSlashCommands(result.slashCommands);
+      }
+      if (result.mcpServers !== undefined) {
+        setMcpServers(result.mcpServers ?? []);
       }
     },
     [applyServerModeUpdate],
@@ -581,6 +585,12 @@ export function useSession(
     try {
       const data = await api.getSessionMetadata(projectId, sessionId);
       setStatus(data.ownership);
+      if (data.slashCommands?.length) {
+        setSlashCommands(data.slashCommands);
+      }
+      if (data.mcpServers !== undefined) {
+        setMcpServers(data.mcpServers ?? []);
+      }
       if (data.ownership.owner === "none") {
         setProcessState("idle");
         setPendingInputRequest(null);
@@ -758,9 +768,7 @@ export function useSession(
             setSessionTools(sdkMessage.tools as string[]);
           }
           if (Array.isArray(sdkMessage.mcp_servers)) {
-            setMcpServers(
-              sdkMessage.mcp_servers as Array<{ name: string; status: string }>,
-            );
+            setMcpServers(sdkMessage.mcp_servers as McpServerStatus[]);
           }
         }
 
@@ -1049,12 +1057,16 @@ export function useSession(
   const handleStreamError = useCallback(async () => {
     try {
       const data = await api.getSessionMetadata(projectId, sessionId);
+      if (data.mcpServers !== undefined) {
+        setMcpServers(data.mcpServers ?? []);
+      }
       if (data.ownership.owner !== "self") {
         setStatus({ owner: "none" });
         setProcessState("idle");
       }
     } catch {
       // If session fetch fails, assume process is dead
+      setMcpServers([]);
       setStatus({ owner: "none" });
       setProcessState("idle");
     }
@@ -1115,7 +1127,7 @@ export function useSession(
     deferredMessages, // Messages queued server-side waiting for agent turn to end
     slashCommands, // Available slash commands from init message
     sessionTools, // Available tools from init message
-    mcpServers, // Available MCP servers from init message
+    mcpServers, // Available MCP servers from REST metadata or init message
     pagination, // Compact-boundary pagination metadata
     loadingOlder, // Whether older messages are being loaded
     loadOlderMessages, // Load next chunk of older messages

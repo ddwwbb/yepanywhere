@@ -185,7 +185,7 @@ export function FloatingActionButton() {
       style={{
         right: `${right}px`,
         bottom: `${bottom}px`,
-        width: `${maxWidth}px`, // Always use maxWidth so button stays centered
+        width: isExpanded ? `${maxWidth}px` : "auto",
         display: isHidden ? "none" : undefined,
       }}
     >

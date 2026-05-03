@@ -1,3 +1,5 @@
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 import {
   type ContextUsage,
   type ModelOption,
@@ -10,8 +12,6 @@ import {
   isUrlProjectId,
   thinkingOptionToConfig,
 } from "@yep-anywhere/shared";
-import * as fs from "node:fs/promises";
-import * as path from "node:path";
 import { Hono } from "hono";
 import { augmentTextBlocks } from "../augments/markdown-augments.js";
 import type { SessionMetadataService } from "../metadata/index.js";
@@ -466,6 +466,7 @@ export function createSessionsRoutes(deps: SessionsDeps): Hono {
     const slashCommands = process?.supportsDynamicCommands
       ? await process.supportedCommands()
       : null;
+    const mcpServers = process ? await process.getMcpServerStatus() : null;
 
     // Read minimal session info from disk (just for title/timestamps, no messages)
     const metadataProvider = deps.sessionMetadataService?.getProvider(
@@ -530,6 +531,7 @@ export function createSessionsRoutes(deps: SessionsDeps): Hono {
       ownership,
       pendingInputRequest,
       slashCommands,
+      mcpServers,
     });
   });
 
@@ -657,12 +659,13 @@ export function createSessionsRoutes(deps: SessionsDeps): Hono {
     const pendingInputRequest =
       process?.state.type === "waiting-input" ? process.state.request : null;
 
-    // Get available slash commands from active process (for "/" button in toolbar)
+    // Get available slash commands from active process (for skills button in toolbar)
     // The init message that normally carries these gets discarded from the SSE buffer
     // after ~30s, so we attach them to the REST response for reliable delivery.
     const slashCommands = process?.supportsDynamicCommands
       ? await process.supportedCommands()
       : null;
+    const mcpServers = process ? await process.getMcpServerStatus() : null;
 
     if (!session) {
       // Session file doesn't exist yet - only valid if we own the process
@@ -724,6 +727,7 @@ export function createSessionsRoutes(deps: SessionsDeps): Hono {
           ownership,
           pendingInputRequest,
           slashCommands,
+          mcpServers,
         });
       }
       return c.json({ error: "Session not found" }, 404);
@@ -797,6 +801,7 @@ export function createSessionsRoutes(deps: SessionsDeps): Hono {
       ownership,
       pendingInputRequest,
       slashCommands,
+      mcpServers,
       ...(paginationInfo && { pagination: paginationInfo }),
     });
   });
@@ -1528,7 +1533,7 @@ export function createSessionsRoutes(deps: SessionsDeps): Hono {
 
     // 查找会话文件路径
     let filePath: string | null = null;
-    let sessionDir: string | null = null;
+    const sessionDir: string | null = null;
 
     // 先用主 reader 查找
     const reader = deps.readerFactory(project);
@@ -1586,7 +1591,9 @@ export function createSessionsRoutes(deps: SessionsDeps): Hono {
             (f) => f.startsWith(`agent-${sessionId}`) && f.endsWith(".jsonl"),
           );
           await Promise.all(
-            agentFiles.map((f) => fs.unlink(path.join(scanDir, f)).catch(() => {})),
+            agentFiles.map((f) =>
+              fs.unlink(path.join(scanDir, f)).catch(() => {}),
+            ),
           );
         } catch {
           // 目录不存在，忽略

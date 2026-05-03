@@ -398,6 +398,7 @@ export const api = {
       ownership: SessionStatus;
       pendingInputRequest?: InputRequest | null;
       slashCommands?: SlashCommand[] | null;
+      mcpServers?: McpServerStatus[] | null;
       pagination?: PaginationInfo;
     }>(`/projects/${projectId}/sessions/${sessionId}${qs ? `?${qs}` : ""}`);
   },
@@ -412,6 +413,7 @@ export const api = {
       ownership: SessionStatus;
       pendingInputRequest?: InputRequest | null;
       slashCommands?: SlashCommand[] | null;
+      mcpServers?: McpServerStatus[] | null;
     }>(`/projects/${projectId}/sessions/${sessionId}/metadata`),
 
   /**
@@ -992,10 +994,13 @@ export const api = {
       body: JSON.stringify({ sessionId }),
     }),
   cancelFeishuRemoteChannelRegistration: (sessionId: string) =>
-    fetchJSON<{ ok: true }>("/settings/remote-channels/feishu/register/cancel", {
-      method: "POST",
-      body: JSON.stringify({ sessionId }),
-    }),
+    fetchJSON<{ ok: true }>(
+      "/settings/remote-channels/feishu/register/cancel",
+      {
+        method: "POST",
+        body: JSON.stringify({ sessionId }),
+      },
+    ),
   verifyTelegramRemoteChannel: (request: {
     action?: "verify" | "detect_chat_id";
     botToken?: string;
@@ -1191,6 +1196,7 @@ export interface ServerSettings {
     };
     telegram?: {
       enabled?: boolean;
+      allowedUsers?: string;
       bots?: {
         id: string;
         name?: string;
@@ -1203,6 +1209,9 @@ export interface ServerSettings {
     };
     qq?: {
       enabled?: boolean;
+      allowedUsers?: string;
+      imageInputEnabled?: boolean;
+      maxImageSizeMb?: number;
       bots?: {
         id: string;
         name?: string;
@@ -1229,4 +1238,14 @@ export interface ServerSettings {
       }[];
     };
   };
+  /** Whether the remote bridge (notification bridge) master switch is enabled */
+  remoteBridgeEnabled?: boolean;
+  /** Whether to auto-start the bridge when the server launches */
+  bridgeAutoStart?: boolean;
+  /** Default working directory for bridge-initiated sessions */
+  bridgeDefaultWorkDir?: string;
+  /** Default model for bridge-initiated sessions */
+  bridgeDefaultModel?: string;
+  /** Default provider ID for bridge-initiated sessions */
+  bridgeDefaultProviderId?: string;
 }

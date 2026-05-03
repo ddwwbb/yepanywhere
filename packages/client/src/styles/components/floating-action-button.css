@@ -18,32 +18,38 @@
 }
 
 .fab-button {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
   background: linear-gradient(
     135deg,
     var(--color-brand-light),
     var(--color-brand-hover)
   );
   color: white;
-  border: none;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35), var(--shadow-md);
-  transition: all var(--duration-smooth) var(--ease-default);
+  transition: transform var(--duration-smooth) var(--ease-default), box-shadow
+    var(--duration-smooth) var(--ease-default), background var(--duration-fast)
+    var(--ease-default), color var(--duration-fast) var(--ease-default);
   flex-shrink: 0;
 }
 
+.fab-collapsed .fab-button,
+.fab-expanded .fab-button {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+}
+
 .fab-button:hover {
-  transform: scale(1.08);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45), var(--shadow-lg);
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.42), var(--shadow-lg);
 }
 
 .fab-button:active {
-  transform: scale(0.95);
+  transform: scale(0.97);
 }
 
 .fab-button-active {

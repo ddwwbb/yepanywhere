@@ -1,4 +1,8 @@
-import type { SlashCommand, UploadedFile } from "@yep-anywhere/shared";
+import type {
+  McpServerStatus,
+  SlashCommand,
+  UploadedFile,
+} from "@yep-anywhere/shared";
 import {
   type ClipboardEvent,
   type KeyboardEvent,
@@ -77,8 +81,10 @@ interface Props {
   /** Available slash commands (without "/" prefix) */
   slashCommands?: SlashCommand[];
   onOpenModelSwitch?: () => void;
+  currentModel?: string;
+  modelSwitchDisabled?: boolean;
   processId?: string;
-  mcpServers?: Array<{ name: string; status: string }>;
+  mcpServers?: McpServerStatus[];
 }
 
 export function MessageInput({
@@ -107,6 +113,8 @@ export function MessageInput({
   supportsThinkingToggle = true,
   slashCommands = [],
   onOpenModelSwitch,
+  currentModel,
+  modelSwitchDisabled,
   processId,
   mcpServers = [],
 }: Props) {
@@ -500,6 +508,8 @@ export function MessageInput({
             slashCommands={slashCommands}
             onSelectSlashCommand={handleSlashCommand}
             onOpenModelSwitch={onOpenModelSwitch}
+            currentModel={currentModel}
+            modelSwitchDisabled={modelSwitchDisabled}
             processId={processId}
             mcpServers={mcpServers}
             contextUsage={contextUsage}

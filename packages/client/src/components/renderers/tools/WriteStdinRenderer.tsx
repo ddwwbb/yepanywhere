@@ -206,6 +206,7 @@ function ReadViaPtyFile({
         <Modal
           title={<span className="file-path">{fileName}</span>}
           onClose={() => setShowModal(false)}
+          size="wide"
         >
           <div className="file-content-modal">
             <div className="file-content-with-lines">

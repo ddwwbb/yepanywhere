@@ -344,6 +344,9 @@ function SessionPageContent({
     onScrollToBottom: handleScrollToBottom,
   });
 
+  const activeProcessId =
+    status.owner === "self" ? status.processId : undefined;
+
   const handleModelChanged = useCallback(
     (model: string) => {
       setSessionModel(model);
@@ -353,11 +356,9 @@ function SessionPageContent({
   );
 
   const handleOpenModelSwitch = useCallback(() => {
+    if (!activeProcessId) return;
     setShowModelSwitchModal(true);
-  }, []);
-
-  const activeProcessId =
-    status.owner === "self" ? status.processId : undefined;
+  }, [activeProcessId]);
 
   const handleAbort = async () => {
     if (status.owner === "self" && status.processId) {
@@ -722,10 +723,10 @@ function SessionPageContent({
         )}
 
         {/* Model Switch Modal */}
-        {showModelSwitchModal && (
+        {showModelSwitchModal && activeProcessId && (
           <ModelSwitchModal
-            processId={status.owner === "self" ? status.processId : undefined}
-            currentModel={session?.model}
+            processId={activeProcessId}
+            currentModel={effectiveModel}
             onModelChanged={handleModelChanged}
             onClose={() => setShowModelSwitchModal(false)}
           />
@@ -784,9 +785,9 @@ function SessionPageContent({
           isRunning={status.owner === "self"}
           isThinking={processState === "in-turn"}
           onStop={handleAbort}
-          onOpenModelSwitch={
-            activeProcessId ? handleOpenModelSwitch : undefined
-          }
+          onOpenModelSwitch={handleOpenModelSwitch}
+          currentModel={effectiveModel}
+          modelSwitchDisabled={!activeProcessId}
           processId={activeProcessId}
           mcpServers={mcpServers}
           onSend={handleSend}

@@ -42,32 +42,49 @@
 
 .session-menu-trigger:hover {
   opacity: 1;
-  background: var(--bg-hover);
+  background: var(--dropdown-opt-hover);
   color: var(--text-primary);
 }
 
 .session-menu-trigger:active {
   opacity: 1;
-  background: var(--bg-tertiary);
+  background: var(--dropdown-opt-active);
+}
+
+.session-menu-trigger:focus-visible {
+  outline: 3px solid var(--dropdown-focus-ring);
+  outline-offset: 2px;
 }
 
 .session-menu-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + var(--dropdown-panel-offset));
   right: 0;
-  margin-top: var(--space-1);
+  z-index: var(--dropdown-z);
+  min-width: 168px;
+  padding: var(--dropdown-panel-pad);
+  overflow: hidden;
   background: var(--dropdown-bg);
   border: 1px solid var(--dropdown-border);
   border-radius: var(--dropdown-radius);
   box-shadow: var(--dropdown-shadow);
-  min-width: 140px;
-  z-index: var(--dropdown-z);
-  overflow: hidden;
+  animation: sessionMenuFadeIn var(--duration-fast) var(--ease-out);
+}
+
+@keyframes sessionMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .session-menu-bot-picker {
-  max-height: 150px;
-  padding: var(--space-1) var(--space-3);
+  max-height: 180px;
+  padding: var(--space-1) 0;
   overflow-y: auto;
 }
 
@@ -78,8 +95,7 @@
 
 .session-menu-dropdown button.session-menu-bot-option {
   display: block;
-  padding: var(--space-1) 0;
-  min-height: 0;
+  min-height: var(--dropdown-opt-min-h);
   text-align: left;
 }
 
@@ -100,20 +116,33 @@
   align-items: center;
   gap: var(--dropdown-opt-gap);
   width: 100%;
-  padding: var(--dropdown-opt-pad);
   min-height: var(--dropdown-opt-min-h);
+  padding: var(--dropdown-opt-pad);
   background: transparent;
   border: none;
+  border-radius: var(--dropdown-opt-radius);
   color: var(--dropdown-text);
-  font-size: var(--dropdown-text-size);
-  font-family: var(--font-sans);
-  text-align: left;
   cursor: pointer;
-  transition: background var(--duration-fast);
+  font-family: var(--font-sans);
+  font-size: var(--dropdown-text-size);
+  text-align: left;
+  transition: background var(--duration-fast) var(--ease-default), color
+    var(--duration-fast) var(--ease-default), transform var(--duration-fast)
+    var(--ease-default);
 }
 
 .session-menu-dropdown button:hover {
   background: var(--dropdown-opt-hover);
+}
+
+.session-menu-dropdown button:active {
+  background: var(--dropdown-opt-active);
+  transform: scale(0.99);
+}
+
+.session-menu-dropdown button:focus-visible {
+  outline: 2px solid var(--dropdown-focus-ring);
+  outline-offset: -2px;
 }
 
 .session-menu-dropdown button svg {

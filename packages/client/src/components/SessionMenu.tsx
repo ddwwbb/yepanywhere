@@ -407,7 +407,7 @@ export function SessionMenu({
               onClick={() => void handleBindBot(bot.botId)}
               disabled={isBindingBot}
             >
-              <span className="session-menu-bot-channel">[{bot.channel}]</span>
+              <span className="session-menu-bot-channel">[{t(`bridge.${bot.channel}Channel` as Parameters<typeof t>[0])}]</span>
               {bot.name || bot.botId.slice(-6)}
               {bot.boundSessionId && (
                 <span className="session-menu-bot-bound">

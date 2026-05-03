@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Modal } from "./ui/Modal";
 
 export interface SlashCommandItem {
   name: string;
@@ -120,7 +121,6 @@ export function SlashCommandButton({
   const [query, setQuery] = useState("");
   const buttonRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const items = useMemo(() => buildCommandList(commands), [commands]);
   const filteredItems = useMemo(() => {
@@ -133,44 +133,17 @@ export function SlashCommandButton({
   }, [items, query]);
 
   useEffect(() => {
-    if (!isOpen) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(e.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsOpen(false);
-        buttonRef.current?.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
-
-  useEffect(() => {
     if (isOpen) {
       setTimeout(() => searchRef.current?.focus(), 0);
     } else {
       setQuery("");
     }
   }, [isOpen]);
+
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+    buttonRef.current?.focus();
+  }, []);
 
   const handleCommandClick = useCallback(
     (command: SlashCommandItem) => {
@@ -225,39 +198,53 @@ export function SlashCommandButton({
         className={`slash-command-button ${isOpen ? "active" : ""}`}
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
-        title="Slash commands"
-        aria-label="Show slash commands"
+        title="Skills and slash commands"
+        aria-label="Show skills and slash commands"
         aria-expanded={isOpen}
-        aria-haspopup="menu"
+        aria-haspopup="dialog"
       >
-        <span className="slash-icon">/</span>
+        <svg
+          className="slash-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M13 2 4 14h7l-1 8 10-12h-7l1-8Z" />
+        </svg>
       </button>
       {isOpen && (
-        <div
-          ref={menuRef}
-          className="slash-command-menu"
-          role="menu"
-          aria-label="Slash commands"
-        >
-          <div className="slash-command-search-wrap">
-            <input
-              ref={searchRef}
-              className="slash-command-search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search commands or skills"
-              aria-label="Search commands or skills"
-            />
+        <Modal title="Skills and slash commands" onClose={handleClose}>
+          <div
+            className="slash-command-modal-content"
+            role="menu"
+            aria-label="Skills and slash commands"
+          >
+            <div className="slash-command-search-wrap">
+              <input
+                ref={searchRef}
+                className="slash-command-search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search commands or skills"
+                aria-label="Search commands or skills"
+              />
+            </div>
+            <div className="slash-command-list">
+              {renderGroup("command")}
+              {renderGroup("slash")}
+              {renderGroup("skill")}
+              {filteredItems.length === 0 && (
+                <div className="slash-command-empty">No commands found</div>
+              )}
+            </div>
           </div>
-          <div className="slash-command-list">
-            {renderGroup("command")}
-            {renderGroup("slash")}
-            {renderGroup("skill")}
-            {filteredItems.length === 0 && (
-              <div className="slash-command-empty">No commands found</div>
-            )}
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

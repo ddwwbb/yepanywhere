@@ -2,12 +2,6 @@
    Onboarding Wizard
    ========================================================================== */
 
-/* Override modal width when containing onboarding wizard */
-.modal:has(.onboarding-wizard) {
-  width: auto;
-  max-width: 500px;
-}
-
 .onboarding-wizard {
   display: flex;
   flex-direction: column;
@@ -16,10 +10,8 @@
 }
 
 @media (max-width: 767px) {
-  .modal:has(.onboarding-wizard) {
-    width: 100vw;
-    max-width: 100vw;
-  }
+  /* Onboarding wizard uses default auto width on mobile;
+     base modal CSS already sets width: 100vw */
 }
 
 .onboarding-modal-title {

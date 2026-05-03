@@ -1,6 +1,6 @@
-import type { SlashCommand } from "@yep-anywhere/shared";
+import type { McpServerStatus, SlashCommand } from "@yep-anywhere/shared";
 import type { RefObject } from "react";
-import { useModelSettings } from "../hooks/useModelSettings";
+import { MODEL_OPTIONS, useModelSettings } from "../hooks/useModelSettings";
 import { useI18n } from "../i18n";
 import type { ContextUsage, PermissionMode } from "../types";
 import { ContextUsageIndicator } from "./ContextUsageIndicator";
@@ -41,8 +41,10 @@ export interface MessageInputToolbarProps {
 
   // Runtime controls
   onOpenModelSwitch?: () => void;
+  currentModel?: string;
+  modelSwitchDisabled?: boolean;
   processId?: string;
-  mcpServers?: Array<{ name: string; status: string }>;
+  mcpServers?: McpServerStatus[];
 
   // Context usage
   contextUsage?: ContextUsage;
@@ -82,6 +84,8 @@ export function MessageInputToolbar({
   slashCommands = [],
   onSelectSlashCommand,
   onOpenModelSwitch,
+  currentModel,
+  modelSwitchDisabled,
   processId,
   mcpServers = [],
   contextUsage,
@@ -95,7 +99,16 @@ export function MessageInputToolbar({
   pendingApproval,
 }: MessageInputToolbarProps) {
   const { t } = useI18n();
-  const { thinkingMode, cycleThinkingMode, thinkingLevel } = useModelSettings();
+  const { thinkingMode, cycleThinkingMode, thinkingLevel, model } =
+    useModelSettings();
+  const modelLabel =
+    (currentModel?.trim()
+      ? (MODEL_OPTIONS.find((option) => option.value === currentModel)?.label ??
+        currentModel)
+      : MODEL_OPTIONS.find((option) => option.value === model)?.label) ?? model;
+  const modelTitle = modelSwitchDisabled
+    ? `Current model: ${modelLabel}. Start or resume a session to switch models.`
+    : `Switch model: ${modelLabel}`;
 
   return (
     <div className="message-input-toolbar">
@@ -108,6 +121,53 @@ export function MessageInputToolbar({
             onHoldChange={onHoldChange}
           />
         )}
+        {onOpenModelSwitch && (
+          <button
+            type="button"
+            className="model-selector-button"
+            onClick={onOpenModelSwitch}
+            disabled={voiceDisabled || modelSwitchDisabled}
+            title={modelTitle}
+            aria-label={modelTitle}
+          >
+            <svg
+              className="model-selector-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="4" y="4" width="16" height="16" rx="3" />
+              <path d="M9 4v3" />
+              <path d="M15 4v3" />
+              <path d="M9 17v3" />
+              <path d="M15 17v3" />
+              <path d="M4 9h3" />
+              <path d="M4 15h3" />
+              <path d="M17 9h3" />
+              <path d="M17 15h3" />
+              <path d="M9 12h6" />
+            </svg>
+            <span className="model-selector-label">{modelLabel}</span>
+          </button>
+        )}
+        {onSelectSlashCommand && (
+          <SlashCommandButton
+            commands={slashCommands}
+            onSelectCommand={onSelectSlashCommand}
+            disabled={voiceDisabled}
+          />
+        )}
+        <McpServerButton
+          processId={processId}
+          initialServers={mcpServers}
+          disabled={voiceDisabled}
+        />
         <button
           type="button"
           className="attach-button"
@@ -192,31 +252,6 @@ export function MessageInputToolbar({
             onTranscript={onVoiceTranscript}
             onInterimTranscript={onInterimTranscript}
             onListeningStart={onListeningStart}
-            disabled={voiceDisabled}
-          />
-        )}
-        {onOpenModelSwitch && (
-          <button
-            type="button"
-            className="model-selector-button"
-            onClick={onOpenModelSwitch}
-            disabled={voiceDisabled}
-            title="Switch model"
-            aria-label="Switch model"
-          >
-            <span className="model-selector-icon">◆</span>
-            <span className="model-selector-label">Model</span>
-          </button>
-        )}
-        <McpServerButton
-          processId={processId}
-          initialServers={mcpServers}
-          disabled={voiceDisabled}
-        />
-        {onSelectSlashCommand && (
-          <SlashCommandButton
-            commands={slashCommands}
-            onSelectCommand={onSelectSlashCommand}
             disabled={voiceDisabled}
           />
         )}

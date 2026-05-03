@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { ConnectionBar } from "../components/ConnectionBar";
-import { FloatingActionButton } from "../components/FloatingActionButton";
 import { ReloadBanner } from "../components/ReloadBanner";
 import { useReloadNotifications } from "../hooks/useReloadNotifications";
 
@@ -43,7 +42,6 @@ export function AppShellContent({
         />
       )}
       {children}
-      <FloatingActionButton />
     </>
   );
 }

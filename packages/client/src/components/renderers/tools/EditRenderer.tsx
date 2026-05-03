@@ -562,6 +562,7 @@ function EditCollapsedPreview({
           <Modal
             title={<span className="file-path">{fileName}</span>}
             onClose={handleClose}
+            size="wide"
           >
             <DiffModalContent
               diffHtml={diffHtml}
@@ -615,6 +616,7 @@ function EditCollapsedPreview({
             <Modal
               title={<span className="file-path">{fileName}</span>}
               onClose={handleClose}
+              size="wide"
             >
               <RawPatchModalContent rawPatch={rawPatch} />
             </Modal>
@@ -771,6 +773,7 @@ function EditInteractiveSummary({
         <Modal
           title={<span className="file-path">{fileName}</span>}
           onClose={() => setShowModal(false)}
+          size="wide"
         >
           <DiffModalContent
             diffHtml={diffHtml}
@@ -1122,3 +1125,4 @@ export const editRenderer: ToolRenderer<EditInput, EditResult> = {
     );
   },
 };
+

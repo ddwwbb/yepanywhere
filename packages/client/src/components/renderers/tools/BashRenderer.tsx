@@ -416,6 +416,7 @@ function BashCollapsedPreview({
         <Modal
           title={input.description || "Bash Command"}
           onClose={handleClose}
+          size="wide"
         >
           <BashModalContent input={input} result={result} isError={isError} />
         </Modal>

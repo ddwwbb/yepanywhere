@@ -1,4 +1,8 @@
-import type { SlashCommand, UploadedFile } from "@yep-anywhere/shared";
+import type {
+  McpServerStatus,
+  SlashCommand,
+  UploadedFile,
+} from "@yep-anywhere/shared";
 import {
   MessageInput,
   type UploadProgress,
@@ -38,8 +42,10 @@ interface SessionInputAreaProps {
   isThinking: boolean;
   onStop: () => void;
   onOpenModelSwitch?: () => void;
+  currentModel?: string;
+  modelSwitchDisabled?: boolean;
   processId?: string;
-  mcpServers: Array<{ name: string; status: string }>;
+  mcpServers: McpServerStatus[];
   onSend: (text: string) => void;
   onQueue?: (text: string) => void;
   placeholder: string;
@@ -77,6 +83,8 @@ export function SessionInputArea({
   isThinking,
   onStop,
   onOpenModelSwitch,
+  currentModel,
+  modelSwitchDisabled,
   processId,
   mcpServers,
   onSend,
@@ -135,6 +143,8 @@ export function SessionInputArea({
               isThinking={isThinking}
               onStop={onStop}
               onOpenModelSwitch={onOpenModelSwitch}
+              currentModel={currentModel}
+              modelSwitchDisabled={modelSwitchDisabled}
               processId={processId}
               mcpServers={mcpServers}
               pendingApproval={
@@ -175,6 +185,8 @@ export function SessionInputArea({
             uploadProgress={uploadProgress}
             slashCommands={slashCommands}
             onOpenModelSwitch={onOpenModelSwitch}
+            currentModel={currentModel}
+            modelSwitchDisabled={modelSwitchDisabled}
             processId={processId}
             mcpServers={mcpServers}
           />

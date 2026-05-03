@@ -311,7 +311,7 @@ function GitDiffModal({
   const fileName = file.path.split("/").pop() || file.path;
 
   return (
-    <Modal title={fileName} onClose={onClose}>
+    <Modal title={fileName} onClose={onClose} size="wide">
       {loading ? (
         <div className="git-diff-loading">{t("gitStatusLoadingDiff")}</div>
       ) : error ? (

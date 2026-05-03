@@ -10,7 +10,7 @@ import { useViewportWidth } from "./useViewportWidth";
 const CONTENT_MAX_WIDTH = 830; // Matches .main-content-constrained max-width
 const FAB_MIN_WIDTH = 100; // Minimum width for the FAB input
 const FAB_MARGIN = 24; // Breathing room around FAB
-const FAB_BOTTOM_OFFSET = 80; // Distance from bottom - positioned just below message input area
+const FAB_BOTTOM_OFFSET = 96; // Keep the quick action clear of bottom controls
 
 /**
  * Calculate the right margin available for the FAB.

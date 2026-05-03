@@ -399,6 +399,7 @@ function WriteCollapsedPreview({
         <Modal
           title={<span className="file-path">{fileName}</span>}
           onClose={handleClose}
+          size="wide"
         >
           <WriteModalContent
             file={
